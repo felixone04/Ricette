@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- Google Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     
     <style>
@@ -25,107 +25,112 @@
             --border: #FED7AA;
             --radius-md: 12px;
             --shadow-sm: 0 4px 12px rgba(249, 115, 22, 0.05);
+            /* Protezione per la barra di navigazione in basso (iPhone e Android) */
+            --safe-bottom: env(safe-area-inset-bottom, 30px);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        /* Uso del DVH (Dynamic Viewport Height) per evitare sovrapposizione con i tasti del telefono */
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #E5E7EB; color: var(--text-main); display: flex; justify-content: center; height: 100dvh; overflow: hidden; }
         .app-container { width: 100%; max-width: 480px; background: var(--bg-color); height: 100dvh; position: relative; display: flex; flex-direction: column; overflow: hidden; }
 
         /* HEADER */
-        header { padding: 24px 20px 16px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        header h1 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        header { padding: calc(24px + env(safe-area-inset-top, 0)) 20px 16px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; z-index: 10; border-bottom: 1px solid var(--border);}
+        header h1 { font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
         .kitchen-icon { width: 26px; height: 26px; display: inline-block; }
-        .header-actions { display: flex; gap: 12px; }
         .btn-icon { background: var(--bg-color); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: var(--primary); transition: 0.2s; }
         
         /* FILTRI */
-        .category-scroll { display: flex; overflow-x: auto; padding: 0 20px 16px; background: var(--surface); gap: 10px; scrollbar-width: none; border-bottom: 1px solid var(--border); }
+        .category-scroll { display: flex; overflow-x: auto; padding: 16px 20px; background: var(--surface); gap: 10px; scrollbar-width: none; border-bottom: 1px solid var(--border); }
         .category-scroll::-webkit-scrollbar { display: none; }
-        .pill { padding: 8px 16px; background: var(--bg-color); border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;}
+        .pill { padding: 8px 18px; background: var(--bg-color); border-radius: 20px; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;}
         .pill.active { background: var(--primary); color: white; }
 
         /* WIDGET GRID (Home) */
-        /* Extra padding bottom aggiunto per permettere di scrollare ben oltre la barra del telefono */
-        .recipe-feed { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 160px; display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: max-content; gap: 12px; align-content: start; }
-        
+        .recipe-feed { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: calc(140px + var(--safe-bottom)); display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: max-content; gap: 12px; align-content: start; }
         .empty-state { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted); }
-        .empty-state i { font-size: 3rem; color: #FDBA74; }
-        .recipe-widget { background: var(--surface); border-radius: var(--radius-md); padding: 14px; box-shadow: var(--shadow-sm); cursor: pointer; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 70px; transition: transform 0.2s; gap: 6px; }
+        .empty-state i { font-size: 3.5rem; color: #FDBA74; margin-bottom:10px; display:block;}
+        
+        .recipe-widget { background: var(--surface); border-radius: var(--radius-md); padding: 14px; box-shadow: var(--shadow-sm); cursor: pointer; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 70px; transition: transform 0.2s; gap: 8px; }
         .recipe-widget:active { transform: scale(0.96); }
-        .widget-title { font-size: 0.95rem; font-weight: 700; line-height: 1.3; width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .widget-title { font-size: 0.95rem; font-weight: 800; line-height: 1.3; width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-main); }
         .widget-badge { background: var(--primary-light); color: var(--primary-dark); padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
 
-        /* FAB ALZATO A 100px (Sicurezza totale da tasti Home Android e barra iOS) */
-        .fab { position: absolute; bottom: 100px; right: 24px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4); cursor: pointer; border: none; z-index: 20; transition: transform 0.2s; }
-        
-        /* MODALS & BOTTOM SHEETS */
-        .overlay { position: absolute; top:0;left:0;right:0;bottom:0; background: rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: 0.3s; z-index: 30; }
-        .overlay.active { opacity: 1; pointer-events: all; }
-        
-        /* Altezza 92dvh dinamica */
-        .sheet { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-color); height: 92dvh; transform: translateY(100%); transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 40; display: flex; flex-direction: column; border-radius: 24px 24px 0 0;}
-        .sheet.active { transform: translateY(0); }
-        
-        .detail-view { position: absolute; top: 0; left: 0; right: 0; background: var(--bg-color); height: 100dvh; transform: translateX(100%); transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 50; display: flex; flex-direction: column;}
+        /* FAB (Pulsante +) ALZATO IN SICUREZZA */
+        .fab { position: absolute; bottom: calc(80px + var(--safe-bottom)); right: 24px; width: 64px; height: 64px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4); cursor: pointer; border: none; z-index: 30; transition: transform 0.2s; }
+        .fab:active { transform: scale(0.9); }
+
+        /* --- Z-INDEX FIX: ORDINE GERARCHICO CORRETTO --- */
+        /* Home -> Detail View -> Overlay -> Sheet -> Toast */
+        .detail-view { position: absolute; top: 0; left: 0; right: 0; background: var(--bg-color); height: 100dvh; transform: translateX(100%); transition: 0.3s ease; z-index: 40; display: flex; flex-direction: column;}
         .detail-view.active { transform: translateX(0); }
         
-        .sheet-header, .detail-header { padding: 20px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); border-radius: 24px 24px 0 0;}
-        .detail-header { border-radius: 0; }
+        .overlay { position: absolute; top:0;left:0;right:0;bottom:0; background: rgba(0,0,0,0.6); opacity: 0; pointer-events: none; transition: 0.3s; z-index: 50; }
+        .overlay.active { opacity: 1; pointer-events: all; }
         
-        /* PADDING BOTTOM ENORME (180px) per far scorrere i bottoni 'Salva' sopra la tastiera */
-        .sheet-content, .detail-content { padding: 20px; padding-bottom: 180px; overflow-y: auto; flex: 1; }
+        .sheet { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-color); height: 90dvh; transform: translateY(100%); transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 60; display: flex; flex-direction: column; border-radius: 24px 24px 0 0;}
+        .sheet.active { transform: translateY(0); }
         
-        /* FORM E INPUTS */
-        .form-group { margin-bottom: 16px; background: var(--surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border); }
-        .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-control { width: 100%; padding: 14px; border: 1px solid #E5E7EB; border-radius: 8px; background: var(--bg-color); font-family: inherit; font-size: 1rem; color: var(--text-main); margin-bottom: 10px;}
-        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        textarea.form-control { resize: vertical; min-height: 80px; }
-
-        /* OPZIONALE: TEMPI */
-        .time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; display: none; }
-        .time-grid.active { display: grid; }
-        .time-grid-item label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;}
-
-        .btn-submit { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; cursor: pointer; display:flex; justify-content:center; align-items:center; gap:8px;}
-        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        
-        /* INGREDIENT BUILDER */
-        .ing-labels { display: flex; gap: 6px; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; padding: 0 4px;}
-        .ing-row { display: flex; gap: 6px; margin-bottom: 12px; }
-        .ing-row input, .ing-row select { padding: 12px 8px; margin-bottom: 0;}
-        .ing-row .btn-add-ing { background: var(--text-main); color: white; border: none; border-radius: 8px; width: 48px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer;}
-        
-        .cat-list { list-style: none; margin-bottom: 10px; }
-        .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-weight: 600; font-size:0.9rem;}
-        .btn-del-cat { background: rgba(239, 68, 68, 0.1); color: #EF4444; border: none; padding: 6px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        
-        /* DETTAGLI RICETTA & SERVINGS */
-        .detail-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 20px; line-height: 1.2;}
-        .time-banner { display: flex; justify-content: space-around; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 20px;}
-        .time-item span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;}
-        .time-item strong { font-size: 1.1rem; }
-        
-        .servings-stepper { display: flex; align-items: center; justify-content: space-between; background: var(--primary-light); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 12px; border: 1px solid var(--border);}
-        .servings-stepper span { font-weight: 700; color: var(--primary-dark); font-size: 0.95rem;}
-        .stepper-controls { display: flex; align-items: center; gap: 8px; }
-        .stepper-btn { background: var(--surface); border: 1px solid var(--primary); color: var(--primary); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer;}
-        .stepper-input { width: 45px; text-align: center; border: none; background: transparent; font-weight: 800; font-size: 1.1rem; color: var(--primary-dark); font-family: inherit;}
-        
-        .content-box { background: var(--surface); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border); white-space: pre-wrap; margin-bottom: 20px; line-height: 1.6;}
-        .ing-display-list { list-style: none; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 20px; }
-        .ing-display-list li { padding: 8px 0; border-bottom: 1px dashed var(--border); display: flex; gap: 8px;}
-        .ing-display-list li:last-child { border-bottom: none; padding-bottom: 0;}
-        .ing-display-list li strong { color: var(--primary-dark); white-space: nowrap;}
-        
-        /* NOTIFICHE E TOGGLE */
-        .toast { position: absolute; top: 20px; left: 50%; transform: translate(-50%, -100px); background: var(--text-main); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; transition: 0.3s; z-index: 100; display: flex; align-items: center; gap: 8px; width:max-content;}
+        .toast { position: absolute; top: 20px; left: 50%; transform: translate(-50%, -100px); background: var(--text-main); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 700; transition: 0.3s; z-index: 100; display: flex; align-items: center; gap: 8px; width:max-content;}
         .toast.show { transform: translate(-50%, 0); }
 
-        .checkbox-container { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
-        .checkbox-container input { width: 20px; height: 20px; accent-color: var(--primary); }
+        /* HEADER INTERNI */
+        .sheet-header, .detail-header { padding: 16px 20px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); border-radius: 24px 24px 0 0;}
+        .detail-header { border-radius: 0; padding-top: calc(16px + env(safe-area-inset-top, 0)); }
+        
+        /* AREE SCORRIMENTO (Spazio enorme in fondo per le tastiere) */
+        .sheet-content, .detail-content { padding: 20px; padding-bottom: calc(200px + var(--safe-bottom)); overflow-y: auto; flex: 1; }
+        
+        /* STILI FORM (TITOLI GRANDI E CHIARI) */
+        .form-section-title { font-size: 1.1rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 12px; margin-top: 24px; display: flex; align-items: center; gap: 6px;}
+        .form-section-title:first-child { margin-top: 0; }
+        .form-section-title i { font-size: 1.3rem; }
+        
+        .form-group { background: var(--surface); padding: 16px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 16px; box-shadow: var(--shadow-sm);}
+        .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-control { width: 100%; padding: 14px; border: 1px solid #E5E7EB; border-radius: 8px; background: var(--bg-color); font-family: inherit; font-size: 1rem; color: var(--text-main); margin-bottom: 12px; font-weight: 500;}
+        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); background: var(--surface);}
+        textarea.form-control { resize: vertical; min-height: 100px; line-height: 1.5;}
+
+        /* TOGGLE TEMPI */
+        .checkbox-container { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; color: var(--text-main); font-size: 1rem; margin-bottom: 10px;}
+        .checkbox-container input { width: 22px; height: 22px; accent-color: var(--primary); }
+        .time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 16px; display: none; padding-top: 16px; border-top: 1px dashed var(--border);}
+        .time-grid.active { display: grid; }
+        .time-grid-item label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 700; text-align: center;}
+        .time-grid-item input { text-align: center; font-weight: 700;}
+
+        /* BOTTONI */
+        .btn-submit { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; margin-bottom: 10px; cursor: pointer; display:flex; justify-content:center; align-items:center; gap:8px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);}
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none;}
+        
+        /* INGREDIENT BUILDER */
+        .ing-labels { display: flex; gap: 6px; font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; padding: 0 4px; text-transform: uppercase;}
+        .ing-row { display: flex; gap: 6px; margin-bottom: 16px; }
+        .ing-row input, .ing-row select { padding: 12px 8px; margin-bottom: 0;}
+        .ing-row .btn-add-ing { background: var(--text-main); color: white; border: none; border-radius: 8px; width: 50px; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; cursor: pointer; font-weight: bold;}
+        
+        .cat-list { list-style: none; margin-bottom: 10px; }
+        .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-weight: 600; font-size:0.95rem;}
+        .btn-del-cat { background: rgba(239, 68, 68, 0.1); color: #EF4444; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        /* DETTAGLI RICETTA VISTA */
+        .detail-title { font-size: 2rem; font-weight: 800; margin-bottom: 24px; line-height: 1.2;}
+        .time-banner { display: flex; justify-content: space-around; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px;}
+        .time-item span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;}
+        .time-item strong { font-size: 1.2rem; font-weight: 800;}
+        
+        .servings-stepper { display: flex; align-items: center; justify-content: space-between; background: var(--primary-light); padding: 16px; border-radius: var(--radius-md); margin-bottom: 16px; border: 1px solid var(--border);}
+        .servings-stepper span { font-weight: 800; color: var(--primary-dark); font-size: 1rem; text-transform: uppercase;}
+        .stepper-controls { display: flex; align-items: center; gap: 12px; }
+        .stepper-btn { background: var(--surface); border: 2px solid var(--primary); color: var(--primary); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; font-weight: bold;}
+        .stepper-input { width: 50px; text-align: center; border: none; background: transparent; font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); font-family: inherit;}
+        
+        .content-box { background: var(--surface); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border); white-space: pre-wrap; margin-bottom: 24px; line-height: 1.6; font-size: 1.05rem;}
+        .ing-display-list { list-style: none; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px; font-size: 1.05rem;}
+        .ing-display-list li { padding: 12px 0; border-bottom: 1px dashed var(--border); display: flex; gap: 10px;}
+        .ing-display-list li:last-child { border-bottom: none; padding-bottom: 0;}
+        .ing-display-list li strong { color: var(--primary-dark); white-space: nowrap; font-weight: 800;}
     </style>
 </head>
 <body>
@@ -146,16 +151,12 @@
         </div>
     </header>
 
-    <div class="category-scroll" id="category-filters">
-        <!-- Generato via JS -->
-    </div>
+    <div class="category-scroll" id="category-filters"></div>
 
-    <!-- FEED RICETTE -->
     <main class="recipe-feed" id="recipe-feed"></main>
 
-    <!-- FAB -->
     <button class="fab" id="fab-add">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
     </button>
@@ -163,56 +164,60 @@
     <div class="overlay" id="overlay"></div>
     <datalist id="db-ingredients"></datalist>
 
-    <!-- SHEET: Form Inserimento / Modifica -->
+    <!-- SHEET: INSERIMENTO / MODIFICA RICETTA -->
     <div class="sheet" id="add-sheet">
         <div class="sheet-header">
-            <h3 style="font-size: 1.2rem;" id="form-title">Nuova Ricetta</h3>
-            <button type="button" class="btn-icon" style="color:var(--text-muted)" id="btn-close-sheet"><i class="ri-close-line"></i></button>
+            <h3 style="font-size: 1.3rem; font-weight:800;" id="form-title">Nuova Ricetta</h3>
+            <button type="button" class="btn-icon" style="color:var(--text-muted); background:var(--bg-color);" id="btn-close-sheet"><i class="ri-close-line"></i></button>
         </div>
         <div class="sheet-content">
             
             <form id="recipe-form">
                 
+                <div class="form-section-title"><i class="ri-information-line"></i> 1. Info Generali</div>
                 <div class="form-group">
-                    <label class="form-label" for="title">Info Principali</label>
-                    <input type="text" class="form-control" id="title" required placeholder="Titolo (Es. Pasta alla Carbonara)">
+                    <label class="form-label" for="title">Nome della Ricetta</label>
+                    <input type="text" class="form-control" id="title" required placeholder="Es. Torta di Mele">
+                    
+                    <label class="form-label" for="category">Categoria Gastronomica</label>
                     <select class="form-control" id="category" required></select>
-                    <label for="servings" style="font-size:0.85rem; font-weight:bold; color:var(--text-main); display:block; margin-bottom:6px;">Per quante persone?</label>
+                    
+                    <label class="form-label" for="servings">Per quante persone è questa dose?</label>
                     <input type="number" class="form-control" id="servings" required placeholder="Es. 4" min="0.5" step="0.5" style="margin-bottom: 0;">
                 </div>
 
-                <!-- SEZIONE TEMPI (OPZIONALE E A SCOMPARSA) -->
+                <div class="form-section-title"><i class="ri-timer-line"></i> 2. Tempi (Opzionale)</div>
                 <div class="form-group">
                     <label class="checkbox-container">
                         <input type="checkbox" id="toggle-times">
-                        ⏱️ Aggiungi Tempi (Opzionale)
+                        Attiva i tempi di preparazione
                     </label>
                     
                     <div class="time-grid" id="time-grid-container">
                         <div class="time-grid-item">
                             <label for="timeTotal">Totale (min)</label>
-                            <input type="number" class="form-control" id="timeTotal" placeholder="Es. 40">
+                            <input type="number" class="form-control" id="timeTotal" placeholder="Es. 60">
                         </div>
                         <div class="time-grid-item">
                             <label for="timeLeav">Lievitazione</label>
                             <input type="number" class="form-control" id="timeLeav" placeholder="Es. 120">
                         </div>
                         <div class="time-grid-item">
-                            <label for="timeCook">Cottura</label>
-                            <input type="number" class="form-control" id="timeCook" placeholder="Es. 15">
+                            <label for="timeCook">Cottura (min)</label>
+                            <input type="number" class="form-control" id="timeCook" placeholder="Es. 40">
                         </div>
                     </div>
                 </div>
                 
-                <!-- SEZIONE INGREDIENTI -->
+                <div class="form-section-title"><i class="ri-shopping-basket-line"></i> 3. Lista Ingredienti</div>
                 <div class="form-group">
-                    <label class="form-label">Ingredienti</label>
+                    <label class="form-label">Aggiungi gli ingredienti uno ad uno</label>
                     
                     <div class="ing-labels">
                         <span style="flex:2;">Prodotto</span>
-                        <span style="flex:1;">Quantità</span>
-                        <span style="flex:1;">Unità</span>
-                        <span style="width:48px;"></span>
+                        <span style="flex:1;">Q.tà</span>
+                        <span style="flex:1;">Misura</span>
+                        <span style="width:50px;"></span>
                     </div>
                     
                     <div class="ing-row">
@@ -223,15 +228,17 @@
                             <option value="ml">ml</option><option value="l">l</option>
                             <option value="pz">pz</option><option value="q.b.">q.b.</option><option value="">-</option>
                         </select>
-                        <button type="button" class="btn-add-ing" id="btn-add-ing"><i class="ri-add-line"></i></button>
+                        <button type="button" class="btn-add-ing" id="btn-add-ing" title="Aggiungi"><i class="ri-add-line"></i></button>
                     </div>
                     
+                    <!-- Lista in cui compaiono gli ingredienti aggiunti -->
                     <ul class="cat-list" id="current-ing-list"></ul>
                 </div>
                 
+                <div class="form-section-title"><i class="ri-list-check-2"></i> 4. Come si prepara</div>
                 <div class="form-group">
-                    <label class="form-label" for="procedure">Procedimento</label>
-                    <textarea class="form-control" id="procedure" required placeholder="1. Taglia a cubetti...&#10;2. Metti in padella..." style="margin-bottom:0;"></textarea>
+                    <label class="form-label" for="procedure">Procedimento passo passo</label>
+                    <textarea class="form-control" id="procedure" required placeholder="Descrivi qui come si prepara il piatto..." style="margin-bottom:0; height:150px;"></textarea>
                 </div>
                 
                 <button type="submit" class="btn-submit" id="btn-save-recipe"><i class="ri-save-3-line"></i> Salva Ricetta</button>
@@ -239,13 +246,22 @@
         </div>
     </div>
 
-    <!-- SHEET: Impostazioni -->
+    <!-- SHEET: IMPOSTAZIONI -->
     <div class="sheet" id="settings-sheet">
         <div class="sheet-header">
             <h3 style="font-size: 1.2rem;">Impostazioni</h3>
-            <button type="button" class="btn-icon" style="color:var(--text-muted)" id="btn-close-settings"><i class="ri-close-line"></i></button>
+            <button type="button" class="btn-icon" style="color:var(--text-muted); background:var(--bg-color);" id="btn-close-settings"><i class="ri-close-line"></i></button>
         </div>
         <div class="sheet-content">
+            <div class="form-group">
+                <label class="form-label">Crea Nuova Categoria</label>
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <input type="text" class="form-control" id="new-cat-name" placeholder="Es. Vegano..." style="margin-bottom:0;">
+                    <button type="button" class="btn-submit" id="btn-add-cat" style="width:auto; margin:0; padding:14px 20px;">+</button>
+                </div>
+                <div style="max-height: 200px; overflow-y:auto;"><ul class="cat-list" id="cat-list-ui"></ul></div>
+            </div>
+            
             <div class="form-group">
                 <label class="form-label">Database Prodotti</label>
                 <div style="display:flex; gap:8px; margin-bottom:10px;">
@@ -256,30 +272,21 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">Gestione Categorie</label>
-                <div style="display:flex; gap:8px; margin-bottom:10px;">
-                    <input type="text" class="form-control" id="new-cat-name" placeholder="Nuova categoria..." style="margin-bottom:0;">
-                    <button type="button" class="btn-submit" id="btn-add-cat" style="width:auto; margin:0; padding:14px 20px;">+</button>
-                </div>
-                <div style="max-height: 200px; overflow-y:auto;"><ul class="cat-list" id="cat-list-ui"></ul></div>
-            </div>
-            
-            <div class="form-group">
                 <label class="form-label">Backup Dati</label>
                 <button type="button" class="btn-submit btn-outline" id="btn-export"><i class="ri-download-2-line"></i> Esporta (.json)</button>
-                <label for="file-import" class="btn-submit btn-outline" style="cursor:pointer; margin-bottom:0;"><i class="ri-upload-2-line"></i> Importa</label>
+                <label for="file-import" class="btn-submit btn-outline" style="cursor:pointer; margin-bottom:0;"><i class="ri-upload-2-line"></i> Importa (.json)</label>
                 <input type="file" id="file-import" accept=".json" style="display:none;">
             </div>
         </div>
     </div>
 
-    <!-- DETAIL VIEW (Lettura) -->
+    <!-- DETAIL VIEW (Lettura Ricetta) -->
     <div class="detail-view" id="detail-view">
         <div class="detail-header">
-            <button type="button" style="background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text-main);" id="btn-back"><i class="ri-arrow-left-s-line"></i></button>
+            <button type="button" style="background:none;border:none;font-size:2rem;cursor:pointer;color:var(--text-main);" id="btn-back"><i class="ri-arrow-left-s-line"></i></button>
             <div style="display:flex; gap:12px;">
-                <button type="button" style="background:rgba(249,115,22,0.1);color:var(--primary);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;" id="btn-edit"><i class="ri-pencil-line"></i></button>
-                <button type="button" style="background:rgba(239,68,68,0.1);color:#EF4444;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;" id="btn-delete"><i class="ri-delete-bin-line"></i></button>
+                <button type="button" class="btn-icon" style="background:var(--primary-light);color:var(--primary-dark);" id="btn-edit"><i class="ri-pencil-line"></i></button>
+                <button type="button" class="btn-icon" style="background:rgba(239,68,68,0.1);color:#EF4444;" id="btn-delete"><i class="ri-delete-bin-line"></i></button>
             </div>
         </div>
         <div class="detail-content" id="detail-content"></div>
@@ -287,12 +294,15 @@
 </div>
 
 <script>
+    // --- DATI INIZIALI ---
     let defaultCats = ["Antipasti", "Primi", "Secondi", "Contorni", "Dolci", "Lievitati", "Salse", "Bevande"];
     let defaultProds = ["Farina 00", "Zucchero", "Uova", "Latte", "Burro", "Sale", "Olio EVO", "Lievito", "Aglio", "Cipolla"];
     
     let categories = JSON.parse(localStorage.getItem('chefbox_cats')) || defaultCats;
     let productsDB = JSON.parse(localStorage.getItem('chefbox_products')) || defaultProds;
-    let recipes = JSON.parse(localStorage.getItem('chefbox_recipes_v5')) || JSON.parse(localStorage.getItem('chefbox_recipes_v4')) || [];
+    
+    // Aggiornamento database interno sicuro
+    let recipes = JSON.parse(localStorage.getItem('chefbox_recipes_v6')) || JSON.parse(localStorage.getItem('chefbox_recipes_v5')) || JSON.parse(localStorage.getItem('chefbox_recipes_v4')) || [];
     
     let currentRecipeId = null;
     let isEditing = false;
@@ -303,13 +313,23 @@
 
     const feed = document.getElementById('recipe-feed'), filters = document.getElementById('category-filters'), catSelect = document.getElementById('category');
     
-    // --- GESTIONE SCHERMATE E FIX STORIA ---
+    // --- GESTIONE SCHERMATE SICURA ---
+    const historyStack = [];
+    
     function openModal(id) { 
         document.getElementById(id).classList.add('active'); 
         if(id.includes('sheet')) document.getElementById('overlay').classList.add('active'); 
         history.pushState({ modal: id }, "", `#${id}`); 
+        historyStack.push(id);
     }
     
+    function closeSheetManually() {
+        document.getElementById('add-sheet').classList.remove('active');
+        document.getElementById('settings-sheet').classList.remove('active');
+        document.getElementById('overlay').classList.remove('active');
+        history.back(); // Riporta l'URL indietro in sync
+    }
+
     function closeAllModals() { 
         document.querySelectorAll('.sheet, .detail-view, .overlay').forEach(el => el.classList.remove('active')); 
     }
@@ -367,7 +387,7 @@
             delBtn.onclick = () => {
                 const count = recipes.filter(r => r.category === cat).length;
                 if(count > 0 && !delBtn.classList.contains('confirming')) { delBtn.classList.add('confirming'); delBtn.innerHTML = 'Elimina ' + count + ' ricette?'; setTimeout(() => { delBtn.classList.remove('confirming'); delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>'; }, 3000); return; }
-                else if(count > 0) { recipes = recipes.filter(r => r.category !== cat); localStorage.setItem('chefbox_recipes_v5', JSON.stringify(recipes)); renderFeed('All'); }
+                else if(count > 0) { recipes = recipes.filter(r => r.category !== cat); localStorage.setItem('chefbox_recipes_v6', JSON.stringify(recipes)); renderFeed('All'); }
                 categories = categories.filter(c => c !== cat); localStorage.setItem('chefbox_cats', JSON.stringify(categories)); renderCategories(); showToast('Categoria rimossa');
             }; li.appendChild(delBtn); document.getElementById('cat-list-ui').appendChild(li);
         });
@@ -375,17 +395,18 @@
     }
     document.getElementById('btn-add-cat').onclick = () => { const val = document.getElementById('new-cat-name').value.trim(); if(val && !categories.includes(val)) { categories.push(val); localStorage.setItem('chefbox_cats', JSON.stringify(categories)); document.getElementById('new-cat-name').value = ''; renderCategories(); showToast('Categoria aggiunta!'); }};
 
-    // --- INGREDIENTI ---
+    // --- COSTRUTTORE INGREDIENTI ---
     function renderActiveIngredients() {
         const ul = document.getElementById('current-ing-list'); ul.innerHTML = '';
         activeIngredients.forEach((ing, index) => {
             const li = document.createElement('li'); li.className = 'cat-item'; li.style.padding = '8px 12px';
-            li.innerHTML = `<span><strong>${ing.qty} ${ing.unit}</strong> ${ing.name}</span>`;
+            li.innerHTML = `<span><strong style="color:var(--primary-dark);">${ing.qty} ${ing.unit}</strong> ${ing.name}</span>`;
             const del = document.createElement('button'); del.className = 'btn-del-cat'; del.type="button"; del.style.padding = '4px 8px'; del.innerHTML = '<i class="ri-close-line"></i>';
             del.onclick = () => { activeIngredients.splice(index, 1); renderActiveIngredients(); };
             li.appendChild(del); ul.appendChild(li);
         });
     }
+    
     document.getElementById('btn-add-ing').onclick = () => {
         const name = document.getElementById('ing-name').value.trim();
         const qty = document.getElementById('ing-qty').value.replace(',', '.').trim();
@@ -399,7 +420,7 @@
     document.getElementById('ing-name').addEventListener('keypress', function(e){ if(e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-add-ing').click(); }});
     document.getElementById('ing-qty').addEventListener('keypress', function(e){ if(e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-add-ing').click(); }});
 
-    // --- SALVATAGGIO (RISOLTO BUG RACE CONDITION) ---
+    // --- SALVATAGGIO (FIXATO BUG MODIFICA) ---
     document.getElementById('fab-add').onclick = () => {
         isEditing = false; document.getElementById('form-title').innerText = "Nuova Ricetta"; document.getElementById('recipe-form').reset();
         document.getElementById('servings').value = 4;
@@ -410,8 +431,12 @@
 
     document.getElementById('recipe-form').onsubmit = (e) => {
         e.preventDefault();
-        const pendName = document.getElementById('ing-name').value; if(pendName) document.getElementById('btn-add-ing').click();
-        if(activeIngredients.length === 0) { alert("Attenzione: Aggiungi almeno un ingrediente cliccando sul tasto '+' nella riga apposita."); return; }
+        
+        // Se un utente ha scritto un ingrediente ma non ha cliccato +, lo aggiungiamo noi
+        const pendName = document.getElementById('ing-name').value; 
+        if(pendName) document.getElementById('btn-add-ing').click();
+        
+        if(activeIngredients.length === 0) { alert("Attenzione: Aggiungi almeno un ingrediente cliccando sul tasto '+' apposito."); return; }
 
         const recData = {
             id: isEditing ? currentRecipeId : ('r_' + Date.now()), 
@@ -421,35 +446,34 @@
             timeTotal: document.getElementById('timeTotal').value, 
             timeLeav: document.getElementById('timeLeav').value, 
             timeCook: document.getElementById('timeCook').value,
-            ingredients: activeIngredients, 
+            ingredients: JSON.parse(JSON.stringify(activeIngredients)), // Deep copy sicura
             procedure: document.getElementById('procedure').value
         };
 
         if(isEditing) {
             recipes[recipes.findIndex(r => r.id === currentRecipeId)] = recData;
-            localStorage.setItem('chefbox_recipes_v5', JSON.stringify(recipes));
+            localStorage.setItem('chefbox_recipes_v6', JSON.stringify(recipes));
             
-            // Per il debug della modifica: Applichiamo le modifiche direttamente alla vista sottostante, 
-            // per poi chiudere il form in totale pulizia senza accavallare gli stati History.
-            openRecipe(currentRecipeId, false); // Aggiorna il DOM senza pushare uno stato
-            triggerBack(); // Chiude il form Add-Sheet
+            // Aggiorno la Detail View "sotto" senza creare conflitti storici
+            refreshDetailView(currentRecipeId);
+            closeSheetManually(); 
             showToast('Ricetta modificata!');
         } else { 
             recipes.unshift(recData); 
-            localStorage.setItem('chefbox_recipes_v5', JSON.stringify(recipes));
-            triggerBack(); // Chiude il form
+            localStorage.setItem('chefbox_recipes_v6', JSON.stringify(recipes));
+            closeSheetManually(); 
             showToast('Ricetta salvata!');
         }
         
-        // Ricarica la Home col filtro giusto
-        setTimeout(() => { renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText); }, 100);
+        // Ricarica Feed
+        setTimeout(() => { renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText); }, 50);
     };
 
     // --- FEED ---
     function renderFeed(filter = 'All') {
         feed.innerHTML = '';
         const filtered = filter === 'All' ? recipes : recipes.filter(r => r.category === filter);
-        if(filtered.length === 0) return feed.innerHTML = `<div class="empty-state"><i class="ri-book-3-line"></i><br><span style="margin-top:10px; display:block;">Nessuna ricetta trovata.</span></div>`;
+        if(filtered.length === 0) return feed.innerHTML = `<div class="empty-state"><i class="ri-book-3-line"></i><br><span style="margin-top:10px; display:block;">Nessuna ricetta qui.</span></div>`;
         
         filtered.forEach(r => {
             const div = document.createElement('div'); div.className = 'recipe-widget'; div.onclick = () => openRecipe(r.id);
@@ -480,9 +504,9 @@
         renderDetailIngredientsHTML();
     }
 
-    // --- LETTURA E MODIFICA ---
-    function openRecipe(id, pushHistory = true) {
-        const r = recipes.find(rec => rec.id === id); currentRecipeId = id;
+    // Funzione usata sia da openRecipe che dal salvataggio modifica per aggiornare l'HTML
+    function refreshDetailView(id) {
+        const r = recipes.find(rec => rec.id === id);
         currentBaseServings = r.servings || 1; currentTargetServings = currentBaseServings;
         currentDetailIngredients = Array.isArray(r.ingredients) ? r.ingredients : [];
 
@@ -496,37 +520,47 @@
         }
 
         document.getElementById('detail-content').innerHTML = `
-            <div style="color:var(--primary); font-weight:bold; font-size:0.9rem; margin-bottom:10px; letter-spacing:0.5px; text-transform:uppercase;">${r.category}</div>
+            <div style="color:var(--primary); font-weight:800; font-size:0.95rem; margin-bottom:10px; letter-spacing:1px; text-transform:uppercase;">${r.category}</div>
             <h2 class="detail-title">${r.title}</h2>
             ${timeBannerHtml}
+            
+            <div class="form-section-title"><i class="ri-restaurant-line"></i> Dosi</div>
             <div class="servings-stepper">
-                <span>Porzioni</span>
+                <span>Persone</span>
                 <div class="stepper-controls">
                     <button type="button" class="stepper-btn" onclick="changeServings(-0.5)">-</button>
                     <input type="number" id="detail-servings" class="stepper-input" step="0.5" min="0.5" value="${currentTargetServings}">
                     <button type="button" class="stepper-btn" onclick="changeServings(0.5)">+</button>
                 </div>
             </div>
+            
             <div id="dynamic-ingredients-box"></div>
-            <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;"><i class="ri-list-check-2" style="color:var(--primary)"></i> Procedimento</h3>
+            
+            <div class="form-section-title"><i class="ri-list-check-2"></i> Preparazione</div>
             <div class="content-box">${r.procedure}</div>
         `;
         
         if(currentDetailIngredients.length > 0) renderDetailIngredientsHTML();
-        else document.getElementById('dynamic-ingredients-box').innerHTML = `<div class="content-box">Ricetta senza formato ingredienti aggiornato. Clicca Modifica per aggiornarla.</div>`;
 
         document.getElementById('detail-servings').addEventListener('input', (e) => {
             let val = parseFloat(e.target.value); if(val && val >= 0.5) { currentTargetServings = val; renderDetailIngredientsHTML(); }
         });
-        
-        if(pushHistory && !document.getElementById('detail-view').classList.contains('active')) {
+    }
+
+    function openRecipe(id) {
+        currentRecipeId = id;
+        refreshDetailView(id);
+        if(!document.getElementById('detail-view').classList.contains('active')) {
             openModal('detail-view');
         }
     }
 
+    // --- MODIFICA / ELIMINA ---
     document.getElementById('btn-edit').onclick = () => {
-        const r = recipes.find(rec => rec.id === currentRecipeId); isEditing = true; 
+        const r = recipes.find(rec => rec.id === currentRecipeId); 
+        isEditing = true; 
         document.getElementById('form-title').innerText = "Modifica Ricetta";
+        
         document.getElementById('title').value = r.title; 
         document.getElementById('category').value = r.category;
         document.getElementById('servings').value = r.servings || 1;
@@ -539,12 +573,20 @@
         document.getElementById('toggle-times').checked = hasTimes;
         document.getElementById('time-grid-container').classList.toggle('active', hasTimes);
 
-        activeIngredients = Array.isArray(r.ingredients) ? [...r.ingredients] : []; renderActiveIngredients();
+        activeIngredients = Array.isArray(r.ingredients) ? JSON.parse(JSON.stringify(r.ingredients)) : []; 
+        renderActiveIngredients();
+        
         openModal('add-sheet'); 
     };
 
     document.getElementById('btn-delete').onclick = () => {
-        if(confirm("Sei sicuro di eliminare questa ricetta definitivamente?")) { recipes = recipes.filter(r => r.id !== currentRecipeId); localStorage.setItem('chefbox_recipes_v5', JSON.stringify(recipes)); triggerBack(); renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText); showToast('Ricetta eliminata'); }
+        if(confirm("Sei sicuro di voler eliminare questa ricetta per sempre?")) { 
+            recipes = recipes.filter(r => r.id !== currentRecipeId); 
+            localStorage.setItem('chefbox_recipes_v6', JSON.stringify(recipes)); 
+            triggerBack(); 
+            renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText); 
+            showToast('Ricetta eliminata'); 
+        }
     };
 
     // --- EXPORT/IMPORT ---
@@ -558,9 +600,9 @@
         reader.onload = (event) => {
             try { const importedRecipes = JSON.parse(event.target.result); if(Array.isArray(importedRecipes)) {
                     const existingIds = new Set(recipes.map(r => r.id)); importedRecipes.forEach(r => { if(!existingIds.has(r.id)) recipes.push(r); });
-                    localStorage.setItem('chefbox_recipes_v5', JSON.stringify(recipes)); triggerBack(); renderFeed('All'); showToast("Ricette importate!");
+                    localStorage.setItem('chefbox_recipes_v6', JSON.stringify(recipes)); triggerBack(); renderFeed('All'); showToast("Ricette importate!");
                 }
-            } catch(err) { alert("Errore file. Assicurati sia un backup valido in JSON."); }
+            } catch(err) { alert("Errore file. Assicurati sia un backup valido."); }
         }; reader.readAsText(file);
     };
 
