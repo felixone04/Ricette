@@ -75,8 +75,6 @@
         .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
         .form-control { width: 100%; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font-family: inherit; font-size: 1rem; color: var(--text-main);}
         .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        
-        /* TEXTAREA RESIZE SOLO VERTICALE */
         textarea.form-control { resize: vertical; min-height: 80px; }
 
         .time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
@@ -97,11 +95,18 @@
         .magic-box { background: var(--primary-light); border: 1px dashed var(--primary); padding: 16px; border-radius: 12px; margin-bottom: 20px; display: none;}
         .magic-box.active { display: block; }
         
-        /* DETTAGLI RICETTA */
+        /* DETTAGLI RICETTA & SERVINGS */
         .detail-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 20px; line-height: 1.2;}
         .time-banner { display: flex; justify-content: space-around; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 20px;}
         .time-item span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;}
         .time-item strong { font-size: 1.1rem; }
+        
+        .servings-stepper { display: flex; align-items: center; justify-content: space-between; background: var(--primary-light); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 12px; border: 1px solid var(--border);}
+        .servings-stepper span { font-weight: 700; color: var(--primary-dark); font-size: 0.95rem;}
+        .stepper-controls { display: flex; align-items: center; gap: 8px; }
+        .stepper-btn { background: var(--surface); border: 1px solid var(--primary); color: var(--primary); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer;}
+        .stepper-input { width: 45px; text-align: center; border: none; background: transparent; font-weight: 800; font-size: 1.1rem; color: var(--primary-dark); font-family: inherit;}
+        
         .content-box { background: var(--surface); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border); white-space: pre-wrap; margin-bottom: 20px; line-height: 1.6;}
         .ing-display-list { list-style: none; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 20px; }
         .ing-display-list li { padding: 8px 0; border-bottom: 1px dashed var(--border); display: flex; gap: 8px;}
@@ -111,7 +116,6 @@
         .settings-card { background: var(--surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 16px;}
         .scroll-list { max-height: 250px; overflow-y: auto; padding-right: 5px;}
         
-        /* NOTIFICHE */
         .toast { position: absolute; top: 20px; left: 50%; transform: translate(-50%, -100px); background: var(--text-main); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 100; display: flex; align-items: center; gap: 8px; width:max-content;}
         .toast.show { transform: translate(-50%, 0); }
     </style>
@@ -128,10 +132,7 @@
     <div id="toast" class="toast"><i class="ri-check-line"></i> <span id="toast-msg">Completato</span></div>
 
     <header>
-        <h1>
-            <img src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="1em" font-size="80">🍳</text></svg>' class="kitchen-icon" alt="ChefBox"> 
-            ChefBox
-        </h1>
+        <h1><img src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="1em" font-size="80">🍳</text></svg>' class="kitchen-icon" alt="ChefBox"> ChefBox</h1>
         <div class="header-actions">
             <button class="btn-icon" id="btn-open-settings"><i class="ri-settings-3-fill"></i></button>
         </div>
@@ -144,7 +145,7 @@
     <!-- FEED RICETTE -->
     <main class="recipe-feed" id="recipe-feed"></main>
 
-    <!-- FAB Aggiungi -->
+    <!-- FAB -->
     <button class="fab" id="fab-add">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
@@ -152,8 +153,6 @@
     </button>
 
     <div class="overlay" id="overlay"></div>
-
-    <!-- DATALIST DATABASE INGREDIENTI -->
     <datalist id="db-ingredients"></datalist>
 
     <!-- SHEET: Form Inserimento / Modifica -->
@@ -169,7 +168,7 @@
             </button>
             
             <div class="magic-box" id="magic-box">
-                <span class="form-label">Incolla qui la ricetta copiata</span>
+                <span class="form-label">Incolla qui la ricetta</span>
                 <textarea class="form-control" id="magic-text" style="height:120px;" placeholder="Copia e incolla tutto il testo della ricetta da internet..."></textarea>
                 <button type="button" class="btn-submit" id="btn-run-magic" style="background:var(--primary);"><i class="ri-ai-generate"></i> Estrai Dati</button>
             </div>
@@ -179,21 +178,21 @@
                 <input type="text" class="form-control" id="title" required placeholder="Es. Pasta alla Carbonara">
                 <select class="form-control" id="category" required><option value="" disabled selected>Scegli Categoria...</option></select>
                 
-                <span class="form-label">Tempi (Opzionali)</span>
-                <div class="time-grid">
-                    <input type="number" class="form-control" id="timeTotal" placeholder="Tot (m)">
-                    <input type="number" class="form-control" id="timeLeav" placeholder="Liev (m)">
-                    <input type="number" class="form-control" id="timeCook" placeholder="Cott (m)">
+                <span class="form-label">Dettagli Preparazione</span>
+                <div style="display:flex; gap:8px;">
+                    <!-- NUOVO CAMPO PORZIONI BASE -->
+                    <input type="number" class="form-control" id="servings" required placeholder="Persone" min="0.5" step="0.5" style="flex:1;">
+                    <input type="number" class="form-control" id="timeTotal" placeholder="Tot (m)" style="flex:1;">
+                    <input type="number" class="form-control" id="timeLeav" placeholder="Liev (m)" style="flex:1;">
+                    <input type="number" class="form-control" id="timeCook" placeholder="Cott (m)" style="flex:1;">
                 </div>
                 
-                <!-- COSTRUTTORE INGREDIENTI -->
-                <span class="form-label" style="display:flex; justify-content:space-between;">Ingredienti <small style="font-weight:normal;">(Cerca o crea)</small></span>
-                
+                <span class="form-label" style="display:flex; justify-content:space-between; margin-top:8px;">Ingredienti</span>
                 <ul class="cat-list" id="current-ing-list" style="margin-bottom:10px;"></ul>
                 
                 <div class="ing-row">
-                    <input type="text" class="form-control" id="ing-name" list="db-ingredients" placeholder="Nome (es. Farina)" style="flex:2;">
-                    <input type="number" class="form-control" id="ing-qty" placeholder="Q.tà" style="flex:1; padding-right:2px;">
+                    <input type="text" class="form-control" id="ing-name" list="db-ingredients" placeholder="Nome" style="flex:2;">
+                    <input type="number" step="0.1" class="form-control" id="ing-qty" placeholder="Q.tà" style="flex:1; padding-right:2px;">
                     <select class="form-control" id="ing-unit" style="flex:1; padding-left:4px; padding-right:4px;">
                         <option value="g">g</option>
                         <option value="kg">kg</option>
@@ -207,7 +206,7 @@
                 </div>
                 
                 <span class="form-label">Procedimento</span>
-                <textarea class="form-control" id="procedure" required placeholder="1. Metti l'acqua a bollire...&#10;2. Taglia il guanciale..." style="height:120px;"></textarea>
+                <textarea class="form-control" id="procedure" required placeholder="1. Metti l'acqua a bollire..." style="height:120px;"></textarea>
                 
                 <button type="submit" class="btn-submit" id="btn-save-recipe">Salva Ricetta</button>
             </form>
@@ -221,39 +220,30 @@
             <button class="btn-icon" style="color:var(--text-muted)" id="btn-close-settings"><i class="ri-close-line"></i></button>
         </div>
         <div class="sheet-content">
-            
             <div class="settings-card">
-                <span class="form-label">Database Prodotti (Ingredienti)</span>
-                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Questi prodotti ti vengono suggeriti quando crei una ricetta. Si aggiornano in automatico.</p>
+                <span class="form-label">Database Ingredienti</span>
                 <div style="display:flex; gap:8px; margin-bottom:10px;">
                     <input type="text" class="form-control" id="new-prod-name" placeholder="Nuovo prodotto..." style="margin-bottom:0;">
                     <button class="btn-submit" id="btn-add-prod" style="width:auto; margin:0; padding:14px 20px;">+</button>
                 </div>
-                <div class="scroll-list">
-                    <ul class="cat-list" id="prod-list-ui" style="margin-bottom:0;"></ul>
-                </div>
+                <div class="scroll-list"><ul class="cat-list" id="prod-list-ui" style="margin-bottom:0;"></ul></div>
             </div>
-
             <div class="settings-card">
                 <span class="form-label">Gestisci Categorie</span>
                 <div style="display:flex; gap:8px; margin-bottom:10px;">
                     <input type="text" class="form-control" id="new-cat-name" placeholder="Nuova categoria..." style="margin-bottom:0;">
                     <button class="btn-submit" id="btn-add-cat" style="width:auto; margin:0; padding:14px 20px;">+</button>
                 </div>
-                <div class="scroll-list">
-                    <ul class="cat-list" id="cat-list-ui" style="margin-bottom:0;"></ul>
-                </div>
+                <div class="scroll-list"><ul class="cat-list" id="cat-list-ui" style="margin-bottom:0;"></ul></div>
             </div>
-
             <div class="settings-card">
-                <span class="form-label">Esporta / Importa Backup</span>
+                <span class="form-label">Backup Data</span>
                 <div style="display:flex; gap:10px; margin-top:10px;">
                     <button class="btn-submit btn-outline" id="btn-export" style="margin:0;"><i class="ri-download-2-line"></i> Esporta</button>
                     <label for="file-import" class="btn-submit btn-outline" style="margin:0; cursor:pointer; flex:1; justify-content:center;"><i class="ri-upload-2-line"></i> Importa</label>
                     <input type="file" id="file-import" accept=".json" style="display:none;">
                 </div>
             </div>
-            
         </div>
     </div>
 
@@ -271,251 +261,189 @@
 </div>
 
 <script>
-    // --- DATI E DB ---
     let defaultCats = ["Antipasti", "Primi", "Secondi", "Contorni", "Dolci", "Lievitati", "Salse", "Bevande"];
-    let defaultProds = ["Farina 00", "Farina Manitoba", "Zucchero", "Zucchero a velo", "Uova", "Latte", "Burro", "Sale", "Olio EVO", "Olio di semi", "Lievito di birra", "Lievito per dolci", "Aglio", "Cipolla", "Pomodori pelati", "Parmigiano"];
+    let defaultProds = ["Farina 00", "Zucchero", "Uova", "Latte", "Burro", "Sale", "Olio EVO", "Lievito", "Aglio", "Cipolla"];
     
     let categories = JSON.parse(localStorage.getItem('chefbox_cats')) || defaultCats;
     let productsDB = JSON.parse(localStorage.getItem('chefbox_products')) || defaultProds;
-    let recipes = JSON.parse(localStorage.getItem('chefbox_recipes_v3')) || [];
+    let recipes = JSON.parse(localStorage.getItem('chefbox_recipes_v4')) || [];
     
     let currentRecipeId = null;
     let isEditing = false;
-    let activeIngredients = []; // Array per la ricetta corrente
+    let activeIngredients = []; 
+    // Variabili per gestire i calcoli live nel Dettaglio Ricetta
+    let currentBaseServings = 1;
+    let currentTargetServings = 1;
+    let currentDetailIngredients = [];
 
-    // --- DOM ---
-    const feed = document.getElementById('recipe-feed'), filters = document.getElementById('category-filters');
-    const catSelect = document.getElementById('category');
+    const feed = document.getElementById('recipe-feed'), filters = document.getElementById('category-filters'), catSelect = document.getElementById('category');
     
     // --- HISTORY API ---
-    function openModal(id) {
-        document.getElementById(id).classList.add('active');
-        if(id.includes('sheet')) document.getElementById('overlay').classList.add('active');
-        history.pushState({ modal: id }, "", `#${id}`);
-    }
+    function openModal(id) { document.getElementById(id).classList.add('active'); if(id.includes('sheet')) document.getElementById('overlay').classList.add('active'); history.pushState({ modal: id }, "", `#${id}`); }
     function closeAllModals() { document.querySelectorAll('.sheet, .detail-view, .overlay').forEach(el => el.classList.remove('active')); }
-    window.addEventListener('popstate', (e) => {
-        closeAllModals();
-        if (e.state && e.state.modal) {
-            document.getElementById(e.state.modal).classList.add('active');
-            if(e.state.modal.includes('sheet')) document.getElementById('overlay').classList.add('active');
-        }
-    });
+    window.addEventListener('popstate', (e) => { closeAllModals(); if (e.state && e.state.modal) { document.getElementById(e.state.modal).classList.add('active'); if(e.state.modal.includes('sheet')) document.getElementById('overlay').classList.add('active'); }});
     const triggerBack = () => history.back();
-    document.getElementById('btn-close-sheet').onclick = triggerBack;
-    document.getElementById('btn-close-settings').onclick = triggerBack;
-    document.getElementById('btn-back').onclick = triggerBack;
-    document.getElementById('overlay').onclick = triggerBack;
+    document.getElementById('btn-close-sheet').onclick = document.getElementById('btn-close-settings').onclick = document.getElementById('btn-back').onclick = document.getElementById('overlay').onclick = triggerBack;
     document.getElementById('btn-open-settings').onclick = () => openModal('settings-sheet');
     
-    // --- GESTIONE DATABASE INGREDIENTI ---
+    // --- DB PRODOTTI ---
     function renderProducts() {
-        const datalist = document.getElementById('db-ingredients');
-        const prodUI = document.getElementById('prod-list-ui');
-        datalist.innerHTML = '';
-        prodUI.innerHTML = '';
-        
-        // Ordine alfabetico
+        const datalist = document.getElementById('db-ingredients'); const prodUI = document.getElementById('prod-list-ui');
+        datalist.innerHTML = ''; prodUI.innerHTML = '';
         productsDB.sort((a,b) => a.localeCompare(b)).forEach(p => {
-            // Aggiungi al datalist
             datalist.appendChild(new Option(p, p));
-            // Aggiungi alla lista impostazioni
-            const li = document.createElement('li');
-            li.className = 'cat-item';
-            li.innerHTML = `<span>${p}</span>`;
-            const delBtn = document.createElement('button');
-            delBtn.className = 'btn-del-cat';
-            delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
-            delBtn.onclick = () => {
-                productsDB = productsDB.filter(x => x !== p);
-                saveProducts();
-            };
-            li.appendChild(delBtn);
-            prodUI.appendChild(li);
+            const li = document.createElement('li'); li.className = 'cat-item'; li.innerHTML = `<span>${p}</span>`;
+            const delBtn = document.createElement('button'); delBtn.className = 'btn-del-cat'; delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+            delBtn.onclick = () => { productsDB = productsDB.filter(x => x !== p); saveProducts(); };
+            li.appendChild(delBtn); prodUI.appendChild(li);
         });
     }
-
-    function saveProducts() {
-        localStorage.setItem('chefbox_products', JSON.stringify(productsDB));
-        renderProducts();
-    }
-
-    // Aggiunta manuale prodotto da impostazioni
+    function saveProducts() { localStorage.setItem('chefbox_products', JSON.stringify(productsDB)); renderProducts(); }
     document.getElementById('btn-add-prod').onclick = () => {
         const val = document.getElementById('new-prod-name').value.trim();
-        if(val && !productsDB.map(v=>v.toLowerCase()).includes(val.toLowerCase())) {
-            productsDB.push(val);
-            saveProducts();
-            document.getElementById('new-prod-name').value = '';
-            showToast('Prodotto aggiunto al DB');
-        }
+        if(val && !productsDB.map(v=>v.toLowerCase()).includes(val.toLowerCase())) { productsDB.push(val); saveProducts(); document.getElementById('new-prod-name').value = ''; showToast('Prodotto aggiunto'); }
     };
+    function autoAddProduct(name) { if(name && !productsDB.map(v=>v.toLowerCase()).includes(name.toLowerCase())) { productsDB.push(name); saveProducts(); } }
 
-    // Aggiunta automatica al volo (se l'utente inserisce un nome nuovo nel form della ricetta)
-    function autoAddProduct(name) {
-        if(name && !productsDB.map(v=>v.toLowerCase()).includes(name.toLowerCase())) {
-            productsDB.push(name);
-            saveProducts();
-        }
-    }
-
-    // --- COSTRUTTORE INGREDIENTI (Ricetta) ---
+    // --- COSTRUTTORE INGREDIENTI ---
     function renderActiveIngredients() {
-        const ul = document.getElementById('current-ing-list');
-        ul.innerHTML = '';
+        const ul = document.getElementById('current-ing-list'); ul.innerHTML = '';
         activeIngredients.forEach((ing, index) => {
-            const li = document.createElement('li');
-            li.className = 'cat-item';
-            li.style.padding = '8px 12px';
+            const li = document.createElement('li'); li.className = 'cat-item'; li.style.padding = '8px 12px';
             li.innerHTML = `<span><strong>${ing.qty} ${ing.unit}</strong> ${ing.name}</span>`;
-            const del = document.createElement('button');
-            del.className = 'btn-del-cat';
-            del.style.padding = '4px 8px';
-            del.innerHTML = '<i class="ri-close-line"></i>';
-            del.onclick = () => {
-                activeIngredients.splice(index, 1);
-                renderActiveIngredients();
-            };
-            li.appendChild(del);
-            ul.appendChild(li);
+            const del = document.createElement('button'); del.className = 'btn-del-cat'; del.style.padding = '4px 8px'; del.innerHTML = '<i class="ri-close-line"></i>';
+            del.onclick = () => { activeIngredients.splice(index, 1); renderActiveIngredients(); };
+            li.appendChild(del); ul.appendChild(li);
         });
     }
-
     document.getElementById('btn-add-ing').onclick = () => {
         const name = document.getElementById('ing-name').value.trim();
-        const qty = document.getElementById('ing-qty').value.trim();
+        const qty = document.getElementById('ing-qty').value.replace(',', '.').trim();
         const unit = document.getElementById('ing-unit').value;
         if(!name) return showToast("Inserisci il nome!");
-        
-        activeIngredients.push({ name, qty, unit });
-        autoAddProduct(name); // Aggiunge al DB se nuovo
-        
-        document.getElementById('ing-name').value = '';
-        document.getElementById('ing-qty').value = '';
-        document.getElementById('ing-name').focus();
+        activeIngredients.push({ name, qty, unit }); autoAddProduct(name);
+        document.getElementById('ing-name').value = ''; document.getElementById('ing-qty').value = ''; document.getElementById('ing-name').focus();
         renderActiveIngredients();
     };
 
-    // --- MAGIC PARSER (Migliorato per Array) ---
+    // --- MAGIC PARSER (Ora cattura le Porzioni!) ---
     document.getElementById('btn-toggle-magic').onclick = () => { document.getElementById('magic-box').classList.toggle('active'); };
     document.getElementById('btn-run-magic').onclick = () => {
-        const text = document.getElementById('magic-text').value;
-        if(!text.trim()) return;
-
+        const text = document.getElementById('magic-text').value; if(!text.trim()) return;
         let lines = text.split('\n').map(l => l.trim()).filter(l => l);
         document.getElementById('title').value = lines[0] || '';
-
         const txtLower = lines.map(l => l.toLowerCase());
         const ingIndex = txtLower.findIndex(l => l.includes('ingredient') || l.includes('occorrente'));
         const procIndex = txtLower.findIndex(l => l.includes('procediment') || l.includes('preparazion') || l.includes('istruzion'));
 
-        // Estrattore di ingredienti grezzi
         let rawIngs = [];
         if(ingIndex !== -1 && procIndex !== -1 && procIndex > ingIndex) {
-            rawIngs = lines.slice(ingIndex + 1, procIndex);
-            document.getElementById('procedure').value = lines.slice(procIndex + 1).join('\n');
+            rawIngs = lines.slice(ingIndex + 1, procIndex); document.getElementById('procedure').value = lines.slice(procIndex + 1).join('\n');
         } else if (ingIndex !== -1) {
-            rawIngs = lines.slice(ingIndex + 1);
-            document.getElementById('procedure').value = "Compila manualmente";
-        } else {
-            // Se non trova le sezioni, mette tutto in procedimento
-            document.getElementById('procedure').value = lines.slice(1).join('\n');
-        }
+            rawIngs = lines.slice(ingIndex + 1); document.getElementById('procedure').value = "Compila manualmente";
+        } else { document.getElementById('procedure').value = lines.slice(1).join('\n'); }
 
-        // Tenta di convertire le stringhe in oggetti
         rawIngs.forEach(line => {
-            // Tenta di trovare numero iniziale, eventuale unità e resto
             const match = line.match(/^([\d.,]+)\s*(g|kg|ml|l|pz|cucchiaio|cucchiai|cucchiaino|cucchiaini|q\.b\.)?\s+(.*)$/i);
-            if(match) {
-                activeIngredients.push({ qty: match[1], unit: (match[2]||'').toLowerCase(), name: match[3].trim() });
-                autoAddProduct(match[3].trim());
-            } else {
-                activeIngredients.push({ qty: '', unit: '', name: line.replace(/^- /, '').trim() });
-                autoAddProduct(line.replace(/^- /, '').trim());
-            }
+            if(match) { activeIngredients.push({ qty: match[1].replace(',', '.'), unit: (match[2]||'').toLowerCase(), name: match[3].trim() }); autoAddProduct(match[3].trim()); }
+            else { activeIngredients.push({ qty: '', unit: '', name: line.replace(/^- /, '').trim() }); autoAddProduct(line.replace(/^- /, '').trim()); }
         });
         renderActiveIngredients();
 
         const fullText = text.toLowerCase();
-        const timeMatch = fullText.match(/(tempo|totale|preparazione).*?(\d+)/);
-        if(timeMatch) document.getElementById('timeTotal').value = timeMatch[2];
-        
-        const cookMatch = fullText.match(/(cottura|forno).*?(\d+)/);
-        if(cookMatch) document.getElementById('timeCook').value = cookMatch[2];
+        // Cerca i Tempi
+        const timeMatch = fullText.match(/(tempo|totale|preparazione).*?(\d+)/); if(timeMatch) document.getElementById('timeTotal').value = timeMatch[2];
+        const cookMatch = fullText.match(/(cottura|forno).*?(\d+)/); if(cookMatch) document.getElementById('timeCook').value = cookMatch[2];
+        // Cerca Porzioni
+        const servMatch = fullText.match(/(per|porzioni|persone)\s*(\d+(\.\d+)?)/); 
+        if(servMatch) document.getElementById('servings').value = servMatch[2];
 
-        showToast("Dati estratti!");
-        document.getElementById('magic-box').classList.remove('active');
-        document.getElementById('magic-text').value = '';
+        showToast("Dati estratti!"); document.getElementById('magic-box').classList.remove('active'); document.getElementById('magic-text').value = '';
     };
 
-    // --- SALVATAGGIO RICETTA ---
+    // --- SALVATAGGIO ---
     document.getElementById('fab-add').onclick = () => {
-        isEditing = false;
-        document.getElementById('form-title').innerText = "Nuova Ricetta";
-        document.getElementById('recipe-form').reset();
-        activeIngredients = [];
-        renderActiveIngredients();
-        document.getElementById('magic-box').classList.remove('active');
-        openModal('add-sheet');
+        isEditing = false; document.getElementById('form-title').innerText = "Nuova Ricetta"; document.getElementById('recipe-form').reset();
+        document.getElementById('servings').value = 4; // Default
+        activeIngredients = []; renderActiveIngredients(); document.getElementById('magic-box').classList.remove('active'); openModal('add-sheet');
     };
 
     document.getElementById('recipe-form').onsubmit = (e) => {
         e.preventDefault();
-        // Fallback: se l'utente non ha cliccato + ma ha scritto qualcosa nell'input
-        const pendName = document.getElementById('ing-name').value;
-        if(pendName) document.getElementById('btn-add-ing').click();
-
-        if(activeIngredients.length === 0) {
-            alert("Aggiungi almeno un ingrediente cliccando sul tasto '+' !");
-            return;
-        }
+        const pendName = document.getElementById('ing-name').value; if(pendName) document.getElementById('btn-add-ing').click();
+        if(activeIngredients.length === 0) { alert("Aggiungi almeno un ingrediente cliccando sul tasto '+' !"); return; }
 
         const recData = {
             id: isEditing ? currentRecipeId : ('r_' + Date.now()), 
             title: document.getElementById('title').value, 
             category: document.getElementById('category').value,
+            servings: parseFloat(document.getElementById('servings').value) || 1, // NUOVO
             timeTotal: document.getElementById('timeTotal').value, 
             timeLeav: document.getElementById('timeLeav').value, 
             timeCook: document.getElementById('timeCook').value,
-            ingredients: activeIngredients, // Salviamo l'array
+            ingredients: activeIngredients, 
             procedure: document.getElementById('procedure').value
         };
 
         if(isEditing) {
-            const idx = recipes.findIndex(r => r.id === currentRecipeId);
-            recipes[idx] = recData;
-            openRecipe(currentRecipeId);
-            showToast('Ricetta modificata!');
+            recipes[recipes.findIndex(r => r.id === currentRecipeId)] = recData;
+            openRecipe(currentRecipeId); showToast('Ricetta modificata!');
         } else {
-            recipes.unshift(recData);
-            showToast('Ricetta salvata!');
+            recipes.unshift(recData); showToast('Ricetta salvata!');
         }
-
-        localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
-        triggerBack();
-        renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText);
+        localStorage.setItem('chefbox_recipes_v4', JSON.stringify(recipes));
+        triggerBack(); renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText);
     };
 
-    // --- VISUALIZZAZIONE RICETTA (FEED E DETTAGLIO) ---
     function renderFeed(filter = 'All') {
         feed.innerHTML = '';
         const filtered = filter === 'All' ? recipes : recipes.filter(r => r.category === filter);
         if(filtered.length === 0) return feed.innerHTML = `<div class="empty-state"><i class="ri-book-3-line"></i><br><span style="margin-top:10px; display:block;">Nessuna ricetta qui.</span></div>`;
         
         filtered.forEach(r => {
-            const div = document.createElement('div');
-            div.className = 'recipe-widget'; 
-            div.onclick = () => openRecipe(r.id);
+            const div = document.createElement('div'); div.className = 'recipe-widget'; div.onclick = () => openRecipe(r.id);
             const badgeHtml = r.timeTotal ? `<div class="widget-badge"><i class="ri-time-line"></i> ${r.timeTotal}m</div>` : '';
-            div.innerHTML = `<div class="widget-title">${r.title}</div>${badgeHtml}`;
-            feed.appendChild(div);
+            div.innerHTML = `<div class="widget-title">${r.title}</div>${badgeHtml}`; feed.appendChild(div);
         });
+    }
+
+    // --- ENGINE RICALCOLO PORZIONI ---
+    function renderDetailIngredientsHTML() {
+        const ratio = currentTargetServings / currentBaseServings;
+        let html = `<ul class="ing-display-list">`;
+        currentDetailIngredients.forEach(i => {
+            let displayQty = i.qty;
+            if(displayQty && displayQty !== '') {
+                let parsed = parseFloat(displayQty);
+                if(!isNaN(parsed)) {
+                    // Calcolo ed arrotondamento a max 2 decimali (elimina zeri inutili finali grazie al + unario)
+                    displayQty = +(parsed * ratio).toFixed(2);
+                }
+            }
+            html += `<li><strong>${displayQty} ${i.unit}</strong> ${i.name}</li>`;
+        });
+        html += `</ul>`;
+        document.getElementById('dynamic-ingredients-box').innerHTML = html;
+    }
+
+    // Gestione pulsanti Stepper (+ / -)
+    function changeServings(delta) {
+        let newVal = currentTargetServings + delta;
+        if(newVal < 0.5) newVal = 0.5;
+        currentTargetServings = newVal;
+        document.getElementById('detail-servings').value = currentTargetServings;
+        renderDetailIngredientsHTML();
     }
 
     function openRecipe(id) {
         const r = recipes.find(rec => rec.id === id);
         currentRecipeId = id;
         
+        // Inizializza Variabili Dettaglio
+        currentBaseServings = r.servings || 1;
+        currentTargetServings = currentBaseServings;
+        currentDetailIngredients = Array.isArray(r.ingredients) ? r.ingredients : [];
+
         let timeBannerHtml = '';
         if(r.timeTotal || r.timeLeav || r.timeCook) {
             timeBannerHtml = `<div class="time-banner">`;
@@ -525,146 +453,104 @@
             timeBannerHtml += `</div>`;
         }
 
-        // Generazione lista ingredienti HTML (retrocompatibile con stringhe vecchie)
-        let ingHTML = '';
-        if(Array.isArray(r.ingredients)) {
-            ingHTML = `<ul class="ing-display-list">`;
-            r.ingredients.forEach(i => {
-                ingHTML += `<li><strong>${i.qty} ${i.unit}</strong> ${i.name}</li>`;
-            });
-            ingHTML += `</ul>`;
-        } else {
-            // Retrocompatibilità
-            ingHTML = `<div class="content-box">${r.ingredients}</div>`;
-        }
+        // Stepper UI per le porzioni
+        const stepperHtml = `
+            <div class="servings-stepper">
+                <span>Porzioni</span>
+                <div class="stepper-controls">
+                    <button class="stepper-btn" onclick="changeServings(-0.5)">-</button>
+                    <input type="number" id="detail-servings" class="stepper-input" step="0.5" min="0.5" value="${currentTargetServings}">
+                    <button class="stepper-btn" onclick="changeServings(0.5)">+</button>
+                </div>
+            </div>
+        `;
 
         document.getElementById('detail-content').innerHTML = `
-            <div style="color:var(--primary); font-weight:bold; font-size:0.9rem; margin-bottom:10px;">${r.category.toUpperCase()}</div>
+            <div style="color:var(--primary); font-weight:bold; font-size:0.9rem; margin-bottom:10px; letter-spacing:0.5px;">${r.category.toUpperCase()}</div>
             <h2 class="detail-title">${r.title}</h2>
             ${timeBannerHtml}
-            <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;"><i class="ri-shopping-basket-line" style="color:var(--primary)"></i> Ingredienti</h3>
-            ${ingHTML}
+            
+            ${stepperHtml}
+            <div id="dynamic-ingredients-box"></div>
+            
             <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;"><i class="ri-list-check-2" style="color:var(--primary)"></i> Procedimento</h3>
             <div class="content-box">${r.procedure}</div>
         `;
         
-        if(!document.getElementById('detail-view').classList.contains('active')) {
-            openModal('detail-view');
+        // Renderizza la prima volta gli ingredienti (con il ratio = 1)
+        if(currentDetailIngredients.length > 0) {
+            renderDetailIngredientsHTML();
+        } else {
+            // Retrocompatibilità
+            document.getElementById('dynamic-ingredients-box').innerHTML = `<div class="content-box">${r.ingredients}</div>`;
         }
+
+        // Listener sul campo input digitato a mano
+        document.getElementById('detail-servings').addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            if(val && val >= 0.5) {
+                currentTargetServings = val;
+                renderDetailIngredientsHTML();
+            }
+        });
+        
+        if(!document.getElementById('detail-view').classList.contains('active')) openModal('detail-view');
     }
 
     // --- MODIFICA E ELIMINA ---
     document.getElementById('btn-edit').onclick = () => {
-        const r = recipes.find(rec => rec.id === currentRecipeId);
-        isEditing = true;
-        document.getElementById('form-title').innerText = "Modifica Ricetta";
-        document.getElementById('title').value = r.title;
-        document.getElementById('category').value = r.category;
-        document.getElementById('timeTotal').value = r.timeTotal || '';
-        document.getElementById('timeLeav').value = r.timeLeav || '';
-        document.getElementById('timeCook').value = r.timeCook || '';
+        const r = recipes.find(rec => rec.id === currentRecipeId); isEditing = true; document.getElementById('form-title').innerText = "Modifica Ricetta";
+        document.getElementById('title').value = r.title; document.getElementById('category').value = r.category;
+        document.getElementById('servings').value = r.servings || 1;
+        document.getElementById('timeTotal').value = r.timeTotal || ''; document.getElementById('timeLeav').value = r.timeLeav || ''; document.getElementById('timeCook').value = r.timeCook || '';
         document.getElementById('procedure').value = r.procedure;
-        
-        // Conversione array
-        if(Array.isArray(r.ingredients)) {
-            activeIngredients = [...r.ingredients];
-        } else {
-            activeIngredients = []; // Per le vecchie ricette stringa le facciamo reinserire pulite
-        }
-        renderActiveIngredients();
-        
-        document.getElementById('magic-box').classList.remove('active');
-        openModal('add-sheet'); 
+        activeIngredients = Array.isArray(r.ingredients) ? [...r.ingredients] : []; renderActiveIngredients();
+        document.getElementById('magic-box').classList.remove('active'); openModal('add-sheet'); 
     };
 
     document.getElementById('btn-delete').onclick = () => {
-        if(confirm("Sei sicuro di eliminare questa ricetta?")) {
-            recipes = recipes.filter(r => r.id !== currentRecipeId);
-            localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
-            triggerBack();
-            renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText);
-            showToast('Ricetta eliminata');
-        }
+        if(confirm("Sei sicuro di eliminare questa ricetta?")) { recipes = recipes.filter(r => r.id !== currentRecipeId); localStorage.setItem('chefbox_recipes_v4', JSON.stringify(recipes)); triggerBack(); renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText); showToast('Ricetta eliminata'); }
     };
 
-    // --- EXPORT E IMPORT ---
+    // --- CATEGORIE ED EXPORT ---
     document.getElementById('btn-export').onclick = () => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(recipes));
-        const dlAnchor = document.createElement('a');
-        dlAnchor.setAttribute("href", dataStr);
-        dlAnchor.setAttribute("download", "chefbox_backup.json");
-        dlAnchor.click();
-        showToast("Backup scaricato!");
+        const dlAnchor = document.createElement('a'); dlAnchor.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(recipes)));
+        dlAnchor.setAttribute("download", "chefbox_backup.json"); dlAnchor.click(); showToast("Backup scaricato!");
     };
-
     document.getElementById('file-import').onchange = (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
+        const file = e.target.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = (event) => {
-            try {
-                const importedRecipes = JSON.parse(event.target.result);
-                if(Array.isArray(importedRecipes)) {
-                    const existingIds = new Set(recipes.map(r => r.id));
-                    importedRecipes.forEach(r => { if(!existingIds.has(r.id)) recipes.push(r); });
-                    localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
-                    triggerBack(); renderFeed('All'); showToast("Ricette importate!");
+            try { const importedRecipes = JSON.parse(event.target.result); if(Array.isArray(importedRecipes)) {
+                    const existingIds = new Set(recipes.map(r => r.id)); importedRecipes.forEach(r => { if(!existingIds.has(r.id)) recipes.push(r); });
+                    localStorage.setItem('chefbox_recipes_v4', JSON.stringify(recipes)); triggerBack(); renderFeed('All'); showToast("Ricette importate!");
                 }
             } catch(err) { alert("Errore file. Assicurati sia un backup valido in JSON."); }
-        };
-        reader.readAsText(file);
+        }; reader.readAsText(file);
     };
 
-    // --- CATEGORIE (Gestione) ---
     function renderCategories() {
-        filters.innerHTML = '<div class="pill active" data-filter="All">Tutte</div>';
-        catSelect.innerHTML = '<option value="" disabled selected>Scegli Categoria...</option>';
-        document.getElementById('cat-list-ui').innerHTML = '';
+        filters.innerHTML = '<div class="pill active" data-filter="All">Tutte</div>'; catSelect.innerHTML = '<option value="" disabled selected>Scegli Categoria...</option>'; document.getElementById('cat-list-ui').innerHTML = '';
         categories.forEach(cat => {
             catSelect.add(new Option(cat, cat));
             const pill = document.createElement('div'); pill.className = 'pill'; pill.innerText = cat;
-            pill.onclick = () => { document.querySelectorAll('.pill').forEach(p => p.classList.remove('active')); pill.classList.add('active'); renderFeed(cat); };
-            filters.appendChild(pill);
-
+            pill.onclick = () => { document.querySelectorAll('.pill').forEach(p => p.classList.remove('active')); pill.classList.add('active'); renderFeed(cat); }; filters.appendChild(pill);
             const li = document.createElement('li'); li.className = 'cat-item'; li.innerHTML = `<span>${cat}</span>`;
             const delBtn = document.createElement('button'); delBtn.className = 'btn-del-cat'; delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
             delBtn.onclick = () => {
                 const count = recipes.filter(r => r.category === cat).length;
-                if(count > 0 && !delBtn.classList.contains('confirming')) {
-                    delBtn.classList.add('confirming'); delBtn.innerHTML = 'Elimina ' + count + ' ricette?';
-                    setTimeout(() => { delBtn.classList.remove('confirming'); delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>'; }, 3000);
-                    return;
-                } else if(count > 0) {
-                    recipes = recipes.filter(r => r.category !== cat);
-                    localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
-                    renderFeed('All');
-                }
-                categories = categories.filter(c => c !== cat);
-                localStorage.setItem('chefbox_cats', JSON.stringify(categories));
-                renderCategories(); showToast('Categoria rimossa');
-            };
-            li.appendChild(delBtn); document.getElementById('cat-list-ui').appendChild(li);
+                if(count > 0 && !delBtn.classList.contains('confirming')) { delBtn.classList.add('confirming'); delBtn.innerHTML = 'Elimina ' + count + ' ricette?'; setTimeout(() => { delBtn.classList.remove('confirming'); delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>'; }, 3000); return; }
+                else if(count > 0) { recipes = recipes.filter(r => r.category !== cat); localStorage.setItem('chefbox_recipes_v4', JSON.stringify(recipes)); renderFeed('All'); }
+                categories = categories.filter(c => c !== cat); localStorage.setItem('chefbox_cats', JSON.stringify(categories)); renderCategories(); showToast('Categoria rimossa');
+            }; li.appendChild(delBtn); document.getElementById('cat-list-ui').appendChild(li);
         });
         filters.firstElementChild.onclick = function() { document.querySelectorAll('.pill').forEach(p => p.classList.remove('active')); this.classList.add('active'); renderFeed('All'); }
     }
+    document.getElementById('btn-add-cat').onclick = () => { const val = document.getElementById('new-cat-name').value.trim(); if(val && !categories.includes(val)) { categories.push(val); localStorage.setItem('chefbox_cats', JSON.stringify(categories)); document.getElementById('new-cat-name').value = ''; renderCategories(); showToast('Categoria aggiunta!'); }};
+    function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
 
-    document.getElementById('btn-add-cat').onclick = () => {
-        const val = document.getElementById('new-cat-name').value.trim();
-        if(val && !categories.includes(val)) {
-            categories.push(val); localStorage.setItem('chefbox_cats', JSON.stringify(categories));
-            document.getElementById('new-cat-name').value = ''; renderCategories(); showToast('Categoria aggiunta!');
-        }
-    };
-
-    function showToast(msg) {
-        const t = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg;
-        t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
-    }
-
-    // --- START APP ---
-    renderCategories();
-    renderProducts();
-    renderFeed();
+    // Start
+    renderCategories(); renderProducts(); renderFeed();
 </script>
 </body>
 </html>
