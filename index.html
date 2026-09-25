@@ -90,9 +90,8 @@
         .recipe-widget:active:not(:has(.widget-fav:active)) { transform: scale(0.96); }
         .recipe-widget.is-fav { border-color: #FDA4AF; box-shadow: 0 4px 14px rgba(225, 29, 72, 0.10); }
         .recipe-widget:has(.widget-open:focus-visible) { outline: 3px solid var(--primary); outline-offset: 2px; }
-        .widget-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--primary-light); }
         .widget-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; justify-content: center; min-height: 70px; flex: 1; }
-        .recipe-widget:not(.has-photo) .widget-body { padding-right: 44px; }
+        .widget-body { padding-right: 44px; }
         .widget-open { background: none; border: none; padding: 0; margin: 0; text-align: left; font: inherit; cursor: pointer; width: 100%; color: inherit; }
         .widget-open:focus-visible { outline: none; }
         .widget-open::after { content: ''; position: absolute; inset: 0; z-index: 1; }
@@ -102,7 +101,7 @@
         .widget-match i { color: var(--primary); }
         .widget-badge { background: var(--primary-light); color: var(--primary-dark); padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
         .widget-fav { position: absolute; top: 6px; right: 6px; z-index: 2; width: 36px; height: 36px; border-radius: 50%; border: none; background: rgba(255, 255, 255, 0.92); color: var(--text-muted); font-size: 1.15rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
-        .recipe-widget:not(.has-photo) .widget-fav { background: transparent; box-shadow: none; }
+        .widget-fav { background: transparent; box-shadow: none; }
         .widget-fav[aria-pressed="true"], #btn-fav[aria-pressed="true"] { color: var(--heart); }
         .pop { animation: pop 0.35s ease; }
         @keyframes pop { 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
@@ -144,17 +143,8 @@
         textarea.form-control { resize: vertical; min-height: 150px; line-height: 1.5; }
         .form-hint { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
 
-        /* --- Foto nel form --- */
-        .photo-picker { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-        .photo-preview { width: 96px; height: 96px; border-radius: 14px; border: 2px dashed var(--border); background: var(--bg-color); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 2rem; overflow: hidden; flex-shrink: 0; cursor: pointer; padding: 0; }
-        .photo-preview.has-photo { border-style: solid; }
-        .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .photo-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; min-width: 0; }
         .btn-mini { padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
         .btn-mini.danger { color: var(--danger); border-color: rgba(239, 68, 68, 0.3); }
-        .storage-bar { height: 8px; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border); overflow: hidden; margin-top: 8px; }
-        .storage-bar > div { height: 100%; background: var(--primary); width: 0; transition: width 0.3s; }
-        .storage-bar.warn > div { background: var(--danger); }
 
         .checkbox-container { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; color: var(--text-main); font-size: 1rem; }
         .checkbox-container input { width: 22px; height: 22px; accent-color: var(--primary); }
@@ -165,7 +155,6 @@
 
         .btn-submit { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2); transition: background 0.2s, transform 0.1s, opacity 0.2s; }
         .btn-submit:active { transform: scale(0.98); }
-        .btn-submit:disabled { opacity: 0.6; cursor: wait; }
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
         .btn-install { background: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
         .btn-small { width: auto; margin: 0; padding: 14px 20px; flex-shrink: 0; }
@@ -183,7 +172,6 @@
         .btn-del-cat { background: var(--danger-light); color: var(--danger); border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex-shrink: 0; }
         .scroll-list { max-height: 220px; overflow-y: auto; }
 
-        .detail-photo { width: 100%; aspect-ratio: 16 / 10; max-height: 360px; object-fit: cover; border-radius: var(--radius-md); margin-bottom: 20px; display: block; border: 1px solid var(--border); background: var(--primary-light); }
         .detail-cat { overflow-wrap: anywhere; color: var(--primary); font-weight: 800; font-size: 0.95rem; margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; }
         .detail-title { font-size: clamp(1.6rem, 4.5vw + 0.5rem, 2.4rem); font-weight: 800; margin-bottom: 24px; line-height: 1.2; overflow-wrap: anywhere; }
         .time-banner { display: flex; justify-content: space-around; gap: 8px; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px; text-align: center; }
@@ -291,7 +279,7 @@
         .pantry-item { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px; }
         .pantry-item .pantry-name { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
         .pantry-item input { width: 72px; margin: 0; padding: 8px; text-align: center; font-weight: 700; }
-        .pantry-item .pantry-unit { width: 64px; font-size: 0.85rem; color: var(--text-muted); font-weight: 700; }
+        .pantry-item .pantry-unit { width: 72px; font-size: 16px; padding: 8px 4px; color: var(--text-muted); font-weight: 700; }
 
         /* --- Modalità cucina (schermo intero, un passaggio alla volta) --- */
         .cook-view { position: fixed; inset: 0; z-index: 65; background: var(--bg-color); display: flex; flex-direction: column; padding: var(--safe-top) var(--safe-right) 0 var(--safe-left); opacity: 0; visibility: hidden; transform: scale(1.02); transition: opacity 0.25s, transform 0.25s, visibility 0s linear 0.25s; }
@@ -363,7 +351,7 @@
             :root { --gutter: 24px; }
             .recipe-feed { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; padding-top: 20px; }
             .widget-body { padding: 18px; min-height: 96px; }
-            .recipe-widget:not(.has-photo) .widget-body { padding-right: 48px; }
+            .widget-body { padding-right: 48px; }
             .widget-title { font-size: 1.05rem; }
         }
 
@@ -458,17 +446,6 @@
 
                 <div class="form-section-title"><i class="ri-information-line"></i> 1. Info Generali</div>
                 <div class="form-group">
-                    <span class="form-label">Foto (opzionale)</span>
-                    <div class="photo-picker">
-                        <button type="button" class="photo-preview" id="photo-preview" aria-label="Scegli una foto"><i class="ri-camera-line"></i></button>
-                        <div class="photo-actions">
-                            <button type="button" class="btn-mini" id="btn-photo-pick"><i class="ri-image-add-line"></i> <span id="photo-pick-label">Aggiungi foto</span></button>
-                            <button type="button" class="btn-mini danger" id="btn-photo-remove" style="display:none;"><i class="ri-delete-bin-line"></i> Rimuovi</button>
-                            <span class="form-hint" id="photo-info">Verrà compressa automaticamente.</span>
-                        </div>
-                    </div>
-                    <input type="file" id="photo-input" accept="image/*" style="display:none;">
-
                     <label class="form-label" for="title">Nome della Ricetta</label>
                     <input type="text" class="form-control" id="title" required maxlength="120" placeholder="Es. Torta di Mele" autocomplete="off">
 
@@ -561,14 +538,8 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Spazio usato</label>
-                <p class="form-hint" id="storage-info">—</p>
-                <div class="storage-bar" id="storage-bar"><div></div></div>
-            </div>
-
-            <div class="form-group">
                 <label class="form-label">Backup Dati</label>
-                <p class="form-hint" style="margin-bottom:12px;">Il backup include ricette (con foto e preferiti), categorie, prodotti e dispensa.</p>
+                <p class="form-hint" style="margin-bottom:12px;">Il backup include ricette (con preferiti e teglie), categorie, prodotti e dispensa.</p>
                 <button type="button" class="btn-submit btn-outline" id="btn-export"><i class="ri-download-2-line"></i> Esporta Dati</button>
                 <label for="file-import" class="btn-submit btn-outline" style="margin-bottom:0;" tabindex="0" role="button" id="lbl-import"><i class="ri-upload-2-line"></i> Ripristina Dati</label>
                 <input type="file" id="file-import" accept=".json,application/json" style="display:none;">
@@ -731,13 +702,12 @@
     }
     function persist(key, value) {
         try { localStorage.setItem(key, JSON.stringify(value)); return true; }
-        catch { showToast('Memoria piena: rimuovi qualche foto o esporta un backup', 'error'); return false; }
+        catch { showToast('Memoria piena: esporta un backup ed elimina qualche ricetta', 'error'); return false; }
     }
     const saveRecipes = () => persist(KEYS.recipes, recipes);
     const saveCats = () => persist(KEYS.cats, categories);
 
     const cleanStr = (v) => (v === null || v === undefined) ? '' : String(v).trim();
-    const PHOTO_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
     // Normalizza una ricetta (anche da backup): scarta quelle non valide e sistema i campi
     function normalizeRecipe(raw) {
         if (!raw || typeof raw !== 'object' || !cleanStr(raw.title)) return null;
@@ -755,8 +725,7 @@
             procedure: raw.procedure === undefined || raw.procedure === null ? '' : String(raw.procedure),
             fav: raw.fav === true
         };
-        // Solo immagini base64 valide (niente URL esterni o SVG)
-        if (typeof r.photo !== 'string' || !PHOTO_RE.test(r.photo)) delete r.photo;
+        delete r.photo; // le foto non sono più usate: vengono tolte anche dai vecchi dati
         r.pan = normalizePan(raw.pan);
         if (!r.pan) delete r.pan;
         return r;
@@ -770,9 +739,12 @@
 
     let categories = loadList(KEYS.cats, [...defaultCats]).filter((x) => typeof x === 'string').map(cleanStr).filter(Boolean);
     let productsDB = loadList(KEYS.prods, [...defaultProds]).filter((x) => typeof x === 'string').map(cleanStr).filter(Boolean);
-    let recipes = loadList(KEYS.recipes, []).map(normalizeRecipe).filter(Boolean);
+    const rawRecipes = loadList(KEYS.recipes, []);
+    let recipes = rawRecipes.map(normalizeRecipe).filter(Boolean);
+    // Le foto non sono più supportate: se ce n'erano le tolgo subito per liberare memoria
+    if (rawRecipes.some((r) => r && r.photo)) { try { localStorage.setItem(KEYS.recipes, JSON.stringify(recipes)); } catch { } }
 
-    let currentRecipeId = null, isEditing = false, activeIngredients = [], activePhoto = '';
+    let currentRecipeId = null, isEditing = false, activeIngredients = [];
     let currentBaseServings = 1, currentTargetServings = 1, currentDetailIngredients = [], currentPanFactor = 1;
     // Rapporto complessivo delle dosi nel dettaglio: persone × adattamento teglia
     const detailRatio = () => (currentTargetServings / currentBaseServings) * currentPanFactor;
@@ -834,12 +806,19 @@
             // Voce rimasta da prima di un ricaricamento: saltala
             applyModals([]); history.back(); return;
         }
-        applyModals(s && Array.isArray(s.modals) ? s.modals : [], s ? s.form : null);
+        const wanted = s && Array.isArray(s.modals) ? s.modals : [];
+        applyModals(wanted, s ? s.form : null);
+        // Voce non più valida (form già salvato, ricetta eliminata): niente tocchi "a vuoto", torno indietro
+        if (modalStack.length < wanted.length) history.back();
     });
     document.addEventListener('keydown', (e) => {
         const top = modalStack[modalStack.length - 1];
         if (top === 'cook-view') {
-            if (e.key === 'Escape' && !$('cook-ing-panel').hidden) { e.preventDefault(); $('cook-ing-panel').hidden = true; return; }
+            if (!$('cook-ing-panel').hidden) {
+                // Con gli ingredienti aperti le frecce non cambiano passaggio "di nascosto"
+                if (e.key === 'Escape') { e.preventDefault(); $('cook-ing-panel').hidden = true; }
+                return;
+            }
             if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); cookMove(1); return; }
             if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); cookMove(-1); return; }
         }
@@ -851,7 +830,7 @@
     if (location.hash || history.state) history.replaceState(null, '', location.pathname + location.search);
 
     $('btn-close-sheet').onclick = $('btn-close-settings').onclick = $('btn-back').onclick = $('overlay').onclick = closeTopModal;
-    $('btn-open-settings').onclick = () => { $('settings-sheet').querySelector('.sheet-content').scrollTop = 0; updateStorageInfo(); openModal('settings-sheet'); };
+    $('btn-open-settings').onclick = () => { $('settings-sheet').querySelector('.sheet-content').scrollTop = 0; openModal('settings-sheet'); };
 
     $('toggle-times').addEventListener('change', function () {
         $('time-grid-container').classList.toggle('active', this.checked);
@@ -930,6 +909,7 @@
             // Salvataggio fallito: ripristina tutto com'era
             recipes = prevRecipes; categories = prevCats; saveRecipes(); renderCategories(); return;
         }
+        if (count > 0) pruneShopPlan();
         renderCategories(); renderFeed(); showToast('Categoria rimossa');
     }
     function addCategoryFromInput() {
@@ -980,77 +960,10 @@
     $('ing-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('ing-qty').focus(); } });
     $('ing-qty').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addIngredient(); } });
 
-    // --- FOTO: compressione con canvas prima del salvataggio ---
-    const PHOTO_TARGET_CHARS = 60000; // ~45 KB per foto: ne entrano circa 80 nei 5 MB del browser
-    const canWebp = document.createElement('canvas').toDataURL('image/webp').startsWith('data:image/webp');
-    function loadImageFromFile(file) {
-        return new Promise((resolve, reject) => {
-            const url = URL.createObjectURL(file), img = new Image();
-            img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('formato')); };
-            img.src = url;
-        });
-    }
-    async function compressImage(file) {
-        const img = await loadImageFromFile(file);
-        const type = canWebp ? 'image/webp' : 'image/jpeg';
-        let maxSide = 800, best = '';
-        for (let attempt = 0; attempt < 5; attempt++) {
-            const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
-            const w = Math.max(1, Math.round(img.naturalWidth * scale)), h = Math.max(1, Math.round(img.naturalHeight * scale));
-            const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, w, h); // sfondo bianco per PNG trasparenti
-            ctx.imageSmoothingQuality = 'high'; ctx.drawImage(img, 0, 0, w, h);
-            for (const q of [0.78, 0.66, 0.54, 0.42]) {
-                best = canvas.toDataURL(type, q);
-                if (best.length <= PHOTO_TARGET_CHARS) return best;
-            }
-            maxSide = Math.round(maxSide * 0.75);
-        }
-        return best;
-    }
-    const kb = (chars) => Math.max(1, Math.round(chars * 0.75 / 1024));
-    function renderPhotoPicker() {
-        const preview = $('photo-preview');
-        preview.classList.toggle('has-photo', !!activePhoto);
-        preview.innerHTML = activePhoto ? `<img src="${esc(activePhoto)}" alt="Anteprima foto">` : '<i class="ri-camera-line"></i>';
-        $('photo-pick-label').textContent = activePhoto ? 'Cambia foto' : 'Aggiungi foto';
-        $('btn-photo-remove').style.display = activePhoto ? 'inline-flex' : 'none';
-        $('photo-info').textContent = activePhoto ? `Foto ottimizzata: ${kb(activePhoto.length)} KB` : 'Verrà compressa automaticamente.';
-    }
-    $('photo-preview').onclick = $('btn-photo-pick').onclick = () => $('photo-input').click();
-    $('btn-photo-remove').onclick = () => { activePhoto = ''; renderPhotoPicker(); };
-    $('photo-input').onchange = async (e) => {
-        const input = e.target, file = input.files[0]; input.value = '';
-        if (!file) return;
-        if (file.type && !file.type.startsWith('image/')) return showToast('Scegli un file immagine', 'error');
-        const saveBtn = $('btn-save-recipe'), form = activeFormToken;
-        saveBtn.disabled = true; $('photo-info').textContent = 'Ottimizzazione foto…';
-        try {
-            const photo = await compressImage(file);
-            if (form !== activeFormToken) return; // il form è stato chiuso o è cambiata ricetta
-            activePhoto = photo; showToast(`Foto ottimizzata (${kb(photo.length)} KB)`);
-        }
-        catch { if (form === activeFormToken) showToast('Formato immagine non supportato', 'error'); }
-        finally { if (form === activeFormToken) { saveBtn.disabled = false; renderPhotoPicker(); } }
-    };
-
-    function updateStorageInfo() {
-        let chars = 0;
-        try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); chars += k.length + (localStorage.getItem(k) || '').length; } } catch { }
-        const LIMIT = 5000000, pct = Math.min(100, (chars / LIMIT) * 100);
-        const photos = recipes.filter((r) => r.photo).length;
-        $('storage-info').textContent = `${numFmt.format(chars / 1e6)} MB su circa 5 MB (${numFmt.format(Math.round(pct))}%) · ${recipes.length} ricette, ${photos} con foto`;
-        $('storage-bar').firstElementChild.style.width = pct + '%';
-        $('storage-bar').classList.toggle('warn', pct > 85);
-    }
-
     // --- NUOVA / MODIFICA / SALVATAGGIO ---
     function resetForm() {
         $('recipe-form').reset();
         $('ing-name').value = ''; $('ing-qty').value = '';
-        $('btn-save-recipe').disabled = false;
         $('add-sheet').querySelector('.sheet-content').scrollTop = 0;
     }
     function focusFirstField() { if (window.matchMedia('(pointer: fine)').matches) setTimeout(() => $('title').focus(), 60); }
@@ -1062,7 +975,6 @@
         if (categories.includes(currentFilter)) catSelect.value = currentFilter;
         $('servings').value = 4; $('toggle-times').checked = false; $('time-grid-container').classList.remove('active');
         activeIngredients = []; renderActiveIngredients();
-        activePhoto = ''; renderPhotoPicker();
         openModal('add-sheet'); focusFirstField();
     };
 
@@ -1082,7 +994,6 @@
 
     $('recipe-form').onsubmit = (e) => {
         e.preventDefault();
-        if ($('btn-save-recipe').disabled) return; // foto ancora in elaborazione
         if (!modalStack.includes('add-sheet')) return; // evita doppi salvataggi
         if ($('ing-name').value.trim() && !addIngredient()) return;
         if (!validateForm()) return;
@@ -1096,7 +1007,6 @@
             servings: $('servings').value,
             timeTotal: $('timeTotal').value, timeLeav: $('timeLeav').value, timeCook: $('timeCook').value,
             ingredients: activeIngredients, procedure: $('procedure').value.trim(),
-            photo: activePhoto || undefined
         });
 
         if (isEditing) {
@@ -1173,7 +1083,7 @@
         }
         items.forEach(({ r, match }) => {
             const card = document.createElement('article');
-            card.className = 'recipe-widget' + (r.photo ? ' has-photo' : '') + (r.fav ? ' is-fav' : '');
+            card.className = 'recipe-widget' + (r.fav ? ' is-fav' : '');
             card.dataset.id = r.id;
             const catHtml = currentFilter !== r.category && r.category ? `<span class="widget-cat">${esc(r.category)}</span>` : '';
             const badgeHtml = r.timeTotal ? `<span class="widget-badge"><i class="ri-time-line"></i> ${formatMinutes(r.timeTotal)}</span>` : '';
@@ -1183,7 +1093,6 @@
                 matchHtml = `<span class="widget-match"><i class="ri-shopping-basket-line"></i> ${shown}</span>`;
             }
             card.innerHTML = `
-                ${r.photo ? `<img class="widget-photo" src="${esc(r.photo)}" alt="" loading="lazy">` : ''}
                 <div class="widget-body">
                     ${catHtml}
                     <button type="button" class="widget-open"><span class="widget-title">${esc(r.title)}</span></button>
@@ -1275,6 +1184,8 @@
         return audioCtx;
     }
     function beep() {
+        // Prima di un tocco il browser blocca l'audio: evito tentativi inutili (resta l'avviso visivo)
+        if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
         const ctx = getAudio(); if (!ctx) return;
         const t0 = ctx.currentTime;
         [0, 0.28, 0.56].forEach((d) => {
@@ -1363,8 +1274,10 @@
         wakeChain = wakeChain.then(async () => {
             if (wantWake() && !wakeLock) {
                 try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    wakeLock.addEventListener('release', () => { wakeLock = null; updateWakeUI(); });
+                    const lock = await navigator.wakeLock.request('screen');
+                    wakeLock = lock;
+                    // Azzera solo se è ancora questo il lock attivo (un rilascio vecchio non deve cancellare quello nuovo)
+                    lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; updateWakeUI(); });
                     if (!wakeHintShown && modalStack.includes('detail-view') && wakePref) { wakeHintShown = true; showToast('☀ Lo schermo resterà acceso'); }
                 } catch {
                     // Alcuni browser lo concedono solo dopo un'interazione: riprova al prossimo tocco
@@ -1592,10 +1505,12 @@
     };
     const AISLE_KW = Object.fromEntries(Object.entries(AISLE_WORDS).map(([k, v]) => [k, v.split(' ')]));
     const nameKey = (n) => norm(n).split(/\s+/).filter(Boolean).map(stem).join(' ');
-    let aisleOverrides = loadObj(KEYS.aisles);
+    const isAisle = (v) => AISLES.some(([k]) => k === v);
+    // Solo chiavi proprie con un reparto valido (un prodotto chiamato "constructor" non deve rompere nulla)
+    let aisleOverrides = Object.fromEntries(Object.entries(loadObj(KEYS.aisles)).filter(([, v]) => isAisle(v)));
     function aisleOf(name) {
         const key = nameKey(name);
-        if (aisleOverrides[key]) return aisleOverrides[key];
+        if (Object.prototype.hasOwnProperty.call(aisleOverrides, key)) return aisleOverrides[key];
         const n = norm(name);
         const phrase = AISLE_PHRASES.find(([p]) => n.includes(p)); if (phrase) return phrase[1];
         const words = n.split(/[^a-z0-9]+/).filter(Boolean);
@@ -1757,6 +1672,12 @@
         updateShopBadge(); updateShopButton();
         showToast(idx >= 0 ? 'Quantità aggiornate nella spesa' : `Aggiunta alla spesa (${numFmt.format(currentTargetServings)} pers.)`);
     }
+    // Toglie dalla spesa le ricette che non esistono più
+    function pruneShopPlan() {
+        const kept = shopPlan.filter((p) => getRecipe(p.id));
+        if (kept.length !== shopPlan.length) { shopPlan = kept; saveShop(); }
+        updateShopBadge();
+    }
     function updateShopButton() {
         const btn = $('btn-add-shop'); if (!btn) return;
         const inPlan = shopPlan.some((p) => p.id === currentRecipeId);
@@ -1894,7 +1815,6 @@
 
         $('detail-content').innerHTML = `
             <div class="detail-inner">
-                ${r.photo ? `<img class="detail-photo" src="${esc(r.photo)}" alt="Foto di ${esc(r.title)}">` : ''}
                 <div class="detail-cat">${esc(r.category)}</div>
                 <h2 class="detail-title">${esc(r.title)}</h2>
                 ${timeBannerHtml}
@@ -1954,7 +1874,6 @@
         const hasTimes = !!(r.timeTotal || r.timeLeav || r.timeCook);
         $('toggle-times').checked = hasTimes; $('time-grid-container').classList.toggle('active', hasTimes);
         activeIngredients = r.ingredients.map((i) => ({ ...i })); renderActiveIngredients();
-        activePhoto = r.photo || ''; renderPhotoPicker();
         openModal('add-sheet'); focusFirstField();
     };
 
@@ -1964,6 +1883,7 @@
         const before = recipes;
         recipes = recipes.filter((x) => x.id !== currentRecipeId);
         if (!saveRecipes()) { recipes = before; return; }
+        pruneShopPlan();
         closeTopModal(); renderFeed(); showToast('Ricetta eliminata');
     };
 
@@ -2022,7 +1942,7 @@
                     const qty = cleanStr(p.qty).replace(',', '.');
                     pantry.push({ id: 'p_' + Math.random().toString(36).slice(2, 9), name: cleanStr(p.name), qty: /^\d+(\.\d+)?$/.test(qty) ? qty : '', unit: UNIT_FAM[p.unit] && p.unit !== 'q.b.' && p.unit !== '' ? p.unit : 'g' });
                 });
-                if (data.aisles && typeof data.aisles === 'object') Object.entries(data.aisles).forEach(([k, v]) => { if (AISLES.some(([a]) => a === v) && !aisleOverrides[k]) aisleOverrides[k] = v; });
+                if (data.aisles && typeof data.aisles === 'object') Object.entries(data.aisles).forEach(([k, v]) => { if (isAisle(v) && k !== '__proto__' && !Object.prototype.hasOwnProperty.call(aisleOverrides, k)) aisleOverrides[k] = v; });
                 savePantry(); persist(KEYS.aisles, aisleOverrides); updateShopBadge();
                 renderProducts();
                 currentFilter = ALL; renderCategories(); renderFeed(); closeTopModal();
