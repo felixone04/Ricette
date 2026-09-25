@@ -292,45 +292,62 @@
         .badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--danger); color: #fff; font-size: 0.72rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid var(--surface); }
         .badge[hidden] { display: none; }
 
-        /* --- Spesa e dispensa --- */
-        .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--surface); padding: 6px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 16px; }
-        .seg button { border: none; background: none; padding: 12px 8px; border-radius: 10px; font-weight: 800; font-size: 0.95rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .seg button.active { background: var(--primary); color: #fff; }
-        .seg-count { background: rgba(0,0,0,0.08); border-radius: 999px; padding: 0 8px; font-size: 0.8rem; }
-        .seg button.active .seg-count { background: rgba(255,255,255,0.25); }
+        /* --- Liste della spesa --- */
+        .list-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -4px 14px; padding: 2px 4px; }
+        .list-chips::-webkit-scrollbar { display: none; }
+        .list-chip { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-weight: 800; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+        .list-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .list-chip .chip-count { background: rgba(0,0,0,0.08); border-radius: 999px; padding: 0 7px; font-size: 0.78rem; }
+        .list-chip.active .chip-count { background: rgba(255,255,255,0.25); }
+        .list-chip.add { border-style: dashed; color: var(--primary-dark); }
+        .list-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .list-head h4 { flex: 1; min-width: 0; font-size: 1.25rem; font-weight: 800; overflow-wrap: anywhere; }
+        .list-head .row-edit { flex: 1; }
+        .shop-progress { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; }
+        .shop-progress-top { display: flex; justify-content: space-between; font-weight: 800; font-size: 0.9rem; margin-bottom: 8px; }
+        .shop-progress-top span:last-child { color: var(--text-muted); }
+        .shop-bar { height: 8px; border-radius: 4px; background: var(--bg-color); overflow: hidden; }
+        .shop-bar > div { height: 100%; background: #10B981; width: 0; transition: width 0.3s; }
         .shop-empty { text-align: center; color: var(--text-muted); padding: 24px 12px; line-height: 1.5; }
         .shop-empty i { font-size: 3rem; color: #FDBA74; display: block; margin-bottom: 8px; }
-        .plan-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
+        .shop-tip { font-size: 0.85rem; color: var(--text-muted); background: var(--primary-light); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.4; }
+        .plan-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; }
         .plan-item .plan-title { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
         .plan-stepper { display: flex; align-items: center; gap: 4px; font-weight: 800; color: var(--primary-dark); white-space: nowrap; font-size: 0.9rem; }
         .plan-stepper button { width: 32px; height: 32px; border-radius: 8px; border: 2px solid var(--primary); background: var(--surface); color: var(--primary); font-weight: 800; font-size: 1.1rem; cursor: pointer; }
         .aisle { margin-bottom: 14px; }
         .aisle-title { font-weight: 800; font-size: 1rem; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
         .aisle-title small { color: var(--text-muted); font-weight: 700; }
-        .shop-item { display: flex; align-items: center; gap: 10px; padding: 10px 8px 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px; }
-        .shop-item input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--primary); flex-shrink: 0; }
+        .shop-item { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 6px; }
+        .shop-item input[type="checkbox"] { width: 24px; height: 24px; accent-color: #10B981; flex-shrink: 0; }
         .shop-item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; cursor: pointer; }
         .shop-item-name { font-weight: 700; overflow-wrap: anywhere; }
         .shop-item-name strong { color: var(--primary-dark); }
         .shop-item-sub { font-size: 0.78rem; color: var(--text-muted); overflow-wrap: anywhere; }
-        .shop-item-sub .have { color: #059669; font-weight: 700; }
         .shop-item.done { opacity: 0.55; }
         .shop-item.done .shop-item-name { text-decoration: line-through; }
-        .shop-item.covered { background: #ECFDF5; border-color: #A7F3D0; }
+        .have-btn { flex-shrink: 0; height: 36px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-color); color: var(--text-muted); font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; font-family: inherit; }
+        .have-box { border: 1px dashed #A7F3D0; background: #F0FDF4; border-radius: 14px; padding: 10px; margin-bottom: 14px; }
+        .have-box summary { cursor: pointer; font-weight: 800; color: #047857; list-style: none; display: flex; align-items: center; gap: 6px; }
+        .have-box summary::-webkit-details-marker { display: none; }
+        .have-box[open] summary { margin-bottom: 8px; }
+        .have-box .shop-item { background: #fff; }
+        .have-box .shop-item-name { color: var(--text-muted); }
         /* Icona "cambia reparto": il menu nativo è sovrapposto e invisibile */
-        .aisle-pick { position: relative; width: 40px; height: 40px; flex-shrink: 0; border-radius: 10px; background: var(--bg-color); border: 1px solid var(--border); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+        .aisle-pick { position: relative; width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; background: var(--bg-color); border: 1px solid var(--border); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 1.05rem; }
         .aisle-pick:focus-within { outline: 3px solid var(--primary); outline-offset: 1px; }
         .aisle-select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
         .shop-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
         .shop-actions .btn-submit { margin: 0; padding: 14px 10px; font-size: 0.95rem; }
-        .inline-add { display: flex; gap: 8px; margin-bottom: 12px; }
+        .inline-add { display: flex; gap: 8px; margin-bottom: 14px; }
         .inline-add .form-control { margin: 0; }
-        .pantry-add { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) 48px; gap: 6px; margin-bottom: 8px; }
-        .pantry-add .form-control { margin: 0; padding: 12px 8px; }
-        .pantry-item { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px; }
-        .pantry-item .pantry-name { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
-        .pantry-item input { width: 72px; margin: 0; padding: 8px; text-align: center; font-weight: 700; }
-        .pantry-item .pantry-unit { width: 72px; font-size: 16px; padding: 8px 4px; color: var(--text-muted); font-weight: 700; }
+        /* Scelta rapida (a quale lista aggiungere, sostituzioni...) sopra qualsiasi schermata */
+        .sheet.sheet-small { height: auto; max-height: 80vh; max-height: 80dvh; z-index: 70; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45); }
+        .pick-option { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; cursor: pointer; font-weight: 700; font-size: 1rem; text-align: left; font-family: inherit; }
+        .pick-option i { font-size: 1.3rem; color: var(--primary); }
+        .pick-option small { margin-left: auto; color: var(--text-muted); font-weight: 600; }
+        .toast-action[hidden] { display: none; }
+        .toast-action { margin-left: 8px; background: rgba(255,255,255,0.18); border: none; color: #fff; font-weight: 800; padding: 6px 12px; border-radius: 999px; cursor: pointer; font-family: inherit; }
 
         /* --- Modalità cucina (schermo intero, un passaggio alla volta) --- */
         .cook-view { position: fixed; inset: 0; z-index: 65; background: var(--bg-color); display: flex; flex-direction: column; padding: var(--safe-top) var(--safe-right) 0 var(--safe-left); opacity: 0; visibility: hidden; transform: scale(1.02); transition: opacity 0.25s, transform 0.25s, visibility 0s linear 0.25s; }
@@ -396,8 +413,6 @@
             .timer-btn { width: 34px; height: 34px; }
             .cook-ing-label { display: none; }
             .cook-ing-btn { width: 56px; justify-content: center; padding: 0; }
-            .pantry-add { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 48px; }
-            .pantry-add #pantry-name { grid-column: 1 / -1; }
             .detail-cta { grid-template-columns: 1fr; }
         }
 
@@ -461,7 +476,7 @@
 <body>
 
 <div class="app-container">
-    <div id="toast" class="toast" role="status" aria-live="polite"><i id="toast-icon" class="ri-check-line" aria-hidden="true"></i> <span id="toast-msg">Completato</span></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"><i id="toast-icon" class="ri-check-line" aria-hidden="true"></i> <span id="toast-msg">Completato</span><button type="button" class="toast-action" id="toast-action" hidden></button></div>
 
     <header>
         <h1><span class="kitchen-icon" aria-hidden="true">🍳</span> ChefBox</h1>
@@ -592,7 +607,7 @@
 
             <div class="form-group">
                 <label class="form-label">Backup Dati</label>
-                <p class="form-hint" style="margin-bottom:12px;">Il backup include ricette (con preferiti e teglie), categorie, prodotti e dispensa.</p>
+                <p class="form-hint" style="margin-bottom:12px;">Il backup include ricette (con preferiti e teglie), categorie, prodotti e liste della spesa.</p>
                 <button type="button" class="btn-submit btn-outline" id="btn-export"><i class="ri-download-2-line"></i> Esporta Dati</button>
                 <label for="file-import" class="btn-submit btn-outline" style="margin-bottom:0;" tabindex="0" role="button" id="lbl-import"><i class="ri-upload-2-line"></i> Ripristina Dati</label>
                 <input type="file" id="file-import" accept=".json,application/json" style="display:none;">
@@ -638,47 +653,36 @@
         </div></div>
     </div>
 
-    <!-- SHEET: SPESA E DISPENSA -->
+    <!-- SHEET: LISTE DELLA SPESA -->
     <div class="sheet" id="shop-sheet" role="dialog" aria-modal="true" aria-labelledby="shop-title">
         <div class="sheet-header">
-            <h3 id="shop-title">Spesa e Dispensa</h3>
+            <h3 id="shop-title">Lista della spesa</h3>
             <button type="button" class="btn-icon" style="color:var(--text-muted);" id="btn-close-shop" aria-label="Chiudi"><i class="ri-close-line"></i></button>
         </div>
         <div class="sheet-content">
-            <div class="seg" role="tablist">
-                <button type="button" role="tab" id="tab-shop" class="active" aria-selected="true"><i class="ri-shopping-cart-2-line"></i> Spesa <span class="seg-count" id="count-shop">0</span></button>
-                <button type="button" role="tab" id="tab-pantry" aria-selected="false"><i class="ri-home-4-line"></i> Dispensa <span class="seg-count" id="count-pantry">0</span></button>
+            <div class="list-chips" id="list-chips" role="tablist" aria-label="Le tue liste"></div>
+            <div class="list-head" id="list-head"></div>
+            <div id="shop-progress"></div>
+            <div id="shop-plan"></div>
+            <div class="inline-add">
+                <input type="text" class="form-control" id="shop-extra-name" placeholder="Aggiungi un articolo (es. detersivo)" maxlength="60" enterkeyhint="done" list="db-ingredients" autocomplete="off" aria-label="Aggiungi un articolo">
+                <button type="button" class="btn-submit btn-small" id="btn-shop-extra" aria-label="Aggiungi articolo">+</button>
             </div>
-
-            <div id="panel-shop" role="tabpanel">
-                <div id="shop-plan"></div>
-                <div class="inline-add">
-                    <input type="text" class="form-control" id="shop-extra-name" placeholder="Aggiungi un articolo (es. detersivo)" maxlength="60" enterkeyhint="done" list="db-ingredients" autocomplete="off">
-                    <button type="button" class="btn-submit btn-small" id="btn-shop-extra" aria-label="Aggiungi articolo">+</button>
-                </div>
-                <div id="shop-list"></div>
-                <div class="shop-actions" id="shop-actions">
-                    <button type="button" class="btn-submit btn-outline" id="btn-shop-share"><i class="ri-share-line"></i> Condividi lista</button>
-                    <button type="button" class="btn-submit btn-outline" id="btn-shop-clear" style="border-color:var(--danger); color:var(--danger);"><i class="ri-delete-bin-line"></i> Svuota lista</button>
-                </div>
-            </div>
-
-            <div id="panel-pantry" role="tabpanel" hidden>
-                <div class="form-group">
-                    <label class="form-label" for="pantry-name">Cosa hai già in casa?</label>
-                    <div class="pantry-add">
-                        <input type="text" class="form-control" id="pantry-name" list="db-ingredients" placeholder="Prodotto" aria-label="Prodotto" autocomplete="off" enterkeyhint="next">
-                        <input type="text" class="form-control" id="pantry-qty" placeholder="Q.tà" aria-label="Quantità" inputmode="decimal" autocomplete="off" enterkeyhint="done">
-                        <select class="form-control" id="pantry-unit" aria-label="Unità">
-                            <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option><option value="pz">pz</option><option value="cucchiai">cucchiai</option><option value="cucchiaini">cucchiaini</option>
-                        </select>
-                        <button type="button" class="btn-add-ing" id="btn-pantry-add" aria-label="Aggiungi alla dispensa"><i class="ri-add-line"></i></button>
-                    </div>
-                    <p class="form-hint">Lascia vuota la quantità per dire «ce l'ho» (es. sale, olio): verrà tolto sempre dalla spesa.</p>
-                </div>
-                <div id="pantry-list"></div>
+            <div id="shop-list"></div>
+            <div class="shop-actions" id="shop-actions">
+                <button type="button" class="btn-submit btn-outline" id="btn-shop-share"><i class="ri-share-line"></i> Condividi lista</button>
+                <button type="button" class="btn-submit btn-outline" id="btn-shop-clear" style="border-color:var(--danger); color:var(--danger);"><i class="ri-delete-bin-line"></i> Svuota lista</button>
             </div>
         </div>
+    </div>
+
+    <!-- SCELTA RAPIDA: a quale lista aggiungere la ricetta -->
+    <div class="sheet sheet-small" id="pick-sheet" role="dialog" aria-modal="true" aria-labelledby="pick-title">
+        <div class="sheet-header">
+            <h3 id="pick-title">Aggiungi alla lista</h3>
+            <button type="button" class="btn-icon" style="color:var(--text-muted);" data-page-close aria-label="Chiudi"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="sheet-content" id="pick-options" style="padding-bottom: calc(24px + var(--safe-bottom));"></div>
     </div>
 
     <!-- MODALITÀ CUCINA -->
@@ -774,7 +778,8 @@
     // --- DATI ---
     const KEYS = {
         recipes: 'chefbox_recipes_v6', cats: 'chefbox_cats', prods: 'chefbox_products', timers: 'chefbox_timers', wake: 'chefbox_wake',
-        plan: 'chefbox_shop_plan', extras: 'chefbox_shop_extra', checked: 'chefbox_shop_checked', pantry: 'chefbox_pantry', aisles: 'chefbox_aisles', myPan: 'chefbox_mypan'
+        plan: 'chefbox_shop_plan', extras: 'chefbox_shop_extra', checked: 'chefbox_shop_checked', lists: 'chefbox_shop_lists', activeList: 'chefbox_shop_active',
+        aisles: 'chefbox_aisles', myPan: 'chefbox_mypan', tts: 'chefbox_tts'
     };
     function loadObj(key) {
         try { const v = JSON.parse(localStorage.getItem(key)); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }
@@ -1749,17 +1754,44 @@
         return `${numFmt.format(+q.toFixed(2))} ${fam.startsWith('u:') ? fam.slice(2) : fam}`;
     }
 
-    let shopPlan = loadList(KEYS.plan, []).filter((p) => p && typeof p.id === 'string' && toNum(p.servings) > 0);
-    let shopExtras = loadList(KEYS.extras, []).filter((x) => x && typeof x.name === 'string' && x.id);
-    let shopChecked = new Set(loadList(KEYS.checked, []).filter((k) => typeof k === 'string'));
-    let pantry = loadList(KEYS.pantry, []).filter((p) => p && typeof p.name === 'string' && cleanStr(p.name)).map((p) => ({ id: String(p.id || 'p_' + Math.random().toString(36).slice(2, 8)), name: cleanStr(p.name), qty: cleanStr(p.qty), unit: cleanStr(p.unit) }));
-    let shopTab = 'shop';
-    const saveShop = () => persist(KEYS.plan, shopPlan) && persist(KEYS.extras, shopExtras) && persist(KEYS.checked, [...shopChecked]);
-    const savePantry = () => persist(KEYS.pantry, pantry);
+    // Liste della spesa: ognuna ha le sue ricette, gli articoli extra, ciò che "ce l'ho" e ciò che è già nel carrello
+    const isStr = (x) => typeof x === 'string';
+    const newListId = () => 'l_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    const makeList = (name) => ({ id: newListId(), name, plan: [], extras: [], have: [], checked: [] });
+    function normalizeShopList(l) {
+        if (!l || typeof l !== 'object') return null;
+        const arr = (v) => (Array.isArray(v) ? v : []);
+        return {
+            id: cleanStr(l.id) || newListId(),
+            name: cleanStr(l.name).slice(0, 40) || 'Spesa',
+            plan: arr(l.plan).filter((p) => p && isStr(p.id) && toNum(p.servings) > 0)
+                .map((p) => ({ id: p.id, servings: toNum(p.servings), factor: toNum(p.factor) > 0 ? toNum(p.factor) : 1 })),
+            extras: arr(l.extras).filter((x) => x && isStr(x.name) && cleanStr(x.name))
+                .map((x) => ({ id: cleanStr(x.id) || 'x_' + Math.random().toString(36).slice(2, 8), name: cleanStr(x.name) })),
+            have: arr(l.have).filter(isStr),
+            checked: arr(l.checked).filter(isStr)
+        };
+    }
+    let shopLists = (loadList(KEYS.lists, null) || []).map(normalizeShopList).filter(Boolean);
+    if (!shopLists.length) {
+        // Prima apertura con la nuova versione: la vecchia lista unica diventa "Spesa"
+        shopLists = [normalizeShopList({ name: 'Spesa', plan: loadList(KEYS.plan, []), extras: loadList(KEYS.extras, []), checked: loadList(KEYS.checked, []) })];
+        try { localStorage.setItem(KEYS.lists, JSON.stringify(shopLists)); [KEYS.plan, KEYS.extras, KEYS.checked].forEach((k) => localStorage.removeItem(k)); } catch { }
+    }
+    try { localStorage.removeItem('chefbox_pantry'); } catch { } // la dispensa non esiste più
+    let activeListId = (() => { try { return localStorage.getItem(KEYS.activeList); } catch { return null; } })();
+    if (!shopLists.some((l) => l.id === activeListId)) activeListId = shopLists[0].id;
+    const activeList = () => shopLists.find((l) => l.id === activeListId) || shopLists[0];
+    function saveShop() {
+        if (!persist(KEYS.lists, shopLists)) return false;
+        try { localStorage.setItem(KEYS.activeList, activeListId); } catch { }
+        return true;
+    }
+    let renamingList = false, haveOpen = false;
 
-    function computeShopping() {
+    function computeShopping(list = activeList()) {
         const map = new Map();
-        shopPlan.forEach((p) => {
+        list.plan.forEach((p) => {
             const r = getRecipe(p.id); if (!r) return;
             const mult = (toNum(p.servings) / (r.servings || 1)) * (toNum(p.factor) > 0 ? toNum(p.factor) : 1);
             r.ingredients.forEach((i) => {
@@ -1776,57 +1808,55 @@
             const twin = [...map.values()].find((x) => x !== it && x.nk === it.nk);
             if (twin) { it.sources.forEach((s) => twin.sources.add(s)); map.delete(it.key); }
         }
-        shopExtras.forEach((x) => map.set('x:' + x.id, { key: 'x:' + x.id, nk: nameKey(x.name), name: x.name, fam: 'extra', qty: 0, unknown: true, extraId: x.id, sources: new Set() }));
-
-        // Confronto con la dispensa: sottraggo quello che ho già
+        list.extras.forEach((x) => map.set('x:' + x.id, { key: 'x:' + x.id, nk: nameKey(x.name), name: x.name, fam: 'extra', qty: 0, unknown: true, extraId: x.id, sources: new Set() }));
+        const have = new Set(list.have), checked = new Set(list.checked);
         return [...map.values()].map((it) => {
-            const owned = pantry.filter((p) => nameKey(p.name) === it.nk);
-            it.remaining = it.qty; it.covered = false; it.haveNote = '';
-            if (owned.length && it.fam !== 'extra') {
-                if (owned.some((p) => p.qty === '') || it.unknown && it.qty === 0) { it.covered = true; it.haveNote = 'in dispensa'; }
-                else {
-                    const same = owned.filter((p) => famOf(p.unit)[0] === it.fam);
-                    if (same.length) {
-                        const have = same.reduce((s, p) => s + toNum(p.qty) * famOf(p.unit)[1], 0);
-                        it.remaining = Math.max(0, it.qty - have);
-                        it.covered = it.remaining <= 1e-9 && !it.unknown;
-                        it.haveNote = `in dispensa: ${formatQty(it.fam, have)}`;
-                    } else {
-                        it.haveNote = 'in dispensa: ' + owned.map((p) => `${p.qty} ${p.unit}`.trim()).join(', ');
-                    }
-                }
-            }
             it.aisle = aisleOf(it.name);
-            it.done = shopChecked.has(it.key);
-            it.label = it.fam === 'extra' || (it.unknown && it.remaining === 0) ? '' : formatQty(it.fam, it.remaining);
-            if (it.fam === 'qb') it.label = 'q.b.';
+            it.have = have.has(it.key);
+            it.done = !it.have && checked.has(it.key);
+            it.label = it.fam === 'qb' ? 'q.b.' : it.fam === 'extra' || (it.unknown && it.qty === 0) ? '' : formatQty(it.fam, it.qty);
             return it;
         });
     }
-
-    function updateShopBadge(items = computeShopping()) {
-        const todo = items.filter((i) => !i.covered && !i.done).length;
+    function listStats(list) {
+        const items = computeShopping(list), toBuy = items.filter((i) => !i.have);
+        return { items, toBuy, left: toBuy.filter((i) => !i.done).length };
+    }
+    function updateShopBadge() {
+        const todo = shopLists.reduce((s, l) => s + listStats(l).left, 0);
         const badge = $('shop-badge');
         badge.hidden = todo === 0; badge.textContent = todo > 99 ? '99+' : String(todo);
-        $('count-shop').textContent = todo;
-        $('count-pantry').textContent = pantry.length;
     }
 
     function renderShop() {
-        const items = computeShopping();
-        updateShopBadge(items);
-        // Ricette in programma
-        const plan = shopPlan.map((p) => ({ p, r: getRecipe(p.id) })).filter((x) => x.r);
-        $('shop-plan').innerHTML = plan.length ? `<div class="form-section-title"><i class="ri-restaurant-line"></i> Ricette in programma</div>` + plan.map(({ p, r }) => `
+        const list = activeList();
+        $('list-chips').innerHTML = shopLists.map((l) => {
+            const left = listStats(l).left, on = l.id === list.id;
+            return `<button type="button" role="tab" class="list-chip${on ? ' active' : ''}" data-list="${esc(l.id)}" aria-selected="${on}">${esc(l.name)}${left ? ` <span class="chip-count">${left}</span>` : ''}</button>`;
+        }).join('') + `<button type="button" class="list-chip add" data-new-list><i class="ri-add-line"></i> Nuova lista</button>`;
+        if (!renamingList) {
+            $('list-head').innerHTML = `<h4>${esc(list.name)}</h4>
+                <button type="button" class="row-btn" data-list-act="rename" aria-label="Rinomina la lista"><i class="ri-pencil-line"></i></button>
+                <button type="button" class="row-btn danger" data-list-act="delete" aria-label="Elimina la lista"><i class="ri-delete-bin-line"></i></button>`;
+        }
+        const { items, toBuy } = listStats(list);
+        updateShopBadge();
+        const done = toBuy.filter((i) => i.done).length, left = toBuy.length - done;
+        $('shop-progress').innerHTML = toBuy.length ? `<div class="shop-progress">
+            <div class="shop-progress-top"><span>🛒 ${done} di ${toBuy.length} nel carrello</span><span>${left ? left + ' da prendere' : 'Fatto!'}</span></div>
+            <div class="shop-bar"><div style="width:${(done / toBuy.length) * 100}%"></div></div></div>` : '';
+
+        const plan = list.plan.map((p) => ({ p, r: getRecipe(p.id) })).filter((x) => x.r);
+        $('shop-plan').innerHTML = plan.length ? `<div class="form-section-title"><i class="ri-restaurant-line"></i> Ricette</div>` + plan.map(({ p, r }) => `
             <div class="plan-item" data-plan="${esc(r.id)}">
-                <span class="plan-title">${esc(r.title)}${toNum(p.factor) > 0 && toNum(p.factor) !== 1 ? ` <small style="color:var(--text-muted);">· teglia ×${numFmt.format(+toNum(p.factor).toFixed(2))}</small>` : ''}</span>
+                <span class="plan-title">${esc(r.title)}${toNum(p.factor) !== 1 ? ` <small style="color:var(--text-muted);">· teglia ×${numFmt.format(+toNum(p.factor).toFixed(2))}</small>` : ''}</span>
                 <span class="plan-stepper"><button type="button" data-plan-act="minus" aria-label="Meno persone">−</button> ${numFmt.format(toNum(p.servings))} pers. <button type="button" data-plan-act="plus" aria-label="Più persone">+</button></span>
-                <button type="button" class="btn-del-cat" data-plan-act="remove" aria-label="Togli ${esc(r.title)} dalla spesa"><i class="ri-close-line"></i></button>
+                <button type="button" class="btn-del-cat" data-plan-act="remove" aria-label="Togli ${esc(r.title)} dalla lista"><i class="ri-close-line"></i></button>
             </div>`).join('') : '';
 
-        const list = $('shop-list');
+        const listEl = $('shop-list');
         if (!items.length) {
-            list.innerHTML = `<div class="shop-empty"><i class="ri-shopping-cart-2-line"></i>La lista è vuota.<br>Apri una ricetta e tocca <strong>«Aggiungi alla spesa»</strong>, oppure aggiungi un articolo qui sopra.</div>`;
+            listEl.innerHTML = `<div class="shop-empty"><i class="ri-shopping-cart-2-line"></i>La lista «${esc(list.name)}» è vuota.<br>Apri una ricetta e tocca <strong>«Aggiungi alla spesa»</strong>, oppure aggiungi un articolo qui sopra.</div>`;
             $('shop-actions').style.display = 'none';
             return;
         }
@@ -1834,92 +1864,179 @@
         const aisleOptions = (sel) => AISLES.map(([k, icon, label]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${icon} ${label}</option>`).join('');
         const row = (it) => {
             const sources = [...it.sources].join(', ');
-            const sub = [sources && esc(sources), it.haveNote && `<span class="have"><i class="ri-home-4-line"></i> ${esc(it.haveNote)}</span>`].filter(Boolean).join(' · ');
-            return `<div class="shop-item${it.done ? ' done' : ''}${it.covered ? ' covered' : ''}" data-key="${esc(it.key)}">
-                ${it.covered ? '<i class="ri-checkbox-circle-fill" style="color:#059669; font-size:1.4rem;" aria-hidden="true"></i>' : `<input type="checkbox" ${it.done ? 'checked' : ''} aria-label="Preso: ${esc(it.name)}">`}
-                <div class="shop-item-main"><span class="shop-item-name">${it.label ? `<strong>${esc(it.label)}</strong> ` : ''}${esc(it.name)}</span>${sub ? `<span class="shop-item-sub">${sub}</span>` : ''}</div>
-                <label class="aisle-pick" title="Cambia reparto"><i class="ri-store-2-line" aria-hidden="true"></i><select class="aisle-select" data-nk="${esc(it.nk)}" aria-label="Reparto di ${esc(it.name)}">${aisleOptions(it.aisle)}</select></label>
+            return `<div class="shop-item${it.done ? ' done' : ''}" data-key="${esc(it.key)}">
+                ${it.have ? '' : `<input type="checkbox" ${it.done ? 'checked' : ''} aria-label="Nel carrello: ${esc(it.name)}">`}
+                <div class="shop-item-main"><span class="shop-item-name">${it.label ? `<strong>${esc(it.label)}</strong> ` : ''}${esc(it.name)}</span>${sources ? `<span class="shop-item-sub">${esc(sources)}</span>` : ''}</div>
+                ${it.done ? '' : `<button type="button" class="have-btn" data-have aria-label="${it.have ? 'Da comprare' : 'Ce l\'ho già'}: ${esc(it.name)}">${it.have ? '<i class="ri-arrow-go-back-line"></i> Da comprare' : '<i class="ri-home-4-line"></i> Ce l\'ho'}</button>`}
+                ${it.have ? '' : `<label class="aisle-pick" title="Cambia reparto"><i class="ri-store-2-line" aria-hidden="true"></i><select class="aisle-select" data-nk="${esc(it.nk)}" aria-label="Reparto di ${esc(it.name)}">${aisleOptions(it.aisle)}</select></label>`}
                 ${it.extraId ? `<button type="button" class="btn-del-cat" data-extra="${esc(it.extraId)}" aria-label="Elimina ${esc(it.name)}"><i class="ri-close-line"></i></button>` : ''}
             </div>`;
         };
-        const toBuy = items.filter((i) => !i.covered), covered = items.filter((i) => i.covered);
-        let html = AISLES.map(([k, icon, label]) => {
+        let html = '';
+        const haveItems = items.filter((i) => i.have);
+        if (!haveItems.length && !done) html += `<p class="shop-tip"><i class="ri-lightbulb-line"></i> Tocca <strong>Ce l'ho</strong> su ciò che hai già in casa: resta solo quello da comprare. Poi spunta gli articoli man mano che li metti nel carrello: a fine spesa la lista si azzera da sola.</p>`;
+        html += AISLES.map(([k, icon, label]) => {
             const group = toBuy.filter((i) => i.aisle === k).sort((a, b) => (a.done - b.done) || a.name.localeCompare(b.name, 'it'));
             if (!group.length) return '';
-            const left = group.filter((i) => !i.done).length;
-            return `<div class="aisle"><div class="aisle-title">${icon} ${label} <small>${left ? left + ' da prendere' : 'fatto ✓'}</small></div>${group.map(row).join('')}</div>`;
+            const groupLeft = group.filter((i) => !i.done).length;
+            return `<div class="aisle"><div class="aisle-title">${icon} ${label} <small>${groupLeft ? groupLeft + ' da prendere' : 'fatto ✓'}</small></div>${group.map(row).join('')}</div>`;
         }).join('');
-        if (covered.length) html += `<div class="aisle"><div class="aisle-title">✅ Già in dispensa <small>${covered.length}</small></div>${covered.map(row).join('')}</div>`;
-        list.innerHTML = html;
+        if (!toBuy.length) html += `<div class="shop-empty" style="padding-top:8px;"><i class="ri-home-smile-line"></i>Hai già tutto in casa!</div>`;
+        if (haveItems.length) html += `<details class="have-box" id="have-box"${haveOpen ? ' open' : ''}><summary><i class="ri-home-4-line"></i> Ce l'ho già (${haveItems.length})</summary>${haveItems.sort((a, b) => a.name.localeCompare(b.name, 'it')).map(row).join('')}</details>`;
+        listEl.innerHTML = html;
+        const box = $('have-box'); if (box) box.addEventListener('toggle', () => { haveOpen = box.open; });
     }
 
-    function renderPantry() {
-        updateShopBadge();
-        const list = $('pantry-list');
-        if (!pantry.length) { list.innerHTML = `<div class="shop-empty"><i class="ri-home-4-line"></i>La dispensa è vuota.<br>Aggiungi ciò che hai già in casa: verrà tolto dalla lista della spesa.</div>`; return; }
-        const units = ['g', 'kg', 'ml', 'l', 'pz', 'cucchiai', 'cucchiaini'];
-        list.innerHTML = [...pantry].sort((a, b) => a.name.localeCompare(b.name, 'it')).map((p) => `
-            <div class="pantry-item" data-pantry="${esc(p.id)}">
-                <span class="pantry-name">${AISLES.find(([k]) => k === aisleOf(p.name))[1]} ${esc(p.name)}</span>
-                <input type="text" inputmode="decimal" class="form-control" data-field="qty" value="${esc(p.qty)}" placeholder="ce l'ho" aria-label="Quantità di ${esc(p.name)}">
-                <select class="form-control pantry-unit" data-field="unit" aria-label="Unità di ${esc(p.name)}">${units.map((u) => `<option${u === p.unit ? ' selected' : ''}>${u}</option>`).join('')}</select>
-                <button type="button" class="btn-del-cat" data-field="del" aria-label="Togli ${esc(p.name)} dalla dispensa"><i class="ri-delete-bin-line"></i></button>
-            </div>`).join('');
-    }
-
-    function setShopTab(tab) {
-        shopTab = tab;
-        $('tab-shop').classList.toggle('active', tab === 'shop'); $('tab-shop').setAttribute('aria-selected', String(tab === 'shop'));
-        $('tab-pantry').classList.toggle('active', tab === 'pantry'); $('tab-pantry').setAttribute('aria-selected', String(tab === 'pantry'));
-        $('panel-shop').hidden = tab !== 'shop'; $('panel-pantry').hidden = tab !== 'pantry';
-        if (tab === 'shop') renderShop(); else renderPantry();
-    }
-    $('tab-shop').onclick = () => setShopTab('shop');
-    $('tab-pantry').onclick = () => setShopTab('pantry');
-    $('btn-open-shop').onclick = () => { setShopTab(shopTab); $('shop-sheet').querySelector('.sheet-content').scrollTop = 0; openModal('shop-sheet'); };
+    $('btn-open-shop').onclick = () => { renamingList = false; renderShop(); $('shop-sheet').querySelector('.sheet-content').scrollTop = 0; openModal('shop-sheet'); };
     $('btn-close-shop').onclick = closeTopModal;
 
+    // Gestione delle liste: cambia, crea, rinomina, elimina
+    function createList() {
+        const l = makeList(`Lista ${shopLists.length + 1}`);
+        shopLists.push(l); activeListId = l.id;
+        if (!saveShop()) { shopLists.pop(); activeListId = shopLists[0].id; return; }
+        renderShop(); startRenameList();
+    }
+    function startRenameList() {
+        const list = activeList();
+        renamingList = true;
+        $('list-head').innerHTML = `<input type="text" class="row-edit" maxlength="40" enterkeyhint="done" aria-label="Nome della lista">
+            <button type="button" class="row-btn" data-list-act="save" aria-label="Salva il nome"><i class="ri-check-line"></i></button>`;
+        const inp = $('list-head').querySelector('input');
+        inp.value = list.name; inp.focus(); inp.select();
+        let done = false;
+        const finish = (save) => {
+            if (done) return; done = true; renamingList = false;
+            const val = inp.value.trim().slice(0, 40);
+            if (save && val && val !== list.name) {
+                if (shopLists.some((l) => l !== list && sameText(l.name, val))) showToast('Esiste già una lista con questo nome', 'error');
+                else { const prev = list.name; list.name = val; if (!saveShop()) list.name = prev; }
+            }
+            renderShop();
+        };
+        inp.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
+        });
+        inp.addEventListener('blur', () => finish(true));
+    }
+    function deleteList() {
+        const list = activeList();
+        if (shopLists.length === 1) {
+            if (!confirm(`«${list.name}» è la tua unica lista: vuoi svuotarla?`)) return;
+            Object.assign(list, { plan: [], extras: [], have: [], checked: [] });
+        } else {
+            if (!confirm(`Eliminare la lista «${list.name}»?`)) return;
+            shopLists = shopLists.filter((l) => l !== list);
+            activeListId = shopLists[0].id;
+        }
+        saveShop(); renderShop(); updateShopButton();
+        showToast('Lista eliminata');
+    }
+    $('list-chips').addEventListener('click', (e) => {
+        if (e.target.closest('[data-new-list]')) { createList(); return; }
+        const chip = e.target.closest('[data-list]'); if (!chip) return;
+        activeListId = chip.dataset.list; renamingList = false; haveOpen = false;
+        saveShop(); renderShop();
+    });
+    $('list-head').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-list-act]'); if (!btn) return;
+        if (btn.dataset.listAct === 'rename') startRenameList();
+        else if (btn.dataset.listAct === 'delete') deleteList();
+    });
+
+    // Aggiungere una ricetta a una lista (se ce n'è più di una, chiedo quale)
     function addToShopping() {
         const r = getRecipe(currentRecipeId); if (!r) return;
-        const entry = { id: r.id, servings: currentTargetServings, factor: +currentPanFactor.toFixed(4) };
-        const idx = shopPlan.findIndex((p) => p.id === r.id);
-        const prev = [...shopPlan];
-        if (idx >= 0) shopPlan[idx] = entry; else shopPlan.push(entry);
-        if (!saveShop()) { shopPlan = prev; return; }
-        updateShopBadge(); updateShopButton();
-        showToast(idx >= 0 ? 'Quantità aggiornate nella spesa' : `Aggiunta alla spesa (${numFmt.format(currentTargetServings)} pers.)`);
+        if (shopLists.length === 1) { addRecipeToList(shopLists[0].id); return; }
+        $('pick-options').innerHTML = shopLists.map((l) => {
+            const inList = l.plan.some((p) => p.id === r.id);
+            return `<button type="button" class="pick-option" data-pick="${esc(l.id)}"><i class="${inList ? 'ri-checkbox-circle-fill' : 'ri-shopping-cart-2-line'}"></i>${esc(l.name)}<small>${inList ? 'aggiorna le dosi' : plural(l.plan.length, 'ricetta', 'ricette')}</small></button>`;
+        }).join('') + `<button type="button" class="pick-option" data-pick="__new"><i class="ri-add-circle-line"></i>Nuova lista</button>`;
+        openModal('pick-sheet');
     }
-    // Toglie dalla spesa le ricette che non esistono più
+    $('pick-options').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-pick]'); if (!b) return;
+        let id = b.dataset.pick;
+        if (id === '__new') { const l = makeList(`Lista ${shopLists.length + 1}`); shopLists.push(l); id = l.id; }
+        closeTopModal();
+        addRecipeToList(id);
+    });
+    function addRecipeToList(listId) {
+        const r = getRecipe(currentRecipeId), list = shopLists.find((l) => l.id === listId);
+        if (!r || !list) return;
+        const entry = { id: r.id, servings: currentTargetServings, factor: +currentPanFactor.toFixed(4) };
+        const prev = list.plan.map((p) => ({ ...p })), idx = list.plan.findIndex((p) => p.id === r.id);
+        if (idx >= 0) list.plan[idx] = entry; else list.plan.push(entry);
+        activeListId = list.id;
+        if (!saveShop()) { list.plan = prev; return; }
+        updateShopBadge(); updateShopButton();
+        showToast(idx >= 0 ? `Dosi aggiornate in «${list.name}»` : `Aggiunta a «${list.name}» (${numFmt.format(currentTargetServings)} pers.)`);
+    }
+    // Toglie dalle liste le ricette che non esistono più
     function pruneShopPlan() {
-        const kept = shopPlan.filter((p) => getRecipe(p.id));
-        if (kept.length !== shopPlan.length) { shopPlan = kept; saveShop(); }
+        let changed = false;
+        shopLists.forEach((l) => { const kept = l.plan.filter((p) => getRecipe(p.id)); if (kept.length !== l.plan.length) { l.plan = kept; changed = true; } });
+        if (changed) saveShop();
         updateShopBadge();
     }
     function updateShopButton() {
         const btn = $('btn-add-shop'); if (!btn) return;
-        const inPlan = shopPlan.some((p) => p.id === currentRecipeId);
+        const inPlan = shopLists.some((l) => l.plan.some((p) => p.id === currentRecipeId));
         btn.innerHTML = inPlan ? '<i class="ri-refresh-line"></i> Aggiorna spesa' : '<i class="ri-shopping-cart-2-line"></i> Aggiungi alla spesa';
+    }
+
+    // Spesa completata: la lista si azzera (con possibilità di annullare per qualche secondo)
+    function completeList(list, lastKey) {
+        const snapshot = JSON.parse(JSON.stringify(list));
+        snapshot.checked = snapshot.checked.filter((k) => k !== lastKey); // con "Annulla" l'ultimo articolo torna da prendere
+        Object.assign(list, { plan: [], extras: [], have: [], checked: [] });
+        haveOpen = false;
+        saveShop(); renderShop(); updateShopButton();
+        showToast(`Spesa completata! «${list.name}» è stata azzerata 🎉`, 'success', {
+            label: 'Annulla',
+            run: () => {
+                if (!shopLists.includes(list)) return;
+                Object.assign(list, snapshot); saveShop(); renderShop(); updateShopButton();
+                showToast('Lista ripristinata');
+            }
+        });
     }
 
     $('shop-plan').addEventListener('click', (e) => {
         const btn = e.target.closest('[data-plan-act]'); if (!btn) return;
-        const id = btn.closest('[data-plan]').dataset.plan, p = shopPlan.find((x) => x.id === id); if (!p) return;
+        const list = activeList(), id = btn.closest('[data-plan]').dataset.plan, p = list.plan.find((x) => x.id === id); if (!p) return;
         const act = btn.dataset.planAct;
-        if (act === 'remove') shopPlan = shopPlan.filter((x) => x !== p);
+        if (act === 'remove') list.plan = list.plan.filter((x) => x !== p);
         else p.servings = Math.max(1, Math.round(toNum(p.servings) + (act === 'plus' ? 1 : -1)));
         saveShop(); renderShop(); updateShopButton();
     });
     $('shop-list').addEventListener('click', (e) => {
+        const list = activeList();
         const del = e.target.closest('[data-extra]');
-        if (del) { shopExtras = shopExtras.filter((x) => x.id !== del.dataset.extra); shopChecked.delete('x:' + del.dataset.extra); saveShop(); renderShop(); return; }
+        if (del) {
+            const key = 'x:' + del.dataset.extra;
+            list.extras = list.extras.filter((x) => x.id !== del.dataset.extra);
+            list.have = list.have.filter((k) => k !== key); list.checked = list.checked.filter((k) => k !== key);
+            saveShop(); renderShop(); return;
+        }
         const item = e.target.closest('.shop-item'); if (!item || e.target.closest('.aisle-pick')) return;
-        const box = item.querySelector('input[type="checkbox"]'); if (!box) return;
-        if (e.target !== box) box.checked = !box.checked; // tocco su tutta la riga
         const key = item.dataset.key;
-        if (box.checked) shopChecked.add(key); else shopChecked.delete(key);
-        saveShop(); renderShop();
-        const left = computeShopping().filter((i) => !i.covered && !i.done).length;
-        if (box.checked && left === 0) showToast('Spesa completata! 🎉');
+        // "Ce l'ho" / "Da comprare"
+        if (e.target.closest('[data-have]')) {
+            if (list.have.includes(key)) list.have = list.have.filter((k) => k !== key);
+            else { list.have.push(key); list.checked = list.checked.filter((k) => k !== key); }
+            saveShop(); renderShop(); return;
+        }
+        // Spunta "nel carrello" (tocco sulla casella o su tutta la riga)
+        const box = item.querySelector('input[type="checkbox"]'); if (!box) return;
+        if (e.target !== box) box.checked = !box.checked;
+        if (box.checked) { if (!list.checked.includes(key)) list.checked.push(key); }
+        else list.checked = list.checked.filter((k) => k !== key);
+        saveShop();
+        const { toBuy, left } = listStats(list);
+        if (box.checked && toBuy.length && left === 0) { completeList(list, key); return; }
+        renderShop();
     });
     $('shop-list').addEventListener('change', (e) => {
         const sel = e.target.closest('.aisle-select'); if (!sel) return;
@@ -1928,22 +2045,26 @@
     });
     function addShopExtra() {
         const input = $('shop-extra-name'), name = input.value.trim(); if (!name) return;
-        shopExtras.push({ id: 'x_' + Date.now().toString(36), name });
-        if (!saveShop()) { shopExtras.pop(); return; }
+        const list = activeList();
+        list.extras.push({ id: 'x_' + Date.now().toString(36), name });
+        if (!saveShop()) { list.extras.pop(); return; }
         input.value = ''; renderShop();
     }
     $('btn-shop-extra').onclick = addShopExtra;
     $('shop-extra-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addShopExtra(); } });
     $('btn-shop-clear').onclick = () => {
-        if (!confirm('Svuotare la lista della spesa? (La dispensa non viene toccata)')) return;
-        shopPlan = []; shopExtras = []; shopChecked.clear(); saveShop(); renderShop(); updateShopButton();
+        const list = activeList();
+        if (!confirm(`Svuotare la lista «${list.name}»?`)) return;
+        Object.assign(list, { plan: [], extras: [], have: [], checked: [] });
+        saveShop(); renderShop(); updateShopButton();
         showToast('Lista svuotata');
     };
     $('btn-shop-share').onclick = () => {
-        const items = computeShopping().filter((i) => !i.covered && !i.done);
+        const list = activeList();
+        const items = computeShopping(list).filter((i) => !i.have && !i.done);
         if (!items.length) return showToast('Non c\'è niente da comprare', 'error');
-        const titles = shopPlan.map((p) => getRecipe(p.id)).filter(Boolean).map((r) => r.title);
-        const lines = ['🛒 LISTA DELLA SPESA'];
+        const titles = list.plan.map((p) => getRecipe(p.id)).filter(Boolean).map((r) => r.title);
+        const lines = [`🛒 ${list.name.toUpperCase()}`];
         if (titles.length) lines.push(`Per: ${titles.join(', ')}`);
         AISLES.forEach(([k, icon, label]) => {
             const group = items.filter((i) => i.aisle === k); if (!group.length) return;
@@ -1951,48 +2072,8 @@
             group.forEach((i) => lines.push(`☐ ${i.label === 'q.b.' ? i.name : (i.label ? i.label + ' ' : '') + i.name}`));
         });
         lines.push('', '— Creata con ChefBox');
-        shareText('Lista della spesa', lines.join('\n'), 'Lista copiata: incollala dove vuoi');
+        shareText(list.name, lines.join('\n'), 'Lista copiata: incollala dove vuoi');
     };
-
-    // Dispensa: aggiunta e modifica
-    function addPantryItem() {
-        const name = $('pantry-name').value.trim();
-        let qty = $('pantry-qty').value.trim().replace(',', '.');
-        const unit = $('pantry-unit').value;
-        if (!name) { showToast('Scrivi il nome del prodotto', 'error'); $('pantry-name').focus(); return; }
-        if (/^\d+\s*\/\s*\d+$/.test(qty)) qty = String(+toNum(qty).toFixed(3));
-        if (qty !== '' && !/^\d+(\.\d+)?$/.test(qty)) { showToast('Quantità non valida', 'error'); $('pantry-qty').focus(); return; }
-        const prev = pantry.map((p) => ({ ...p }));
-        const same = pantry.find((p) => nameKey(p.name) === nameKey(name) && famOf(p.unit)[0] === famOf(unit)[0]);
-        if (same && qty !== '' && same.qty !== '') {
-            // Stesso prodotto: sommo le quantità (convertendo kg→g, l→ml)
-            const total = toNum(same.qty) * famOf(same.unit)[1] + toNum(qty) * famOf(unit)[1];
-            same.qty = String(+(total / famOf(same.unit)[1]).toFixed(3));
-        } else if (same) same.qty = '';
-        else pantry.push({ id: 'p_' + Date.now().toString(36), name, qty, unit });
-        if (!savePantry()) { pantry = prev; return; }
-        autoAddProduct(name);
-        $('pantry-name').value = ''; $('pantry-qty').value = ''; $('pantry-name').focus();
-        renderPantry(); showToast(same ? 'Quantità aggiornata' : 'Aggiunto alla dispensa');
-    }
-    $('btn-pantry-add').onclick = addPantryItem;
-    $('pantry-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('pantry-qty').focus(); } });
-    $('pantry-qty').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addPantryItem(); } });
-    $('pantry-list').addEventListener('change', (e) => {
-        const row = e.target.closest('[data-pantry]'); if (!row) return;
-        const p = pantry.find((x) => x.id === row.dataset.pantry); if (!p) return;
-        if (e.target.dataset.field === 'qty') {
-            const v = e.target.value.trim().replace(',', '.');
-            if (v !== '' && !/^\d+(\.\d+)?$/.test(v)) { showToast('Quantità non valida', 'error'); e.target.value = p.qty; return; }
-            p.qty = v;
-        } else if (e.target.dataset.field === 'unit') p.unit = e.target.value;
-        savePantry(); updateShopBadge();
-    });
-    $('pantry-list').addEventListener('click', (e) => {
-        const del = e.target.closest('[data-field="del"]'); if (!del) return;
-        pantry = pantry.filter((x) => x.id !== del.closest('[data-pantry]').dataset.pantry);
-        savePantry(); renderPantry();
-    });
 
     // --- DETTAGLIO RICETTA E PORZIONI ---
     function ingredientsListHTML(ings, ratio) {
@@ -2106,7 +2187,7 @@
 
     // --- EXPORT/IMPORT ---
     $('btn-export').onclick = async () => {
-        const data = { app: 'chefbox', version: 3, exportedAt: new Date().toISOString(), recipes, categories, products: productsDB, pantry, aisles: aisleOverrides };
+        const data = { app: 'chefbox', version: 4, exportedAt: new Date().toISOString(), recipes, categories, products: productsDB, lists: shopLists, aisles: aisleOverrides };
         const fileName = `chefbox_backup_${new Date().toISOString().slice(0, 10)}.json`;
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         // Su telefono usa il menu Condividi (funziona anche nell'app installata su iPhone)
@@ -2153,14 +2234,12 @@
                     saveRecipes(); saveCats(); persist(KEYS.prods, productsDB); renderCategories(); renderProducts();
                     return;
                 }
-                // Dispensa e reparti personalizzati (backup v3): aggiungo solo ciò che manca
-                (Array.isArray(data.pantry) ? data.pantry : []).forEach((p) => {
-                    if (!p || typeof p.name !== 'string' || !cleanStr(p.name) || pantry.some((x) => nameKey(x.name) === nameKey(p.name))) return;
-                    const qty = cleanStr(p.qty).replace(',', '.');
-                    pantry.push({ id: 'p_' + Math.random().toString(36).slice(2, 9), name: cleanStr(p.name), qty: /^\d+(\.\d+)?$/.test(qty) ? qty : '', unit: UNIT_FAM[p.unit] && p.unit !== 'q.b.' && p.unit !== '' ? p.unit : 'g' });
+                // Liste della spesa e reparti personalizzati (backup v4): aggiungo solo ciò che manca
+                (Array.isArray(data.lists) ? data.lists : []).map(normalizeShopList).filter(Boolean).forEach((l) => {
+                    if (!shopLists.some((x) => x.id === l.id)) shopLists.push(l);
                 });
                 if (data.aisles && typeof data.aisles === 'object') Object.entries(data.aisles).forEach(([k, v]) => { if (isAisle(v) && k !== '__proto__' && !Object.prototype.hasOwnProperty.call(aisleOverrides, k)) aisleOverrides[k] = v; });
-                savePantry(); persist(KEYS.aisles, aisleOverrides); updateShopBadge();
+                saveShop(); persist(KEYS.aisles, aisleOverrides); pruneShopPlan();
                 renderProducts();
                 currentFilter = ALL; renderCategories(); renderFeed(); closeTopModal();
                 showToast(added ? `${added} ricett${added === 1 ? 'a importata' : 'e importate'}!` : 'Nessuna nuova ricetta da importare');
@@ -2172,16 +2251,25 @@
         reader.readAsText(file);
     };
 
-    let toastTimer = null;
-    function showToast(msg, type = 'success') {
-        const t = $('toast');
+    let toastTimer = null, toastAction = null;
+    // action (facoltativa): { label, run } mostra un pulsante nel messaggio, es. "Annulla"
+    function showToast(msg, type = 'success', action = null) {
+        const t = $('toast'), btn = $('toast-action');
         t.classList.toggle('error', type === 'error');
         $('toast-icon').className = type === 'error' ? 'ri-error-warning-line' : 'ri-check-line';
         $('toast-msg').textContent = msg;
+        toastAction = action;
+        btn.hidden = !action;
+        if (action) btn.textContent = action.label;
         t.classList.add('show');
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+        toastTimer = setTimeout(() => { t.classList.remove('show'); toastAction = null; }, action ? 6000 : 2800);
     }
+    $('toast-action').onclick = () => {
+        const a = toastAction; toastAction = null;
+        clearTimeout(toastTimer); $('toast').classList.remove('show');
+        if (a) a.run();
+    };
 
     // Avvio
     applyModals([]);
