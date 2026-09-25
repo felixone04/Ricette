@@ -170,7 +170,58 @@
         .cat-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-weight: 600; font-size: 0.95rem; }
         .cat-item > span { overflow-wrap: anywhere; }
         .btn-del-cat { background: var(--danger-light); color: var(--danger); border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex-shrink: 0; }
-        .scroll-list { max-height: 220px; overflow-y: auto; }
+        /* Scorrimento senza barre laterali visibili, in tutta l'app */
+        .recipe-feed, .sheet-content, .detail-content, .page-content, .cook-stage, .cook-ing-card { scrollbar-width: none; -ms-overflow-style: none; }
+        .recipe-feed::-webkit-scrollbar, .sheet-content::-webkit-scrollbar, .detail-content::-webkit-scrollbar,
+        .page-content::-webkit-scrollbar, .cook-stage::-webkit-scrollbar, .cook-ing-card::-webkit-scrollbar { display: none; }
+
+        /* --- Impostazioni: schede che aprono le pagine --- */
+        .settings-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .settings-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 18px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow-sm); cursor: pointer; text-align: left; position: relative; transition: transform 0.15s, box-shadow 0.2s, border-color 0.2s; }
+        .settings-tile:active { transform: scale(0.97); }
+        .tile-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--primary-light); color: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .tile-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .tile-text strong { font-size: 1rem; font-weight: 800; color: var(--text-main); }
+        .tile-text small { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+        .tile-arrow { position: absolute; top: 18px; right: 14px; font-size: 1.4rem; color: var(--text-muted); }
+
+        /* --- Pagine a tutto schermo (Categorie, Prodotti) --- */
+        .page-view { position: fixed; inset: 0; z-index: 62; background: var(--bg-color); display: flex; flex-direction: column; transform: translateX(100%); visibility: hidden; transition: transform 0.3s ease, visibility 0s linear 0.3s; }
+        .page-view.active { transform: none; visibility: visible; transition-delay: 0s; }
+        .page-header, .page-add { padding-left: max(16px, var(--safe-left), calc((100% - 760px) / 2)); padding-right: max(16px, var(--safe-right), calc((100% - 760px) / 2)); background: var(--surface); }
+        .page-header { display: flex; align-items: center; gap: 10px; padding-top: calc(12px + var(--safe-top)); padding-bottom: 8px; }
+        .page-back { font-size: 1.8rem; color: var(--text-main); background: var(--bg-color); }
+        .page-heading { display: flex; flex-direction: column; min-width: 0; }
+        .page-heading h2 { font-size: 1.4rem; font-weight: 800; line-height: 1.2; }
+        .page-heading span { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+        .page-add { display: flex; gap: 8px; padding-top: 8px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+        .page-add-field { flex: 1; min-width: 0; position: relative; }
+        .page-add-field i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.15rem; pointer-events: none; }
+        .page-add-field input { width: 100%; padding: 13px 14px 13px 42px; border-radius: 14px; border: 1px solid var(--border); background: var(--bg-color); font-size: 1rem; color: var(--text-main); font-weight: 500; }
+        .page-add-field input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); background: var(--surface); }
+        .page-add-btn { width: auto; margin: 0; padding: 0 18px; border-radius: 14px; font-size: 1rem; flex-shrink: 0; }
+        .page-add-btn:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
+        .page-content { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 16px max(16px, var(--safe-right)) calc(32px + var(--safe-bottom) + var(--dock-h)) max(16px, var(--safe-left)); }
+        .page-inner { max-width: 728px; margin: 0 auto; }
+        .page-hint { font-size: 0.9rem; color: var(--text-muted); margin: 0 4px 12px; }
+        .page-hint[hidden] { display: none; }
+        .page-list { list-style: none; }
+        .page-letter { font-size: 0.8rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin: 18px 6px 8px; }
+        .page-letter:first-child { margin-top: 0; }
+        .page-row { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 8px; }
+        .page-row.flash { animation: row-flash 1.2s ease; }
+        @keyframes row-flash { 0%, 40% { background: #FFEDD5; border-color: var(--primary); } }
+        .row-avatar { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
+        .row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .row-title { font-weight: 700; font-size: 1rem; overflow-wrap: anywhere; }
+        .row-sub { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+        .row-edit { width: 100%; margin: 0; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--primary); font-size: 1rem; font-weight: 700; color: var(--text-main); background: var(--surface); }
+        .row-edit:focus { outline: none; }
+        .row-btn { width: 40px; height: 40px; border: none; border-radius: 12px; background: var(--bg-color); color: var(--text-muted); font-size: 1.15rem; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: inherit; }
+        .row-btn.danger { background: var(--danger-light); color: var(--danger); }
+        .row-btn.confirming { width: auto; padding: 0 12px; background: var(--danger); color: #fff; font-weight: 800; font-size: 0.85rem; white-space: nowrap; }
+        .page-empty { text-align: center; color: var(--text-muted); padding: 40px 16px; line-height: 1.5; }
+        .page-empty i { display: block; font-size: 3rem; color: #FDBA74; margin-bottom: 8px; }
 
         .detail-cat { overflow-wrap: anywhere; color: var(--primary); font-weight: 800; font-size: 0.95rem; margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; }
         .detail-title { font-size: clamp(1.6rem, 4.5vw + 0.5rem, 2.4rem); font-weight: 800; margin-bottom: 24px; line-height: 1.2; overflow-wrap: anywhere; }
@@ -328,6 +379,10 @@
 
         /* --- Telefoni molto stretti (≤360px) --- */
         @media (max-width: 360px) {
+            .settings-tiles { gap: 8px; }
+            .settings-tile { padding: 14px 12px; }
+            .page-add-btn span { display: none; }
+            .page-add-btn { padding: 0 14px; }
             header h1 { font-size: 1.3rem; }
             .detail-actions { gap: 4px; }
             .detail-actions .btn-icon { width: 36px; height: 36px; font-size: 1.1rem; }
@@ -385,6 +440,9 @@
 
         /* --- Mouse: effetti hover --- */
         @media (hover: hover) and (pointer: fine) {
+            .settings-tile:hover { border-color: #FDBA74; box-shadow: 0 10px 24px rgba(249, 115, 22, 0.12); transform: translateY(-2px); }
+            .row-btn:hover { background: var(--primary-light); color: var(--primary-dark); }
+            .row-btn.danger:hover { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
             .btn-icon:hover { background: var(--primary-light); }
             .pill:hover:not(.active) { border-color: var(--border); color: var(--text-main); }
             .recipe-widget:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(249, 115, 22, 0.15); border-color: #FDBA74; }
@@ -512,22 +570,17 @@
                 <p class="form-hint">Tocca <i class="ri-share-box-line"></i> <strong>Condividi</strong> in Safari e poi <strong>Aggiungi alla schermata Home</strong>.</p>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="new-cat-name">Crea Nuova Categoria</label>
-                <div style="display:flex; gap:8px; margin-bottom:10px;">
-                    <input type="text" class="form-control" id="new-cat-name" placeholder="Es. Vegano..." maxlength="40" style="margin-bottom:0;" enterkeyhint="done">
-                    <button type="button" class="btn-submit btn-small" id="btn-add-cat" aria-label="Aggiungi categoria">+</button>
-                </div>
-                <div class="scroll-list"><ul class="cat-list" id="cat-list-ui"></ul></div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="new-prod-name">Database Prodotti</label>
-                <div style="display:flex; gap:8px; margin-bottom:10px;">
-                    <input type="text" class="form-control" id="new-prod-name" placeholder="Nuovo prodotto..." maxlength="60" style="margin-bottom:0;" enterkeyhint="done">
-                    <button type="button" class="btn-submit btn-small" id="btn-add-prod" aria-label="Aggiungi prodotto">+</button>
-                </div>
-                <div class="scroll-list"><ul class="cat-list" id="prod-list-ui"></ul></div>
+            <div class="settings-tiles">
+                <button type="button" class="settings-tile" id="tile-cats">
+                    <span class="tile-icon"><i class="ri-price-tag-3-line"></i></span>
+                    <span class="tile-text"><strong>Categorie</strong><small id="tile-cats-count">—</small></span>
+                    <i class="ri-arrow-right-s-line tile-arrow" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="settings-tile" id="tile-prods">
+                    <span class="tile-icon"><i class="ri-shopping-basket-2-line"></i></span>
+                    <span class="tile-text"><strong>Database prodotti</strong><small id="tile-prods-count">—</small></span>
+                    <i class="ri-arrow-right-s-line tile-arrow" aria-hidden="true"></i>
+                </button>
             </div>
 
             <div class="form-group" id="wake-setting" style="display:none;">
@@ -545,6 +598,44 @@
                 <input type="file" id="file-import" accept=".json,application/json" style="display:none;">
             </div>
         </div>
+    </div>
+
+    <!-- PAGINA A TUTTO SCHERMO: CATEGORIE -->
+    <div class="page-view" id="cats-page" role="dialog" aria-modal="true" aria-labelledby="cats-title">
+        <div class="page-header">
+            <button type="button" class="btn-icon page-back" data-page-close aria-label="Torna alle impostazioni"><i class="ri-arrow-left-s-line"></i></button>
+            <div class="page-heading"><h2 id="cats-title">Categorie</h2><span id="cats-count"></span></div>
+        </div>
+        <div class="page-add">
+            <div class="page-add-field">
+                <i class="ri-search-line" aria-hidden="true"></i>
+                <input type="text" id="new-cat-name" placeholder="Cerca o crea una categoria…" maxlength="40" enterkeyhint="done" autocomplete="off" aria-label="Cerca o crea una categoria">
+            </div>
+            <button type="button" class="btn-submit page-add-btn" id="btn-add-cat" disabled><i class="ri-add-line"></i><span>Crea</span></button>
+        </div>
+        <div class="page-content"><div class="page-inner">
+            <p class="page-hint" id="cats-hint" hidden></p>
+            <ul class="page-list" id="cat-list-ui"></ul>
+        </div></div>
+    </div>
+
+    <!-- PAGINA A TUTTO SCHERMO: DATABASE PRODOTTI -->
+    <div class="page-view" id="prods-page" role="dialog" aria-modal="true" aria-labelledby="prods-title">
+        <div class="page-header">
+            <button type="button" class="btn-icon page-back" data-page-close aria-label="Torna alle impostazioni"><i class="ri-arrow-left-s-line"></i></button>
+            <div class="page-heading"><h2 id="prods-title">Database prodotti</h2><span id="prods-count"></span></div>
+        </div>
+        <div class="page-add">
+            <div class="page-add-field">
+                <i class="ri-search-line" aria-hidden="true"></i>
+                <input type="text" id="new-prod-name" placeholder="Cerca o aggiungi un prodotto…" maxlength="60" enterkeyhint="done" autocomplete="off" aria-label="Cerca o aggiungi un prodotto">
+            </div>
+            <button type="button" class="btn-submit page-add-btn" id="btn-add-prod" disabled><i class="ri-add-line"></i><span>Aggiungi</span></button>
+        </div>
+        <div class="page-content"><div class="page-inner">
+            <p class="page-hint" id="prods-hint" hidden></p>
+            <ul class="page-list" id="prod-list-ui"></ul>
+        </div></div>
     </div>
 
     <!-- SHEET: SPESA E DISPENSA -->
@@ -769,7 +860,7 @@
         modalStack = stack.filter((id) => $(id)
             && (id !== 'detail-view' || getRecipe(currentRecipeId))   // non riaprire ricette eliminate
             && (id !== 'add-sheet' || form === activeFormToken));      // non riaprire un form già salvato (tasto "avanti")
-        document.querySelectorAll('.sheet, .detail-view, .cook-view').forEach((el) => {
+        document.querySelectorAll('.sheet, .detail-view, .cook-view, .page-view').forEach((el) => {
             const open = modalStack.includes(el.id);
             el.classList.toggle('active', open);
             el.setAttribute('aria-hidden', String(!open));
@@ -830,46 +921,109 @@
     if (location.hash || history.state) history.replaceState(null, '', location.pathname + location.search);
 
     $('btn-close-sheet').onclick = $('btn-close-settings').onclick = $('btn-back').onclick = $('overlay').onclick = closeTopModal;
-    $('btn-open-settings').onclick = () => { $('settings-sheet').querySelector('.sheet-content').scrollTop = 0; openModal('settings-sheet'); };
+    $('btn-open-settings').onclick = () => { $('settings-sheet').querySelector('.sheet-content').scrollTop = 0; updateSettingsTiles(); openModal('settings-sheet'); };
 
     $('toggle-times').addEventListener('change', function () {
         $('time-grid-container').classList.toggle('active', this.checked);
         if (!this.checked) { $('timeTotal').value = ''; $('timeLeav').value = ''; $('timeCook').value = ''; }
     });
 
-    // --- DB PRODOTTI ---
-    function makeListItem(text, onDelete, label) {
-        const li = document.createElement('li'); li.className = 'cat-item';
-        const span = document.createElement('span'); span.textContent = text; li.appendChild(span);
-        const delBtn = document.createElement('button'); delBtn.className = 'btn-del-cat'; delBtn.type = 'button';
-        delBtn.setAttribute('aria-label', label + ' ' + text); delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
-        delBtn.onclick = () => onDelete(delBtn); li.appendChild(delBtn);
-        return li;
+    // --- PAGINE "CATEGORIE" E "DATABASE PRODOTTI" (a tutto schermo, aperte dalle Impostazioni) ---
+    const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+    const firstChar = (s) => [...String(s)][0] || '#';
+    function updateSettingsTiles() {
+        $('tile-cats-count').textContent = plural(categories.length, 'categoria', 'categorie');
+        $('tile-prods-count').textContent = plural(productsDB.length, 'prodotto', 'prodotti');
     }
+    // Il campo in alto filtra la lista mentre scrivi e abilita il pulsante solo per nomi nuovi
+    function pageInputState(input, list, reserved = []) {
+        const val = input.value.trim();
+        const exists = !!val && (includesText(list, val) || reserved.some((r) => sameText(r, val)));
+        return { val, q: norm(val), exists, canAdd: !!val && !exists };
+    }
+    function setPageHint(hintId, st, existsMsg, addMsg) {
+        const hint = $(hintId);
+        hint.hidden = !st.val;
+        hint.textContent = st.exists ? existsMsg : addMsg;
+    }
+    function flashRow(listEl, name) {
+        const row = [...listEl.querySelectorAll('.page-row')].find((r) => r.dataset.name === name);
+        if (!row) return;
+        row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        row.classList.add('flash');
+    }
+    function openPage(id, inputId, render) {
+        $(inputId).value = '';
+        render();
+        $(id).querySelector('.page-content').scrollTop = 0;
+        openModal(id);
+        if (window.matchMedia('(pointer: fine)').matches) setTimeout(() => $(inputId).focus(), 320);
+    }
+    document.querySelectorAll('[data-page-close]').forEach((b) => { b.onclick = closeTopModal; });
+    $('tile-cats').onclick = () => openPage('cats-page', 'new-cat-name', renderCatPage);
+    $('tile-prods').onclick = () => openPage('prods-page', 'new-prod-name', renderProdPage);
+
+    // --- DB PRODOTTI ---
     function renderProducts() {
-        const datalist = $('db-ingredients'), prodUI = $('prod-list-ui');
-        datalist.innerHTML = ''; prodUI.innerHTML = '';
         productsDB.sort((a, b) => a.localeCompare(b, 'it'));
-        productsDB.forEach((p) => {
-            datalist.appendChild(new Option(p, p));
-            prodUI.appendChild(makeListItem(p, () => {
-                const before = productsDB; productsDB = productsDB.filter((x) => x !== p);
-                if (!saveProducts()) { productsDB = before; renderProducts(); }
-            }, 'Elimina'));
+        const datalist = $('db-ingredients'); datalist.innerHTML = '';
+        productsDB.forEach((p) => datalist.appendChild(new Option(p, p)));
+        renderProdPage(); updateSettingsTiles();
+    }
+    function renderProdPage() {
+        const input = $('new-prod-name'), ul = $('prod-list-ui');
+        const st = pageInputState(input, productsDB);
+        $('btn-add-prod').disabled = !st.canAdd;
+        $('prods-count').textContent = plural(productsDB.length, 'prodotto', 'prodotti');
+        setPageHint('prods-hint', st, `«${st.val}» è già nel database.`, `Tocca «Aggiungi» per inserire «${st.val}».`);
+        const shown = productsDB.filter((p) => !st.q || norm(p).includes(st.q));
+        if (!shown.length) {
+            ul.innerHTML = st.val ? '' : `<li class="page-empty"><i class="ri-shopping-basket-2-line"></i>Nessun prodotto.<br>Quelli che aggiungi compaiono come suggerimenti quando scrivi gli ingredienti.</li>`;
+            return;
+        }
+        // In quante ricette compare ogni prodotto
+        const usage = new Map();
+        recipes.forEach((r) => new Set(r.ingredients.map((i) => nameKey(i.name))).forEach((k) => usage.set(k, (usage.get(k) || 0) + 1)));
+        let html = '', letter = '';
+        shown.forEach((p) => {
+            const c = norm(firstChar(p)).toUpperCase();
+            const l = /[A-Z]/.test(c) ? c : '#';
+            if (l !== letter) { letter = l; html += `<li class="page-letter" aria-hidden="true">${l}</li>`; }
+            const n = usage.get(nameKey(p)) || 0;
+            const aisle = AISLES.find(([k]) => k === aisleOf(p));
+            html += `<li class="page-row" data-name="${esc(p)}">
+                <span class="row-avatar" title="${esc(aisle[2])}" aria-hidden="true">${aisle[1]}</span>
+                <div class="row-main"><span class="row-title">${esc(p)}</span><span class="row-sub">${n ? 'in ' + plural(n, 'ricetta', 'ricette') : 'non ancora usato'} · ${esc(aisle[2])}</span></div>
+                <button type="button" class="row-btn danger" data-act="delete" aria-label="Elimina ${esc(p)}"><i class="ri-delete-bin-line"></i></button>
+            </li>`;
         });
+        ul.innerHTML = html;
     }
     function saveProducts() { const ok = persist(KEYS.prods, productsDB); renderProducts(); return ok; }
     function autoAddProduct(name) { if (name && !includesText(productsDB, name)) { productsDB.push(name); if (!saveProducts()) { productsDB.pop(); renderProducts(); } } }
     function addProductFromInput() {
-        const input = $('new-prod-name'), val = input.value.trim();
-        if (!val) return;
-        if (includesText(productsDB, val)) return showToast('Prodotto già presente', 'error');
-        productsDB.push(val);
-        if (!saveProducts()) { productsDB = productsDB.filter((x) => x !== val); renderProducts(); return; }
-        input.value = ''; showToast('Prodotto aggiunto');
+        const input = $('new-prod-name'), st = pageInputState(input, productsDB);
+        if (!st.val) return;
+        if (st.exists) return showToast('Prodotto già presente', 'error');
+        productsDB.push(st.val);
+        if (!saveProducts()) { productsDB = productsDB.filter((x) => x !== st.val); renderProducts(); return; }
+        input.value = ''; renderProdPage(); flashRow($('prod-list-ui'), st.val);
+        showToast('Prodotto aggiunto');
     }
     $('btn-add-prod').onclick = addProductFromInput;
-    $('new-prod-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addProductFromInput(); } });
+    $('new-prod-name').addEventListener('input', renderProdPage);
+    $('new-prod-name').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addProductFromInput(); }
+        if (e.key === 'Escape' && e.target.value) { e.preventDefault(); e.stopPropagation(); e.target.value = ''; renderProdPage(); }
+    });
+    $('prod-list-ui').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-act="delete"]'); if (!btn) return;
+        const name = btn.closest('.page-row').dataset.name;
+        const before = productsDB;
+        productsDB = productsDB.filter((x) => x !== name);
+        if (!saveProducts()) { productsDB = before; renderProducts(); return; }
+        showToast('Prodotto eliminato');
+    });
 
     // --- CATEGORIE ---
     function setFilter(filter) { currentFilter = filter; renderPills(); renderFeed(); }
@@ -890,15 +1044,36 @@
         renderPills();
         catSelect.innerHTML = '<option value="" disabled selected>Scegli Categoria...</option>';
         categories.forEach((cat) => catSelect.add(new Option(cat, cat)));
-        const ui = $('cat-list-ui'); ui.innerHTML = '';
-        categories.forEach((cat) => ui.appendChild(makeListItem(cat, (delBtn) => deleteCategory(cat, delBtn), 'Elimina categoria')));
+        renderCatPage(); updateSettingsTiles();
+    }
+    const RESERVED_CATS = ['Tutte', 'Preferiti'];
+    function renderCatPage() {
+        const input = $('new-cat-name'), ul = $('cat-list-ui');
+        const st = pageInputState(input, categories, RESERVED_CATS);
+        $('btn-add-cat').disabled = !st.canAdd;
+        $('cats-count').textContent = plural(categories.length, 'categoria', 'categorie');
+        setPageHint('cats-hint', st, `La categoria «${st.val}» esiste già.`, `Tocca «Crea» per aggiungere «${st.val}».`);
+        const shown = categories.filter((c) => !st.q || norm(c).includes(st.q));
+        if (!shown.length) {
+            ul.innerHTML = st.val ? '' : `<li class="page-empty"><i class="ri-price-tag-3-line"></i>Nessuna categoria.<br>Creane una per iniziare a salvare ricette.</li>`;
+            return;
+        }
+        ul.innerHTML = shown.map((c) => {
+            const n = recipes.filter((r) => r.category === c).length;
+            return `<li class="page-row" data-name="${esc(c)}">
+                <span class="row-avatar" aria-hidden="true">${esc(firstChar(c))}</span>
+                <div class="row-main"><span class="row-title">${esc(c)}</span><span class="row-sub">${n ? plural(n, 'ricetta', 'ricette') : 'nessuna ricetta'}</span></div>
+                <button type="button" class="row-btn" data-act="rename" aria-label="Rinomina ${esc(c)}"><i class="ri-pencil-line"></i></button>
+                <button type="button" class="row-btn danger" data-act="delete" aria-label="Elimina ${esc(c)}"><i class="ri-delete-bin-line"></i></button>
+            </li>`;
+        }).join('');
     }
     function deleteCategory(cat, delBtn) {
         const count = recipes.filter((r) => r.category === cat).length;
         // Se la categoria contiene ricette serve un secondo tocco di conferma
         if (count > 0 && !delBtn.classList.contains('confirming')) {
             delBtn.classList.add('confirming');
-            delBtn.textContent = `Elimina ${count} ricett${count === 1 ? 'a' : 'e'}?`;
+            delBtn.textContent = `Elimina ${plural(count, 'ricetta', 'ricette')}?`;
             setTimeout(() => { if (delBtn.isConnected) { delBtn.classList.remove('confirming'); delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>'; } }, 3000);
             return;
         }
@@ -912,16 +1087,58 @@
         if (count > 0) pruneShopPlan();
         renderCategories(); renderFeed(); showToast('Categoria rimossa');
     }
+    function renameCategory(old, val) {
+        if (!val || val === old) { renderCatPage(); return; }
+        if (categories.some((c) => c !== old && sameText(c, val)) || RESERVED_CATS.some((r) => sameText(r, val))) {
+            showToast('Esiste già una categoria con questo nome', 'error'); renderCatPage(); return;
+        }
+        const prevCats = [...categories], prevRecipeCats = recipes.map((r) => r.category);
+        categories = categories.map((c) => (c === old ? val : c));
+        recipes.forEach((r) => { if (r.category === old) r.category = val; }); // anche le ricette passano al nuovo nome
+        if (!saveCats() || !saveRecipes()) {
+            categories = prevCats; recipes.forEach((r, i) => { r.category = prevRecipeCats[i]; });
+            saveCats(); saveRecipes(); renderCategories(); return;
+        }
+        if (currentFilter === old) currentFilter = val;
+        renderCategories(); renderFeed(); flashRow($('cat-list-ui'), val);
+        showToast('Categoria rinominata');
+    }
+    function startRename(row) {
+        const old = row.dataset.name, main = row.querySelector('.row-main');
+        main.innerHTML = `<input type="text" class="row-edit" maxlength="40" enterkeyhint="done" aria-label="Nuovo nome per ${esc(old)}">`;
+        const inp = main.firstElementChild;
+        inp.value = old; inp.focus(); inp.select();
+        const btn = row.querySelector('[data-act="rename"]');
+        btn.dataset.act = 'save'; btn.setAttribute('aria-label', 'Salva il nuovo nome'); btn.innerHTML = '<i class="ri-check-line"></i>';
+        let done = false;
+        const finish = (save) => { if (done) return; done = true; if (save) renameCategory(old, inp.value.trim()); else renderCatPage(); };
+        inp.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
+        });
+        inp.addEventListener('blur', () => finish(true)); // toccando "✓" o fuori dal campo si salva
+    }
     function addCategoryFromInput() {
-        const input = $('new-cat-name'), val = input.value.trim();
-        if (!val) return;
-        if (includesText(categories, val) || sameText(val, 'Tutte') || sameText(val, 'Preferiti')) return showToast('Categoria già presente', 'error');
-        categories.push(val);
+        const input = $('new-cat-name'), st = pageInputState(input, categories, RESERVED_CATS);
+        if (!st.val) return;
+        if (st.exists) return showToast('Categoria già presente', 'error');
+        categories.push(st.val);
         if (!saveCats()) { categories.pop(); return; }
-        input.value = ''; renderCategories(); showToast('Categoria aggiunta!');
+        input.value = ''; renderCategories(); flashRow($('cat-list-ui'), st.val);
+        showToast('Categoria aggiunta!');
     }
     $('btn-add-cat').onclick = addCategoryFromInput;
-    $('new-cat-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCategoryFromInput(); } });
+    $('new-cat-name').addEventListener('input', renderCatPage);
+    $('new-cat-name').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addCategoryFromInput(); }
+        if (e.key === 'Escape' && e.target.value) { e.preventDefault(); e.stopPropagation(); e.target.value = ''; renderCatPage(); }
+    });
+    $('cat-list-ui').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-act]'); if (!btn) return;
+        const row = btn.closest('.page-row');
+        if (btn.dataset.act === 'delete') deleteCategory(row.dataset.name, btn);
+        else if (btn.dataset.act === 'rename') startRename(row);
+    });
 
     // --- COSTRUTTORE INGREDIENTI ---
     function formatIngredient(ing, ratio = 1) {
