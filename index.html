@@ -347,6 +347,21 @@
         .pick-option i { font-size: 1.3rem; color: var(--primary); }
         .pick-option small { margin-left: auto; color: var(--text-muted); font-weight: 600; }
         .toast-action[hidden] { display: none; }
+        /* --- Sostituzioni --- */
+        .tile-wide { grid-column: 1 / -1; flex-direction: row; align-items: center; }
+        .tile-wide .tile-arrow { position: static; margin-left: auto; }
+        .sub-btn { margin-left: auto; flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-color); color: var(--primary-dark); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; align-self: center; }
+        .sub-card { display: flex; gap: 12px; align-items: flex-start; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; }
+        .sub-amount { flex-shrink: 0; min-width: 76px; max-width: 40%; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; border-radius: 10px; padding: 6px 8px; text-align: center; font-size: 0.9rem; overflow-wrap: anywhere; }
+        .sub-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .sub-text strong { font-size: 1rem; }
+        .sub-text span { font-size: 0.85rem; color: var(--text-muted); line-height: 1.35; }
+        .sub-row { flex-direction: column; align-items: stretch; padding: 0; }
+        .sub-toggle { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; background: none; border: none; cursor: pointer; text-align: left; font-family: inherit; color: inherit; }
+        .sub-chevron { font-size: 1.4rem; color: var(--text-muted); transition: transform 0.2s; }
+        .sub-row.open .sub-chevron { transform: rotate(180deg); }
+        .sub-details { padding: 0 10px 4px; }
+        .sub-details .sub-card { background: var(--bg-color); }
         .toast-action { margin-left: 8px; background: rgba(255,255,255,0.18); border: none; color: #fff; font-weight: 800; padding: 6px 12px; border-radius: 999px; cursor: pointer; font-family: inherit; }
 
         /* --- Modalità cucina (schermo intero, un passaggio alla volta) --- */
@@ -383,7 +398,7 @@
         .cook-tts.speaking i { animation: tts-pulse 1s ease-in-out infinite; }
         @keyframes tts-pulse { 50% { transform: scale(1.2); } }
         .cook-ing-panel { position: absolute; inset: 0; background: rgba(28, 25, 23, 0.55); display: flex; align-items: flex-end; justify-content: center; z-index: 2; }
-        .cook-ing-panel[hidden] { display: none; }
+        .cook-ing-panel:not(.active) { display: none; }
         .cook-ing-card { background: var(--surface); width: min(640px, 100%); max-height: 82%; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 20px 20px calc(20px + var(--safe-bottom)); font-size: 1.25rem; }
         .cook-ing-card .ing-display-list { border: none; padding: 0; font-size: 1.25rem; }
         @media (orientation: landscape) and (max-height: 600px) {
@@ -394,9 +409,9 @@
             .cook-close { width: 46px; }
             .cook-nav { display: contents; }
             .cook-btn { min-height: 0; flex-direction: column; gap: 4px; }
-            .cook-prev { grid-column: 1; grid-row: 3; margin: 12px 0 calc(12px + var(--safe-bottom)) 12px; }
+            .cook-prev { grid-column: 1; grid-row: 3; margin: 12px 0 calc(12px + var(--safe-bottom) + var(--dock-h)) 12px; }
             .cook-stage { grid-column: 2; grid-row: 3; padding: 12px 20px calc(12px + var(--dock-h)); }
-            .cook-next { grid-column: 3; grid-row: 3; margin: 12px 12px calc(12px + var(--safe-bottom)) 0; }
+            .cook-next { grid-column: 3; grid-row: 3; margin: 12px 12px calc(12px + var(--safe-bottom) + var(--dock-h)) 0; }
         }
 
         /* --- Telefoni molto stretti (≤360px) --- */
@@ -601,6 +616,11 @@
                     <span class="tile-text"><strong>Database prodotti</strong><small id="tile-prods-count">—</small></span>
                     <i class="ri-arrow-right-s-line tile-arrow" aria-hidden="true"></i>
                 </button>
+                <button type="button" class="settings-tile tile-wide" id="tile-subs">
+                    <span class="tile-icon"><i class="ri-arrow-left-right-line"></i></span>
+                    <span class="tile-text"><strong>Sostituzioni</strong><small>Cosa usare quando manca un ingrediente</small></span>
+                    <i class="ri-arrow-right-s-line tile-arrow" aria-hidden="true"></i>
+                </button>
             </div>
 
             <div class="form-group" id="wake-setting" style="display:none;">
@@ -658,6 +678,30 @@
         </div></div>
     </div>
 
+    <!-- PAGINA A TUTTO SCHERMO: SOSTITUZIONI -->
+    <div class="page-view" id="subs-page" role="dialog" aria-modal="true" aria-labelledby="subs-page-title">
+        <div class="page-header">
+            <button type="button" class="btn-icon page-back" data-page-close aria-label="Torna alle impostazioni"><i class="ri-arrow-left-s-line"></i></button>
+            <div class="page-heading"><h2 id="subs-page-title">Sostituzioni</h2><span id="subs-count"></span></div>
+        </div>
+        <div class="page-add">
+            <div class="page-add-field">
+                <i class="ri-search-line" aria-hidden="true"></i>
+                <input type="text" id="subs-search" placeholder="Cosa ti manca? (es. burro, uova, panna…)" autocomplete="off" enterkeyhint="search" aria-label="Cerca un ingrediente da sostituire">
+            </div>
+        </div>
+        <div class="page-content"><div class="page-inner"><ul class="page-list" id="subs-list"></ul></div></div>
+    </div>
+
+    <!-- SCELTA RAPIDA: alternative a un ingrediente -->
+    <div class="sheet sheet-small" id="subs-sheet" role="dialog" aria-modal="true" aria-labelledby="subs-title">
+        <div class="sheet-header">
+            <h3 id="subs-title">Sostituzioni</h3>
+            <button type="button" class="btn-icon" style="color:var(--text-muted);" data-page-close aria-label="Chiudi"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="sheet-content" id="subs-options" style="padding-bottom: calc(24px + var(--safe-bottom));"></div>
+    </div>
+
     <!-- SHEET: LISTE DELLA SPESA -->
     <div class="sheet" id="shop-sheet" role="dialog" aria-modal="true" aria-labelledby="shop-title">
         <div class="sheet-header">
@@ -704,7 +748,7 @@
             <button type="button" class="cook-btn cook-prev" id="btn-cook-prev"><i class="ri-arrow-left-line"></i><span>Indietro</span></button>
             <button type="button" class="cook-btn cook-next" id="btn-cook-next"><span id="cook-next-label">Avanti</span><i class="ri-arrow-right-line" id="cook-next-icon"></i></button>
         </div>
-        <div class="cook-ing-panel" id="cook-ing-panel" hidden>
+        <div class="cook-ing-panel" id="cook-ing-panel" role="dialog" aria-modal="true" aria-label="Ingredienti">
             <div class="cook-ing-card">
                 <div class="form-section-title"><i class="ri-shopping-basket-line"></i> Ingredienti <span id="cook-ing-servings" style="margin-left:auto; font-size:0.9rem; color:var(--text-muted);"></span></div>
                 <div id="cook-ing-list"></div>
@@ -870,8 +914,10 @@
     function applyModals(stack, form = activeFormToken) {
         modalStack = stack.filter((id) => $(id)
             && (id !== 'detail-view' || getRecipe(currentRecipeId))   // non riaprire ricette eliminate
-            && (id !== 'add-sheet' || form === activeFormToken));      // non riaprire un form già salvato (tasto "avanti")
-        document.querySelectorAll('.sheet, .detail-view, .cook-view, .page-view').forEach((el) => {
+            && (id !== 'add-sheet' || form === activeFormToken)       // non riaprire un form già salvato (tasto "avanti")
+            && (id !== 'cook-view' || (!!cook.recipeId && cook.recipeId === currentRecipeId)) // né una cottura già finita
+            && (id !== 'cook-ing-panel' || stack.includes('cook-view')));
+        document.querySelectorAll('.sheet, .detail-view, .cook-view, .page-view, .cook-ing-panel').forEach((el) => {
             const open = modalStack.includes(el.id);
             el.classList.toggle('active', open);
             el.setAttribute('aria-hidden', String(!open));
@@ -916,12 +962,8 @@
     });
     document.addEventListener('keydown', (e) => {
         const top = modalStack[modalStack.length - 1];
+        // Con il pannello ingredienti aperto (in cima) le frecce non cambiano passaggio "di nascosto"
         if (top === 'cook-view') {
-            if (!$('cook-ing-panel').hidden) {
-                // Con gli ingredienti aperti le frecce non cambiano passaggio "di nascosto"
-                if (e.key === 'Escape') { e.preventDefault(); $('cook-ing-panel').hidden = true; }
-                return;
-            }
             if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); cookMove(1); return; }
             if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); cookMove(-1); return; }
         }
@@ -948,10 +990,12 @@
         $('tile-prods-count').textContent = plural(productsDB.length, 'prodotto', 'prodotti');
     }
     // Il campo in alto filtra la lista mentre scrivi e abilita il pulsante solo per nomi nuovi
-    function pageInputState(input, list, reserved = []) {
+    // byStem: considera doppioni anche singolare/plurale ("Pomodoro" = "pomodori")
+    function pageInputState(input, list, reserved = [], byStem = false) {
         const val = input.value.trim();
-        const exists = !!val && (includesText(list, val) || reserved.some((r) => sameText(r, val)));
-        return { val, q: norm(val), exists, canAdd: !!val && !exists };
+        const reservedHit = !!val && reserved.some((r) => sameText(r, val));
+        const exists = !!val && (reservedHit || includesText(list, val) || (byStem && list.some((x) => nameKey(x) === nameKey(val))));
+        return { val, q: norm(val), exists, reservedHit, canAdd: !!val && !exists };
     }
     function setPageHint(hintId, st, existsMsg, addMsg) {
         const hint = $(hintId);
@@ -984,10 +1028,10 @@
     }
     function renderProdPage() {
         const input = $('new-prod-name'), ul = $('prod-list-ui');
-        const st = pageInputState(input, productsDB);
+        const st = pageInputState(input, productsDB, [], true);
         $('btn-add-prod').disabled = !st.canAdd;
         $('prods-count').textContent = plural(productsDB.length, 'prodotto', 'prodotti');
-        setPageHint('prods-hint', st, `«${st.val}» è già nel database.`, `Tocca «Aggiungi» per inserire «${st.val}».`);
+        setPageHint('prods-hint', st, `«${st.val}» (o una sua variante) è già nel database.`, `Tocca «Aggiungi» per inserire «${st.val}».`);
         const shown = productsDB.filter((p) => !st.q || norm(p).includes(st.q));
         if (!shown.length) {
             ul.innerHTML = st.val ? '' : `<li class="page-empty"><i class="ri-shopping-basket-2-line"></i>Nessun prodotto.<br>Quelli che aggiungi compaiono come suggerimenti quando scrivi gli ingredienti.</li>`;
@@ -1014,7 +1058,7 @@
     function saveProducts() { const ok = persist(KEYS.prods, productsDB); renderProducts(); return ok; }
     function autoAddProduct(name) { if (name && !includesText(productsDB, name)) { productsDB.push(name); if (!saveProducts()) { productsDB.pop(); renderProducts(); } } }
     function addProductFromInput() {
-        const input = $('new-prod-name'), st = pageInputState(input, productsDB);
+        const input = $('new-prod-name'), st = pageInputState(input, productsDB, [], true);
         if (!st.val) return;
         if (st.exists) return showToast('Prodotto già presente', 'error');
         productsDB.push(st.val);
@@ -1064,7 +1108,7 @@
         const st = pageInputState(input, categories, RESERVED_CATS);
         $('btn-add-cat').disabled = !st.canAdd;
         $('cats-count').textContent = plural(categories.length, 'categoria', 'categorie');
-        setPageHint('cats-hint', st, `La categoria «${st.val}» esiste già.`, `Tocca «Crea» per aggiungere «${st.val}».`);
+        setPageHint('cats-hint', st, st.reservedHit ? `«${st.val}» è un nome riservato ai filtri: scegline un altro.` : `La categoria «${st.val}» esiste già.`, `Tocca «Crea» per aggiungere «${st.val}».`);
         const shown = categories.filter((c) => !st.q || norm(c).includes(st.q));
         if (!shown.length) {
             ul.innerHTML = st.val ? '' : `<li class="page-empty"><i class="ri-price-tag-3-line"></i>Nessuna categoria.<br>Creane una per iniziare a salvare ricette.</li>`;
@@ -1253,20 +1297,23 @@
 
     // --- RICERCA (titolo, ingredienti e categoria; ignora maiuscole, accenti e singolare/plurale) ---
     const STOP_WORDS = new Set(['di', 'e', 'ed', 'o', 'con', 'il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'uno', 'una', 'a', 'al', 'alla', 'allo', 'ai', 'alle', 'da', 'in', 'per', 'del', 'della', 'dello', 'dei', 'delle', 'degli', 'senza']);
-    const norm = (s) => String(s || '').toLocaleLowerCase('it').normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const norm = (s) => String(s || '').toLocaleLowerCase('it').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     // "zucchine" → "zucchin" trova anche "zucchina"; "pomodori" trova "pomodoro"
     const stem = (w) => (w.length >= 4 ? w.replace(/[aeiou]$/, '') : w);
-    const parseQuery = (q) => norm(q).split(/[\s,;+]+/).filter((t) => t && !STOP_WORDS.has(t)).map(stem);
+    const parseQuery = (q) => norm(q).split(/[\s,;+]+/).filter((t) => t && !STOP_WORDS.has(t)).map((raw) => ({ raw, stem: stem(raw) }));
+    // Una parola corrisponde se ha la stessa radice ("uova" = "uovo") o se inizia con quanto scritto ("zucch" → "zucchine").
+    // Così "sale" non trova più "insalata" o "salmone".
+    const words = (s) => norm(s).split(/[^a-z0-9]+/).filter(Boolean);
+    const wordMatch = (w, t) => stem(w) === t.stem || w.startsWith(t.raw);
+    const textMatch = (s, t) => words(s).some((w) => wordMatch(w, t));
 
     function matchRecipe(r, terms) {
-        const title = norm(r.title), cat = norm(r.category);
-        const ingNames = r.ingredients.map((i) => norm(i.name));
         const matchedIngs = new Set();
         let titleHits = 0;
         for (const t of terms) {
-            const inTitle = title.includes(t) || cat.includes(t);
+            const inTitle = textMatch(r.title, t) || textMatch(r.category, t);
             let inIng = false;
-            ingNames.forEach((n, idx) => { if (n.includes(t)) { inIng = true; matchedIngs.add(r.ingredients[idx].name); } });
+            r.ingredients.forEach((i) => { if (textMatch(i.name, t)) { inIng = true; matchedIngs.add(i.name); } });
             if (!inTitle && !inIng) return null; // tutte le parole devono trovare riscontro
             if (inTitle) titleHits++;
         }
@@ -1361,7 +1408,7 @@
     const N = `(\\d+(?:[.,]\\d+)?|${NUMW})`;
     const TIMER_RE = new RegExp(
         `(^|[^a-zà-ÿ\\d'’])` +                                                    // 1: carattere precedente
-        `(?:(mezz['’]?\\s?ora)` +                                                  // 2: mezz'ora
+        `(?:(mezz['’]?\\s?ora|mezza\\s+ora)` +                                                  // 2: mezz'ora
         `|${N}(?:\\s*(?:-|–|o|a)\\s*${N})?['’]?\\s*` +                             // 3: numero, 4: secondo numero (intervallo)
         `(?:(ore|ora|h)(?:\\s+e\\s+(mezz[ao]|un\\s+quarto|\\d+\\s*(?:minuti|minuto|min)))?` + // 5: ore, 6: "e mezza"...
         `|(minuti|minuto|min|['’])` +                                              // 7: minuti
@@ -1458,6 +1505,8 @@
         if (!timers.length && tickHandle) { clearInterval(tickHandle); tickHandle = null; }
         updateRinging(); syncWakeLock();
     }
+    // Ruotando il telefono l'altezza del riquadro timer cambia: ricalcolo lo spazio da lasciare libero
+    window.addEventListener('resize', () => { if (timers.length) document.documentElement.style.setProperty('--dock-h', ($('timer-dock').offsetHeight + 12) + 'px'); });
     function tickTimers() {
         let changed = false;
         const rang = [];
@@ -1681,7 +1730,7 @@
         const resume = cook.recipeId === r.id && cook.index > 0 && cook.index < steps.length;
         cook.recipeId = r.id; cook.steps = steps; cook.index = resume ? cook.index : 0;
         $('cook-recipe').textContent = r.title;
-        $('cook-ing-panel').hidden = true;
+
         renderCookStep();
         openModal('cook-view');
         speakCookStep();
@@ -1710,10 +1759,10 @@
     $('btn-cook-ing').onclick = () => {
         $('cook-ing-list').innerHTML = ingredientsListHTML(currentDetailIngredients, detailRatio());
         $('cook-ing-servings').textContent = `per ${numFmt.format(currentTargetServings)} pers.` + (currentPanFactor !== 1 ? ` · teglia ×${numFmt.format(+currentPanFactor.toFixed(2))}` : '');
-        $('cook-ing-panel').hidden = false;
+        openModal('cook-ing-panel');
     };
-    $('btn-cook-ing-close').onclick = () => { $('cook-ing-panel').hidden = true; };
-    $('cook-ing-panel').addEventListener('click', (e) => { if (e.target.id === 'cook-ing-panel') e.target.hidden = true; });
+    $('btn-cook-ing-close').onclick = closeTopModal;
+    $('cook-ing-panel').addEventListener('click', (e) => { if (e.target.id === 'cook-ing-panel') closeTopModal(); });
     // Scorrimento orizzontale sul testo per cambiare passaggio
     let swipe = null;
     $('cook-stage').addEventListener('pointerdown', (e) => { swipe = { x: e.clientX, y: e.clientY }; });
@@ -2157,12 +2206,336 @@
         shareText(list.name, lines.join('\n'), 'Lista copiata: incollala dove vuoi');
     };
 
+    // --- SOSTITUZIONI DEGLI INGREDIENTI ---
+    // Formato: [nomi riconosciuti (separati da |), nome mostrato, [[alternativa, proporzione, nota, unità in uscita]]]
+    // proporzione: quantità dell'alternativa per 1 unità dell'originale (null = solo consiglio, senza calcolo)
+    // unità in uscita: se indicata, la proporzione vale "per ogni pezzo" dell'originale (es. 60 g di yogurt per ogni uovo)
+    const SUBS_DB = [
+        // Latticini
+        ['burro', 'Burro', [['Olio di semi', 0.8, 'Dolci morbidi e muffin: usa l\'80% del peso'], ['Olio extravergine', 0.8, 'Torte salate, focacce e dolci rustici'], ['Margarina o burro vegetale', 1, 'Stessa dose, anche per frolle e creme'], ['Yogurt greco', 1, 'Torte soffici e più leggere: risultato più umido'], ['Ricotta', 1, 'Plumcake e torte da colazione'], ['Avocado schiacciato', 1, 'Brownie e dolci al cacao']]],
+        ['burro chiarificato|ghee', 'Burro chiarificato', [['Burro', 1.2, 'Fallo sciogliere piano ed elimina la schiuma'], ['Olio di semi', 1, 'Per fritture e cotture ad alta temperatura']]],
+        ['burro di arachidi', 'Burro di arachidi', [['Crema di mandorle', 1, ''], ['Crema di nocciole non zuccherata', 1, ''], ['Tahina (crema di sesamo)', 1, 'Nelle salse e nei condimenti']]],
+        ['latte|latte intero|latte parzialmente scremato', 'Latte', [['Latte vegetale (soia, avena, mandorla)', 1, 'Stessa dose; la soia è la più simile nei dolci'], ['Acqua + burro', 1, 'Nei dolci: aggiungi 1 cucchiaio di burro ogni 250 ml d\'acqua'], ['Latte in polvere', 0.1, 'Sciogli in acqua fino al volume indicato', 'g', 'ml'], ['Panna + acqua', 1, 'Metà panna e metà acqua'], ['Yogurt allungato', 1, 'Metà yogurt e metà acqua, nelle pastelle']]],
+        ['latte condensato', 'Latte condensato', [['Latte + zucchero ridotti', 1, 'Per 400 g: 250 ml di latte e 200 g di zucchero, cuoci finché si dimezza'], ['Latte di cocco condensato', 1, 'Versione senza lattosio']]],
+        ['latte di cocco', 'Latte di cocco', [['Panna + cocco rapè', 1, 'Scalda la panna con 2 cucchiai di cocco e filtra'], ['Yogurt greco', 1, 'Nei curry, a fine cottura'], ['Latte + cocco rapè', 1, 'Più leggero']]],
+        ['latticello|buttermilk', 'Latticello', [['Latte + succo di limone', 1, '1 cucchiaio di limone o aceto ogni 250 ml di latte, lascia riposare 10 minuti'], ['Yogurt + latte', 1, 'Metà e metà'], ['Kefir', 1, '']]],
+        ['panna|panna fresca|panna liquida|panna da cucina', 'Panna', [['Latte + burro', 1, '3/4 di latte e 1/4 di burro fuso: per cucinare, non si monta'], ['Yogurt greco', 1, 'Salse fredde e condimenti; nei sughi aggiungilo a fuoco spento'], ['Ricotta frullata', 1, 'Sughi cremosi per la pasta'], ['Mascarpone', 0.75, 'Diluito con un po\' di latte'], ['Latte di cocco', 1, 'Curry, zuppe e dolci'], ['Panna vegetale', 1, 'Versione senza lattosio']]],
+        ['panna da montare|panna montata', 'Panna da montare', [['Panna vegetale', 1, 'Montala ben fredda'], ['Latte di cocco (solo parte solida)', 1, 'Tieni la lattina in frigo una notte e monta la parte densa'], ['Yogurt greco + miele', 1, 'Per farcire, più leggero'], ['Mascarpone + latte', 1, 'Più ricco, ottimo nei dolci al cucchiaio']]],
+        ['panna acida', 'Panna acida', [['Yogurt greco + limone', 1, 'Qualche goccia di limone'], ['Panna + succo di limone', 1, '1 cucchiaio di limone ogni 200 ml, riposo 15 minuti'], ['Formaggio spalmabile', 1, 'Allungato con un po\' di latte']]],
+        ['yogurt|yogurt bianco|yogurt intero', 'Yogurt', [['Yogurt greco allungato', 1, 'Con un po\' di latte'], ['Panna acida', 1, ''], ['Latticello', 1, ''], ['Latte + limone', 1, '1 cucchiaio di limone ogni 250 ml, riposo 10 minuti'], ['Yogurt di soia', 1, 'Versione vegetale']]],
+        ['yogurt greco', 'Yogurt greco', [['Yogurt bianco scolato', 1, 'Lascialo scolare 2 ore in un colino con un canovaccio'], ['Skyr', 1, ''], ['Ricotta', 1, ''], ['Panna acida', 1, '']]],
+        ['mascarpone', 'Mascarpone', [['Ricotta + panna', 1, '3 parti di ricotta e 1 di panna, frullate'], ['Formaggio spalmabile', 1, ''], ['Yogurt greco', 1, 'Più leggero, meno cremoso'], ['Panna montata + formaggio spalmabile', 1, 'Metà e metà: ottimo per tiramisù leggero']]],
+        ['ricotta', 'Ricotta', [['Yogurt greco scolato', 1, ''], ['Mascarpone', 1, 'Più grasso e cremoso'], ['Formaggio spalmabile', 1, ''], ['Quark', 1, ''], ['Tofu frullato', 1, 'Versione vegana per ripieni']]],
+        ['formaggio spalmabile|philadelphia|robiola|stracchino', 'Formaggio spalmabile', [['Ricotta + yogurt greco', 1, 'Metà e metà, frullati'], ['Mascarpone', 1, ''], ['Robiola o stracchino', 1, ''], ['Quark', 1, '']]],
+        ['mozzarella|fior di latte', 'Mozzarella', [['Fior di latte', 1, ''], ['Provola', 1, 'Sapore affumicato'], ['Scamorza', 1, ''], ['Mozzarella per pizza (poco umida)', 1, 'In forno rilascia meno acqua'], ['Burrata o stracciatella', 1, 'Solo a crudo, a fine cottura']]],
+        ['burrata|stracciatella', 'Burrata', [['Mozzarella + panna', 1, 'Sfilaccia la mozzarella e condiscila con un filo di panna'], ['Mozzarella di bufala', 1, '']]],
+        ['parmigiano|parmigiano reggiano|grana|grana padano', 'Parmigiano / Grana', [['Grana Padano o Parmigiano', 1, ''], ['Pecorino', 0.8, 'Più sapido: riduci il sale'], ['Trentingrana o Asiago stagionato', 1, ''], ['Lievito alimentare in scaglie', 0.5, 'Versione vegana dal gusto di formaggio']]],
+        ['pecorino|pecorino romano', 'Pecorino', [['Parmigiano', 1, 'Meno sapido: aggiungi un pizzico di sale'], ['Grana Padano', 1, ''], ['Pecorino sardo', 1, 'Più delicato']]],
+        ['gorgonzola|formaggio erborinato', 'Gorgonzola', [['Taleggio', 1, 'Più delicato'], ['Roquefort o Blu di capra', 1, ''], ['Fontina + un pizzico di pepe', 1, 'Nei risotti']]],
+        ['fontina|emmental|groviera|asiago|provola|scamorza|taleggio', 'Formaggi da fondere', [['Mozzarella per pizza', 1, ''], ['Fontina, Emmental o Asiago', 1, 'Sono intercambiabili nelle gratinature'], ['Scamorza', 1, 'Gusto affumicato']]],
+        ['besciamella', 'Besciamella', [['Ricotta + latte', 1, 'Frullate: lasagne più leggere'], ['Panna + parmigiano', 1, ''], ['Besciamella vegetale', 1, 'Con olio, farina e latte vegetale']]],
+
+        // Uova
+        ['uova|uovo', 'Uova', [['Yogurt bianco', 60, 'Dolci morbidi', 'g'], ['Purea di banana', 60, 'Dolci; dà sapore di banana', 'g'], ['Purea di mela', 60, 'Muffin e torte', 'g'], ['Semi di lino macinati + acqua', 1, '1 cucchiaio + 3 cucchiai d\'acqua, 10 minuti di riposo', 'cucchiai'], ['Aquafaba (acqua dei ceci)', 45, 'Anche montata come gli albumi', 'ml'], ['Amido di mais + acqua', 1, '1 cucchiaio + 2 cucchiai d\'acqua: legante nei salati', 'cucchiai']]],
+        ['tuorli|tuorlo', 'Tuorli', [['Uovo intero', 0.5, '2 tuorli ≈ 1 uovo intero', 'pz'], ['Amido di mais + acqua', 1, '1 cucchiaino + un po\' d\'acqua per addensare le creme', 'cucchiaini'], ['Panna', 15, 'Nelle salse, per dare cremosità', 'ml']]],
+        ['albumi|albume|bianchi d uovo', 'Albumi', [['Aquafaba (acqua dei ceci)', 30, 'Si monta a neve con un pizzico di cremor tartaro', 'ml'], ['Albume in polvere', 3, 'Sciolto in 30 ml d\'acqua', 'g'], ['Albume pastorizzato in brick', 30, '', 'g']]],
+
+        // Farine, amidi e impanature
+        ['farina|farina 00|farina 0', 'Farina 00', [['Farina 0', 1, ''], ['Farina di tipo 1 o 2', 1, 'Più rustica: aggiungi un goccio di liquido'], ['Farina di farro', 1, 'Dolci e pane più saporiti'], ['Mix di farine senza glutine', 1, 'Aggiungi 1 cucchiaino di psyllium o xantano ogni 250 g'], ['Farina di riso', 1, 'Per addensare, impanare e nelle pastelle']]],
+        ['farina manitoba|farina forte', 'Farina Manitoba', [['Farina 0 forte (W 300+)', 1, ''], ['Farina 00 + glutine', 1, '10 g di glutine ogni 100 g di farina'], ['Metà 00 e metà semola rimacinata', 1, 'Per pane e pizza']]],
+        ['farina integrale', 'Farina integrale', [['Farina 00 + crusca', 1, '90% farina e 10% crusca'], ['Farina di tipo 2', 1, ''], ['Farina di farro integrale', 1, '']]],
+        ['farina di mandorle', 'Farina di mandorle', [['Mandorle frullate', 1, 'Frulla a scatti con un cucchiaio di zucchero perché non diventino una crema'], ['Farina di nocciole', 1, ''], ['Farina di cocco', 0.3, 'Assorbe molto: aumenta i liquidi']]],
+        ['farina di nocciole', 'Farina di nocciole', [['Nocciole tostate frullate', 1, ''], ['Farina di mandorle', 1, '']]],
+        ['farina di cocco|cocco rape|cocco grattugiato', 'Cocco rapè', [['Farina di mandorle', 1, ''], ['Fiocchi d\'avena frullati', 1, 'Nei biscotti']]],
+        ['semola|semola rimacinata|farina di grano duro', 'Semola rimacinata', [['Farina 00', 1, 'Impasto più morbido e meno tenace'], ['Farina di grano duro', 1, '']]],
+        ['farina di mais|farina per polenta|polenta', 'Farina di mais', [['Polenta istantanea', 1, 'Cuoce in pochi minuti'], ['Semolino', 1, ''], ['Farina di mais fioretto', 1, 'Per dolci e impanature']]],
+        ['fecola|fecola di patate|amido di mais|maizena|amido', 'Amido / Fecola', [['Fecola di patate o amido di mais', 1, 'Sono intercambiabili'], ['Amido di riso', 1, ''], ['Farina 00', 2, 'Per addensare serve il doppio'], ['Arrowroot (maranta)', 1, 'Addensa senza intorbidire']]],
+        ['pangrattato|pane grattugiato', 'Pangrattato', [['Cracker sbriciolati', 1, ''], ['Fette biscottate tritate', 1, ''], ['Corn flakes tritati', 1, 'Impanature extra croccanti'], ['Panko', 1, ''], ['Farina di mais', 1, 'Senza glutine'], ['Mandorle o nocciole tritate', 1, 'Senza glutine e più saporito']]],
+        ['panko', 'Panko', [['Pangrattato grosso', 1, ''], ['Corn flakes tritati', 1, '']]],
+
+        // Lieviti e agenti lievitanti
+        ['lievito di birra|lievito di birra fresco|lievito fresco', 'Lievito di birra fresco', [['Lievito di birra secco', 0.33, '1/3 del peso'], ['Lievito istantaneo per pizza', 0.33, 'Si mescola direttamente alla farina'], ['Lievito madre', null, 'Circa il 20-30% del peso della farina, con lievitazioni più lunghe']]],
+        ['lievito di birra secco|lievito secco|lievito disidratato', 'Lievito di birra secco', [['Lievito di birra fresco', 3, 'Il triplo del peso'], ['Lievito istantaneo', 1, '']]],
+        ['lievito madre|pasta madre|licoli', 'Lievito madre', [['Lievito di birra fresco', 0.1, 'Circa 10 g ogni 100 g di lievito madre; aggiungi un po\' di acqua e farina'], ['Poolish o biga', null, 'Preparati la sera prima con poco lievito di birra']]],
+        ['lievito|lievito per dolci|lievito vanigliato|lievito chimico', 'Lievito per dolci', [['Bicarbonato + cremor tartaro', 1, 'Per una bustina (16 g): 5 g di bicarbonato e 10 g di cremor tartaro'], ['Bicarbonato + yogurt o limone', 0.33, 'Solo in impasti con ingredienti acidi'], ['Lievito istantaneo per torte salate', 1, 'Nelle ricette salate'], ['Albumi montati', null, 'Nei pan di Spagna: incorporali delicatamente']]],
+        ['bicarbonato|bicarbonato di sodio', 'Bicarbonato', [['Lievito per dolci', 3, 'Il triplo, in ricette non acide'], ['Ammoniaca per dolci', 1, 'Solo per biscotti secchi']]],
+        ['cremor tartaro', 'Cremor tartaro', [['Succo di limone', 2, 'Per stabilizzare gli albumi'], ['Aceto bianco', 2, '']]],
+
+        // Zuccheri e dolcificanti
+        ['zucchero|zucchero semolato|zucchero bianco', 'Zucchero', [['Zucchero di canna', 1, 'Sapore più caramellato'], ['Miele', 0.75, 'Riduci i liquidi di 20 ml ogni 100 g e il forno di 10°'], ['Sciroppo d\'acero', 0.75, 'Riduci i liquidi di 30 ml ogni 100 g'], ['Zucchero di cocco', 1, ''], ['Eritritolo', 1.3, 'Dolcifica un po\' meno dello zucchero'], ['Stevia', null, 'Pochissima: segui le dosi della confezione']]],
+        ['zucchero a velo', 'Zucchero a velo', [['Zucchero semolato frullato', 1, 'Frulla con 1 cucchiaino di amido ogni 100 g'], ['Eritritolo a velo', 1.3, '']]],
+        ['zucchero di canna|zucchero grezzo|zucchero muscovado', 'Zucchero di canna', [['Zucchero semolato + melassa', 1, '1 cucchiaio di melassa ogni 100 g'], ['Zucchero semolato', 1, ''], ['Zucchero di cocco', 1, '']]],
+        ['zucchero vanigliato', 'Zucchero vanigliato', [['Zucchero + estratto di vaniglia', 1, 'Qualche goccia di estratto ogni 10 g'], ['Zucchero + vanillina', 1, '']]],
+        ['miele', 'Miele', [['Sciroppo d\'acero', 1, ''], ['Sciroppo d\'agave', 1, ''], ['Malto di riso', 1, ''], ['Zucchero', 1.25, 'Aggiungi 20 ml di liquido ogni 100 g']]],
+        ['sciroppo d acero|sciroppo d agave|sciroppo di agave', 'Sciroppo d\'acero / agave', [['Miele', 1, ''], ['Sciroppo d\'agave o d\'acero', 1, ''], ['Zucchero di canna + acqua', 1, '3 parti di zucchero e 1 d\'acqua, sciolti a caldo']]],
+        ['vaniglia|bacca di vaniglia|estratto di vaniglia|vanillina', 'Vaniglia', [['Estratto di vaniglia', null, '1 cucchiaino al posto di una bacca o di una bustina di vanillina'], ['Zucchero vanigliato', null, 'Una bustina al posto della vanillina'], ['Scorza di limone o arancia', null, 'Profumo diverso ma ottimo nei dolci'], ['Cannella', null, 'Un pizzico']]],
+
+        // Cioccolato e cacao
+        ['cioccolato fondente|cioccolato', 'Cioccolato fondente', [['Cacao amaro + burro', 1, 'Per 30 g: 18 g di cacao e 12 g di burro o olio (+ zucchero a piacere)'], ['Cioccolato al latte', 1, 'Più dolce: riduci lo zucchero'], ['Gocce di cioccolato', 1, '']]],
+        ['cacao|cacao amaro|cacao in polvere', 'Cacao amaro', [['Cioccolato fondente', 1.5, 'Riduci un po\' burro e zucchero della ricetta'], ['Carruba in polvere', 1, 'Più dolce, senza caffeina']]],
+        ['gocce di cioccolato', 'Gocce di cioccolato', [['Cioccolato fondente tritato', 1, ''], ['Uvetta o mirtilli secchi', 1, ''], ['Frutta secca tritata', 1, '']]],
+        ['nutella|crema di nocciole|crema spalmabile', 'Crema di nocciole', [['Cioccolato fondente + nocciole tritate', 1, 'Fondi il cioccolato con un goccio di latte e aggiungi le nocciole'], ['Crema di nocciole bio / fondente', 1, '']]],
+
+        // Oli, grassi e condimenti
+        ['olio evo|olio extravergine|olio extravergine di oliva|olio di oliva|olio d oliva|olio', 'Olio extravergine', [['Olio di semi', 1, 'Sapore più neutro'], ['Burro', 1.25, 'In padella e al forno'], ['Olio di oliva', 1, '']]],
+        ['olio di semi|olio di girasole|olio di arachidi|olio di mais', 'Olio di semi', [['Olio extravergine', 1, 'Più saporito'], ['Burro fuso', 1.25, 'Nei dolci'], ['Olio di cocco', 1, ''], ['Olio di arachidi', 1, 'Il migliore per friggere']]],
+        ['strutto', 'Strutto', [['Burro', 1, ''], ['Olio extravergine', 0.8, 'Nelle piadine e nelle focacce'], ['Olio di cocco', 1, 'Versione vegetale']]],
+        ['margarina', 'Margarina', [['Burro', 1, ''], ['Olio di semi', 0.8, '']]],
+        ['aceto|aceto di vino|aceto bianco|aceto di vino bianco', 'Aceto', [['Succo di limone', 1, ''], ['Aceto di mele', 1, 'Più delicato'], ['Aceto balsamico', 1, 'Più dolce'], ['Vino bianco', 2, 'Nelle marinate']]],
+        ['aceto di mele', 'Aceto di mele', [['Aceto di vino bianco', 1, ''], ['Succo di limone', 1, '']]],
+        ['aceto balsamico', 'Aceto balsamico', [['Aceto di vino + zucchero', 1, '1 cucchiaino di zucchero per cucchiaio di aceto'], ['Glassa di balsamico', 0.5, ''], ['Salsa di soia + miele', 1, 'Nelle marinate']]],
+        ['succo di limone|limone', 'Limone (succo)', [['Succo di lime', 1, ''], ['Aceto di mele', 1, 'Nelle marinate e nei condimenti'], ['Acido citrico', null, 'Pochissimo: circa 1 g ogni 20 ml di succo'], ['Succo d\'arancia', 1, 'Nei dolci']]],
+        ['scorza di limone|scorza di arancia|scorza d arancia|buccia di limone', 'Scorza di agrumi', [['Scorza di un altro agrume', 1, 'Limone, arancia, lime e mandarino si scambiano bene'], ['Estratto di limone o arancia', null, 'Poche gocce'], ['Succo dell\'agrume', null, '1 cucchiaio al posto di un cucchiaino di scorza']]],
+        ['salsa di soia|soia', 'Salsa di soia', [['Tamari', 1, 'Senza glutine'], ['Miso sciolto in acqua', 1, '1 cucchiaino di miso in 1 cucchiaio d\'acqua'], ['Salsa Worcester', 1, ''], ['Sale + un goccio di aceto balsamico', null, 'In emergenza']]],
+        ['salsa worcester|worcester', 'Salsa Worcester', [['Salsa di soia + aceto + zucchero', 1, '2 parti di soia, 1 di aceto e un pizzico di zucchero'], ['Salsa di soia', 1, '']]],
+        ['senape', 'Senape', [['Senape in polvere + acqua', 0.33, 'Un cucchiaino di polvere con un po\' d\'acqua'], ['Rafano', 0.5, 'Più piccante'], ['Maionese + curcuma', 1, 'Nelle salse']]],
+        ['maionese', 'Maionese', [['Yogurt greco + senape', 1, 'Più leggera'], ['Avocado frullato', 1, ''], ['Maionese vegana (aquafaba e olio)', 1, '']]],
+        ['ketchup', 'Ketchup', [['Passata + zucchero + aceto', 1, 'Cuoci 10 minuti: 100 g di passata, 1 cucchiaio di zucchero e 1 di aceto'], ['Concentrato di pomodoro diluito', 1, '']]],
+        ['dado|dado da brodo|dado vegetale|dado di carne', 'Dado', [['Brodo vegetale', null, '1 dado = 500 ml di brodo'], ['Brodo granulare', null, '1 cucchiaino al posto di mezzo dado'], ['Sale + erbe aromatiche', null, 'Con un filo d\'olio e una punta di concentrato']]],
+        ['brodo|brodo vegetale|brodo di carne|brodo di pollo', 'Brodo', [['Acqua + dado', 1, '1 dado ogni 500 ml d\'acqua'], ['Acqua di cottura delle verdure', 1, ''], ['Brodo granulare', 1, '1 cucchiaino ogni 250 ml'], ['Acqua + miso', 1, '1 cucchiaio di miso ogni 500 ml']]],
+        ['sale|sale fino', 'Sale', [['Salsa di soia', null, '1 cucchiaio al posto di 1 cucchiaino di sale'], ['Sale alle erbe o gomasio', 1, ''], ['Sale grosso', 1, 'Meglio nell\'acqua di cottura']]],
+        ['sale grosso', 'Sale grosso', [['Sale fino', 0.8, '']]],
+        ['pepe|pepe nero', 'Pepe nero', [['Pepe bianco', 1, 'Più delicato, non si vede nelle salse chiare'], ['Pepe rosa', 1, 'Aromatico e poco piccante'], ['Peperoncino', 0.25, '']]],
+        ['peperoncino|peperoncino fresco|peperoncino secco', 'Peperoncino', [['Paprika piccante', 1, ''], ['Pepe di Cayenna', 0.5, 'Molto piccante'], ['Fiocchi di peperoncino', 1, ''], ['Pepe nero', 1, 'Piccantezza più delicata']]],
+
+        // Pomodoro
+        ['pomodori pelati|pelati', 'Pomodori pelati', [['Passata di pomodoro', 1, ''], ['Polpa di pomodoro', 1, ''], ['Pomodori freschi', 1.2, 'Sbollentati e pelati; cuoci un po\' di più']]],
+        ['passata|passata di pomodoro|salsa di pomodoro', 'Passata di pomodoro', [['Pelati frullati', 1, ''], ['Polpa di pomodoro', 1, ''], ['Concentrato + acqua', 1, '1 cucchiaio di concentrato ogni 100 ml d\'acqua']]],
+        ['polpa di pomodoro|pomodoro a pezzi', 'Polpa di pomodoro', [['Pelati schiacciati', 1, ''], ['Passata', 1, ''], ['Pomodorini tagliati', 1, '']]],
+        ['concentrato di pomodoro|concentrato|doppio concentrato', 'Concentrato di pomodoro', [['Passata ridotta', 3, 'Il triplo, fatta restringere in padella'], ['Ketchup', 1, 'Più dolce'], ['Pomodori secchi frullati', 1, '']]],
+        ['pomodori|pomodoro|pomodorini|pomodori ciliegini|pomodori datterini', 'Pomodori', [['Pomodorini', 1, ''], ['Pelati', 1, 'Nei sughi'], ['Pomodori secchi', 0.25, 'Reidratati in acqua calda']]],
+        ['pomodori secchi', 'Pomodori secchi', [['Pomodorini confit', 3, 'Al forno a 120° per 2 ore con olio e zucchero'], ['Concentrato di pomodoro', 0.5, 'Nei sughi']]],
+
+        // Verdure
+        ['cipolla|cipolle|cipolla bianca|cipolla dorata|cipolla rossa', 'Cipolla', [['Scalogno', 2, 'Più delicato', 'pz'], ['Porro', 1, 'Mezzo porro per cipolla', 'pz'], ['Cipollotto', 2, '', 'pz'], ['Cipolla in polvere', 1, 'Nei ragù e nelle marinate', 'cucchiaini']]],
+        ['scalogno|scalogni', 'Scalogno', [['Cipolla', 0.5, 'Mezza cipolla per scalogno', 'pz'], ['Cipollotto', 1, '', 'pz'], ['Porro (parte bianca)', null, 'Un pezzetto di 5 cm']]],
+        ['cipollotto|cipollotti|cipolla di tropea', 'Cipollotto', [['Cipolla rossa', 0.5, '', 'pz'], ['Erba cipollina', 1, 'A crudo, un ciuffetto', 'cucchiai'], ['Porro', 0.5, '', 'pz']]],
+        ['porro|porri', 'Porro', [['Cipolla', 1, '', 'pz'], ['Cipollotti', 2, '', 'pz']]],
+        ['aglio|spicchio d aglio|spicchi d aglio|spicchi di aglio', 'Aglio', [['Aglio in polvere', 0.25, '1/4 di cucchiaino per spicchio', 'cucchiaini'], ['Scalogno', 0.5, 'Più delicato', 'pz'], ['Aglio orsino', null, 'Qualche foglia'], ['Erba cipollina', null, 'A crudo']]],
+        ['zucchine|zucchina', 'Zucchine', [['Melanzane', 1, ''], ['Zucca', 1, 'Nei risotti e nelle torte salate'], ['Cetriolo', 1, 'Solo a crudo'], ['Fagiolini', 1, '']]],
+        ['melanzane|melanzana', 'Melanzane', [['Zucchine', 1, ''], ['Funghi', 1, ''], ['Peperoni', 1, '']]],
+        ['peperoni|peperone', 'Peperoni', [['Peperoni arrostiti in vasetto', 1, ''], ['Zucchine', 1, ''], ['Paprika dolce', null, 'Per il sapore, un cucchiaino']]],
+        ['spinaci|spinacino', 'Spinaci', [['Bietole', 1, ''], ['Cavolo nero', 1, 'Cuoce un po\' di più'], ['Spinaci surgelati', 1, 'Strizzali bene'], ['Rucola', 1, 'Solo a crudo']]],
+        ['bietole|bietola|coste', 'Bietole', [['Spinaci', 1, ''], ['Cicoria', 1, 'Più amarognola']]],
+        ['rucola', 'Rucola', [['Spinacino', 1, ''], ['Crescione', 1, ''], ['Valeriana', 1, '']]],
+        ['cavolo nero|verza|cavolo', 'Cavolo', [['Verza o cavolo cappuccio', 1, ''], ['Bietole', 1, ''], ['Spinaci', 1, '']]],
+        ['broccoli|broccolo|cavolfiore|cime di rapa', 'Broccoli / Cavolfiore', [['Cavolfiore o broccoli', 1, 'Si scambiano bene'], ['Cime di rapa', 1, 'Più amare'], ['Romanesco', 1, '']]],
+        ['patate|patata', 'Patate', [['Patate dolci', 1, ''], ['Topinambur', 1, ''], ['Zucca', 1, ''], ['Cavolfiore', 1, 'Purè più leggero']]],
+        ['patate dolci|patata dolce|patata americana', 'Patate dolci', [['Zucca', 1, ''], ['Patate + un pizzico di zucchero', 1, '']]],
+        ['carote|carota', 'Carote', [['Zucca', 1, ''], ['Patate dolci', 1, ''], ['Pastinaca', 1, '']]],
+        ['zucca', 'Zucca', [['Patate dolci', 1, ''], ['Carote', 1, ''], ['Butternut', 1, '']]],
+        ['sedano', 'Sedano', [['Finocchio', 1, ''], ['Sedano rapa', 1, ''], ['Semi di sedano', null, 'Un pizzico nel soffritto']]],
+        ['finocchio|finocchi', 'Finocchio', [['Sedano', 1, ''], ['Semi di finocchio', null, 'Per il profumo, un pizzico']]],
+        ['funghi porcini|porcini', 'Funghi porcini', [['Porcini secchi', 0.1, '10 g secchi ≈ 100 g freschi; ammollali 20 minuti'], ['Champignon + porcini secchi', 1, 'Pochi porcini secchi danno molto profumo'], ['Funghi misti surgelati', 1, '']]],
+        ['funghi|champignon|funghi champignon', 'Funghi', [['Funghi secchi', 0.1, 'Ammollati 20 minuti in acqua tiepida'], ['Porcini', 1, 'Più saporiti'], ['Melanzane a cubetti', 1, '']]],
+        ['piselli', 'Piselli', [['Fave', 1, ''], ['Edamame', 1, ''], ['Piselli surgelati', 1, 'Cuociono in pochi minuti']]],
+        ['fagiolini', 'Fagiolini', [['Taccole', 1, ''], ['Asparagi', 1, ''], ['Zucchine a bastoncino', 1, '']]],
+        ['asparagi|asparago', 'Asparagi', [['Fagiolini', 1, ''], ['Zucchine', 1, ''], ['Carciofi', 1, 'Nei risotti']]],
+        ['carciofi|carciofo', 'Carciofi', [['Cuori di carciofo sott\'olio', 1, 'Scolali bene'], ['Asparagi', 1, ''], ['Carciofi surgelati', 1, '']]],
+        ['insalata|lattuga|iceberg', 'Insalata', [['Lattuga, iceberg o romana', 1, ''], ['Spinacino', 1, ''], ['Valeriana o songino', 1, '']]],
+        ['cetrioli|cetriolo', 'Cetriolo', [['Zucchina cruda', 1, ''], ['Sedano', 1, '']]],
+        ['avocado', 'Avocado', [['Hummus', 1, 'Spalmato sui toast'], ['Banana', 1, 'Nei dolci e nei frullati'], ['Yogurt greco', 1, 'Nelle salse']]],
+
+        // Erbe e spezie
+        ['basilico', 'Basilico', [['Prezzemolo', 1, ''], ['Menta', 0.5, ''], ['Basilico secco', 0.33, 'Un terzo della quantità'], ['Pesto', null, '1 cucchiaino nei sughi']]],
+        ['prezzemolo', 'Prezzemolo', [['Coriandolo', 1, ''], ['Erba cipollina', 1, ''], ['Prezzemolo secco', 0.33, ''], ['Basilico', 1, '']]],
+        ['rosmarino', 'Rosmarino', [['Timo', 1, ''], ['Salvia', 1, ''], ['Rosmarino secco', 0.33, '']]],
+        ['salvia', 'Salvia', [['Rosmarino', 1, ''], ['Timo', 1, ''], ['Salvia secca', 0.33, '']]],
+        ['timo', 'Timo', [['Origano', 1, ''], ['Maggiorana', 1, ''], ['Timo secco', 0.33, '']]],
+        ['origano', 'Origano', [['Maggiorana', 1, ''], ['Timo', 1, ''], ['Basilico secco', 1, '']]],
+        ['maggiorana', 'Maggiorana', [['Origano', 1, 'Più deciso'], ['Timo', 1, '']]],
+        ['menta', 'Menta', [['Basilico', 1, ''], ['Melissa', 1, ''], ['Menta secca', 0.33, '']]],
+        ['erba cipollina', 'Erba cipollina', [['Cipollotto (parte verde)', 1, ''], ['Aglio orsino', 1, '']]],
+        ['coriandolo', 'Coriandolo', [['Prezzemolo + scorza di lime', 1, ''], ['Basilico thai', 1, '']]],
+        ['alloro', 'Alloro', [['Timo', null, 'Un rametto'], ['Origano', null, 'Un pizzico']]],
+        ['zenzero|zenzero fresco', 'Zenzero fresco', [['Zenzero in polvere', 0.25, '1/4 di cucchiaino ogni cm di radice'], ['Galanga', 1, ''], ['Cannella + pepe', null, 'Nei dolci, un pizzico']]],
+        ['zenzero in polvere', 'Zenzero in polvere', [['Zenzero fresco grattugiato', 4, ''], ['Cannella', 1, 'Nei dolci']]],
+        ['noce moscata', 'Noce moscata', [['Macis', 1, ''], ['Cannella', 1, 'Nei dolci'], ['Pepe bianco', 0.5, 'Nella besciamella']]],
+        ['cannella', 'Cannella', [['Noce moscata', 0.5, ''], ['Pimento (allspice)', 1, ''], ['Cardamomo', 0.5, '']]],
+        ['zafferano', 'Zafferano', [['Curcuma', null, 'Solo per il colore: un pizzico, il sapore è diverso'], ['Paprika dolce', null, 'Per il colore']]],
+        ['curcuma', 'Curcuma', [['Zafferano', null, 'Una bustina'], ['Curry', 1, '']]],
+        ['paprika|paprica|paprika dolce', 'Paprika', [['Paprika affumicata', 1, 'Sapore più intenso'], ['Peperoncino dolce in polvere', 1, ''], ['Pepe di Cayenna', 0.25, 'Molto più piccante']]],
+        ['curry', 'Curry', [['Curcuma + cumino + coriandolo', 1, 'In parti uguali, con un pizzico di peperoncino'], ['Garam masala', 1, '']]],
+        ['cumino', 'Cumino', [['Coriandolo in semi', 1, ''], ['Curry', 1, ''], ['Semi di finocchio', 0.5, '']]],
+        ['chiodi di garofano', 'Chiodi di garofano', [['Pimento (allspice)', 1, ''], ['Cannella + noce moscata', null, 'Un pizzico di ciascuna']]],
+
+        // Frutta secca, semi e frutta
+        ['capperi', 'Capperi', [['Olive verdi tritate', 1, ''], ['Acciughe', 0.5, ''], ['Cetriolini sott\'aceto tritati', 1, '']]],
+        ['olive|olive nere|olive verdi|olive taggiasche', 'Olive', [['Capperi', 0.5, ''], ['Pomodori secchi', 1, ''], ['Olive di un altro tipo', 1, 'Taggiasche, nere e verdi si scambiano']]],
+        ['pinoli', 'Pinoli', [['Anacardi', 1, 'Nel pesto sono ottimi'], ['Mandorle', 1, ''], ['Noci', 1, ''], ['Semi di girasole', 1, 'Più economici']]],
+        ['noci|gherigli di noce', 'Noci', [['Nocciole', 1, ''], ['Noci pecan', 1, ''], ['Mandorle', 1, '']]],
+        ['mandorle', 'Mandorle', [['Nocciole', 1, ''], ['Anacardi', 1, ''], ['Pistacchi', 1, '']]],
+        ['nocciole', 'Nocciole', [['Mandorle', 1, ''], ['Noci', 1, ''], ['Arachidi', 1, 'Più economiche']]],
+        ['pistacchi|pistacchio', 'Pistacchi', [['Mandorle', 1, ''], ['Pinoli', 1, ''], ['Anacardi', 1, '']]],
+        ['anacardi', 'Anacardi', [['Mandorle', 1, ''], ['Pinoli', 1, ''], ['Macadamia', 1, '']]],
+        ['uvetta|uva passa|uva sultanina', 'Uvetta', [['Mirtilli rossi secchi', 1, ''], ['Albicocche secche tritate', 1, ''], ['Datteri tritati', 1, ''], ['Gocce di cioccolato', 1, 'Nei dolci']]],
+        ['semi di sesamo|sesamo', 'Semi di sesamo', [['Semi di papavero', 1, ''], ['Semi di girasole tritati', 1, ''], ['Semi di lino', 1, '']]],
+        ['semi di lino|semi di chia|chia', 'Semi di lino / chia', [['Semi di chia o di lino', 1, 'Si scambiano, anche come legante'], ['Semi di girasole', 1, 'Solo come decorazione']]],
+        ['mele|mela', 'Mele', [['Pere', 1, ''], ['Pesche', 1, ''], ['Purea di mele', 1, 'Nelle torte']]],
+        ['pere|pera', 'Pere', [['Mele', 1, ''], ['Pesche', 1, '']]],
+        ['banane|banana', 'Banana', [['Purea di mela', 1, 'Nei dolci'], ['Avocado', 1, 'Nei frullati'], ['Zucca cotta', 1, '']]],
+        ['frutti di bosco|mirtilli|lamponi|fragole|more', 'Frutti di bosco', [['Frutti di bosco surgelati', 1, 'Aggiungili ancora congelati, infarinati'], ['Fragole a pezzetti', 1, ''], ['Ciliegie', 1, '']]],
+        ['arance|arancia|succo d arancia|succo di arancia', 'Arancia', [['Mandarini', 1, ''], ['Clementine', 1, ''], ['Limone + zucchero', null, 'Nelle salse agrodolci']]],
+
+        // Pasta, riso, cereali e basi
+        ['riso|riso carnaroli|carnaroli|riso arborio|arborio|vialone nano', 'Riso da risotto', [['Arborio, Carnaroli o Vialone nano', 1, ''], ['Orzo perlato', 1, 'Orzotto, cottura più lunga'], ['Farro perlato', 1, 'Farrotto'], ['Riso integrale', 1, 'Cottura quasi doppia']]],
+        ['riso basmati|basmati|riso jasmine|riso thai', 'Riso basmati', [['Riso jasmine', 1, ''], ['Riso parboiled', 1, ''], ['Couscous', 1, '']]],
+        ['pasta|spaghetti|penne|fusilli|rigatoni|linguine|mezze maniche|farfalle|orecchiette|paccheri|bucatini', 'Pasta', [['Un altro formato', 1, 'Corta con sughi a pezzi, lunga con sughi lisci'], ['Pasta integrale', 1, ''], ['Pasta di legumi', 1, 'Più proteica, cuoce prima'], ['Pasta senza glutine', 1, ''], ['Zucchine a spaghetti', 2, 'Versione leggera']]],
+        ['tagliatelle|fettuccine|pappardelle|pasta all uovo', 'Pasta all\'uovo', [['Pasta all\'uovo secca', 0.8, 'Rende di più'], ['Tagliatelle o pappardelle', 1, '']]],
+        ['lasagne|sfoglie per lasagne|lasagna', 'Sfoglie per lasagne', [['Crespelle', 1, ''], ['Fette di melanzane grigliate', 1, 'Senza glutine'], ['Pane carasau', 1, 'Leggermente inumidito'], ['Sfoglie fresche', 1, 'Non vanno sbollentate']]],
+        ['gnocchi', 'Gnocchi', [['Gnocchi di zucca o di ricotta', 1, ''], ['Pasta corta', 0.6, '']]],
+        ['couscous', 'Couscous', [['Bulgur', 1, ''], ['Quinoa', 1, ''], ['Miglio', 1, '']]],
+        ['quinoa', 'Quinoa', [['Couscous', 1, ''], ['Miglio', 1, ''], ['Riso integrale', 1, '']]],
+        ['orzo|orzo perlato', 'Orzo perlato', [['Farro perlato', 1, ''], ['Riso', 1, '']]],
+        ['farro|farro perlato', 'Farro', [['Orzo perlato', 1, ''], ['Riso integrale', 1, '']]],
+        ['semolino', 'Semolino', [['Polenta istantanea', 1, ''], ['Farina di riso', 1, '']]],
+        ['fiocchi d avena|avena', 'Fiocchi d\'avena', [['Fiocchi di farro o d\'orzo', 1, ''], ['Muesli', 1, ''], ['Quinoa soffiata', 1, '']]],
+        ['pane|pane raffermo|pane in cassetta|mollica', 'Pane', [['Pane in cassetta', 1, ''], ['Fette biscottate', 1, ''], ['Pangrattato', 0.6, 'Per polpette e ripieni']]],
+        ['pasta sfoglia', 'Pasta sfoglia', [['Pasta brisé', 1, 'Meno friabile'], ['Pasta fillo', 1, 'Spennella ogni strato con burro'], ['Pasta per pizza', 1, 'Nelle torte salate']]],
+        ['pasta brise|pasta brisee', 'Pasta brisé', [['Pasta sfoglia', 1, ''], ['Pasta matta', 1, 'Farina, acqua, olio e sale'], ['Pasta per pizza', 1, '']]],
+        ['pasta frolla', 'Pasta frolla', [['Biscotti sbriciolati + burro', 1, 'Per basi di cheesecake e crostate veloci'], ['Pasta brisé + zucchero', 1, '']]],
+        ['pasta fillo', 'Pasta fillo', [['Pasta sfoglia stesa sottile', 1, ''], ['Pasta brisé', 1, '']]],
+        ['pasta per pizza|impasto per pizza', 'Pasta per pizza', [['Pasta brisé', 1, ''], ['Piadine', 1, 'Pizza veloce in padella']]],
+        ['savoiardi', 'Savoiardi', [['Pavesini', 1, ''], ['Pan di Spagna a fette', 1, ''], ['Biscotti secchi', 1, '']]],
+        ['biscotti|biscotti secchi|biscotti digestive|digestive|oro saiwa', 'Biscotti secchi', [['Savoiardi', 1, ''], ['Fette biscottate + zucchero', 1, ''], ['Cracker', 1, 'Per basi salate'], ['Amaretti', 1, 'Più profumati']]],
+        ['amaretti', 'Amaretti', [['Biscotti secchi + mandorle', 1, ''], ['Cantucci', 1, '']]],
+        ['pan di spagna', 'Pan di Spagna', [['Savoiardi', 1, ''], ['Pandoro o panettone', 1, 'A fette, nei dolci al cucchiaio']]],
+        ['crema pasticcera', 'Crema pasticcera', [['Budino alla vaniglia', 1, ''], ['Mascarpone + zucchero', 1, ''], ['Crema al latte (senza uova)', 1, 'Latte, zucchero e amido']]],
+        ['marmellata|confettura', 'Marmellata', [['Frutta cotta con zucchero', 1, ''], ['Miele', 1, ''], ['Crema di nocciole', 1, 'Nelle crostate']]],
+        ['gelatina|colla di pesce|fogli di gelatina', 'Gelatina (colla di pesce)', [['Agar agar', 0.125, '1 g di agar ≈ 8 g di gelatina; va fatto bollire'], ['Gelatina in polvere', 1, ''], ['Pectina', null, 'Per marmellate e gelatine di frutta']]],
+        ['agar agar|agar', 'Agar agar', [['Colla di pesce', 8, 'Ammollala in acqua fredda 10 minuti']]],
+
+        // Carne, salumi e pesce
+        ['pancetta|pancetta affumicata|bacon', 'Pancetta', [['Guanciale', 1, ''], ['Speck', 1, ''], ['Prosciutto crudo', 1, 'Aggiungilo a fine cottura'], ['Tofu affumicato', 1, 'Versione vegetariana']]],
+        ['guanciale', 'Guanciale', [['Pancetta', 1, ''], ['Speck', 1, '']]],
+        ['speck', 'Speck', [['Pancetta affumicata', 1, ''], ['Prosciutto crudo', 1, '']]],
+        ['prosciutto crudo', 'Prosciutto crudo', [['Speck', 1, ''], ['Bresaola', 1, ''], ['Prosciutto cotto', 1, '']]],
+        ['prosciutto cotto|prosciutto', 'Prosciutto cotto', [['Fesa di tacchino', 1, ''], ['Prosciutto crudo', 1, ''], ['Mortadella', 1, '']]],
+        ['salsiccia|salsicce', 'Salsiccia', [['Macinato di maiale + finocchietto', 1, 'Con sale, pepe e semi di finocchio'], ['Salsiccia di pollo', 1, ''], ['Salsiccia vegetale', 1, '']]],
+        ['macinato|carne macinata|macinato di manzo|macinato misto', 'Carne macinata', [['Macinato di tacchino o pollo', 1, ''], ['Lenticchie cotte', 1, 'Ragù vegetale'], ['Soia granulare', 0.4, 'Reidratata in brodo caldo'], ['Salsiccia sbriciolata', 1, '']]],
+        ['pollo|petto di pollo|cosce di pollo|sovracosce di pollo', 'Pollo', [['Tacchino', 1, ''], ['Coniglio', 1, ''], ['Tofu', 1, 'Versione vegetale'], ['Seitan', 1, '']]],
+        ['tacchino|petto di tacchino|fesa di tacchino', 'Tacchino', [['Pollo', 1, ''], ['Lonza di maiale', 1, '']]],
+        ['manzo|carne di manzo|bistecca|spezzatino', 'Manzo', [['Vitello', 1, ''], ['Maiale', 1, ''], ['Seitan', 1, 'Versione vegetale']]],
+        ['vitello|fesa di vitello|scaloppine', 'Vitello', [['Manzo', 1, ''], ['Tacchino', 1, ''], ['Lonza di maiale', 1, '']]],
+        ['maiale|lonza|arista|braciole', 'Maiale', [['Pollo o tacchino', 1, ''], ['Vitello', 1, '']]],
+        ['agnello', 'Agnello', [['Capretto', 1, ''], ['Maiale', 1, '']]],
+        ['tonno|tonno in scatola|tonno sott olio', 'Tonno', [['Sgombro', 1, ''], ['Salmone', 1, ''], ['Ceci', 1, 'Nelle insalate, versione vegetale']]],
+        ['tonno fresco', 'Tonno fresco', [['Pesce spada', 1, ''], ['Salmone', 1, '']]],
+        ['salmone|salmone fresco', 'Salmone', [['Trota salmonata', 1, ''], ['Tonno fresco', 1, ''], ['Salmone affumicato', 1, 'A crudo, nei primi']]],
+        ['salmone affumicato', 'Salmone affumicato', [['Trota affumicata', 1, ''], ['Pesce spada affumicato', 1, '']]],
+        ['acciughe|alici|filetti di acciuga', 'Acciughe', [['Pasta d\'acciughe', 0.5, 'Circa 1 cucchiaino ogni 2 filetti'], ['Colatura di alici', null, 'Poche gocce'], ['Capperi', 0.5, 'Per la sapidità']]],
+        ['gamberi|gamberetti|mazzancolle', 'Gamberi', [['Mazzancolle', 1, ''], ['Scampi', 1, ''], ['Calamari', 1, '']]],
+        ['merluzzo|baccala|nasello|platessa', 'Pesce bianco', [['Nasello o merluzzo', 1, ''], ['Platessa', 1, ''], ['Orata o branzino', 1, '']]],
+        ['orata|branzino|spigola', 'Orata / Branzino', [['Branzino o orata', 1, ''], ['Sarago', 1, ''], ['Filetti di merluzzo', 1, '']]],
+        ['calamari|seppie|totani', 'Calamari / Seppie', [['Seppie o totani', 1, ''], ['Gamberi', 1, '']]],
+        ['cozze|vongole|frutti di mare', 'Cozze / Vongole', [['Vongole o cozze', 1, ''], ['Telline', 1, ''], ['Frutti di mare surgelati', 1, '']]],
+
+        // Legumi e proteine vegetali
+        ['ceci', 'Ceci', [['Cannellini', 1, ''], ['Fave', 1, ''], ['Ceci secchi', 0.4, '100 g secchi ≈ 250 g cotti; ammollo di una notte']]],
+        ['fagioli|cannellini|borlotti|fagioli neri', 'Fagioli', [['Ceci', 1, ''], ['Lenticchie', 1, ''], ['Fagioli secchi', 0.4, 'Ammollo di una notte']]],
+        ['lenticchie', 'Lenticchie', [['Piselli spezzati', 1, ''], ['Fagioli', 1, ''], ['Lenticchie rosse decorticate', 1, 'Non serve l\'ammollo']]],
+        ['fave', 'Fave', [['Piselli', 1, ''], ['Edamame', 1, '']]],
+        ['tofu', 'Tofu', [['Paneer', 1, ''], ['Tempeh', 1, ''], ['Mozzarella', 1, 'Nelle insalate']]],
+        ['seitan', 'Seitan', [['Tofu compatto', 1, ''], ['Tempeh', 1, ''], ['Pollo', 1, '']]],
+
+        // Vino, alcol e bevande
+        ['vino bianco', 'Vino bianco', [['Brodo + aceto', 1, '1 cucchiaino di aceto ogni 100 ml di brodo'], ['Succo di mela', 1, 'Carni bianche e dolci'], ['Vermouth bianco', 1, ''], ['Birra chiara', 1, '']]],
+        ['vino rosso', 'Vino rosso', [['Brodo di carne + aceto balsamico', 1, '1 cucchiaino di balsamico ogni 100 ml'], ['Succo d\'uva nera', 1, ''], ['Birra scura', 1, 'Negli stufati']]],
+        ['vino|vino secco', 'Vino', [['Brodo + un goccio di aceto', 1, ''], ['Succo d\'uva', 1, '']]],
+        ['marsala', 'Marsala', [['Porto o vin santo', 1, ''], ['Vino dolce', 1, ''], ['Succo di mela + cannella', 1, 'Versione analcolica']]],
+        ['rum', 'Rum', [['Aroma rum', null, 'Poche gocce'], ['Brandy', 1, ''], ['Succo d\'arancia', 1, 'Versione analcolica']]],
+        ['brandy|cognac|whisky', 'Brandy / Cognac', [['Rum', 1, ''], ['Whisky', 1, ''], ['Succo di mela', 1, 'Versione analcolica']]],
+        ['grand marnier|cointreau|triple sec|liquore all arancia', 'Liquore all\'arancia', [['Succo d\'arancia + scorza', 1, 'Versione analcolica'], ['Rum', 1, '']]],
+        ['amaretto|liquore', 'Liquore', [['Estratto di mandorla', null, 'Poche gocce'], ['Sciroppo aromatizzato', 1, 'Versione analcolica']]],
+        ['birra', 'Birra', [['Birra analcolica', 1, ''], ['Brodo', 1, 'Negli stufati'], ['Acqua frizzante', 1, 'Nelle pastelle']]],
+        ['acqua frizzante|acqua gassata', 'Acqua frizzante', [['Birra', 1, 'Nelle pastelle'], ['Acqua + un pizzico di bicarbonato', 1, '']]],
+        ['caffe|caffe espresso|espresso|caffe solubile', 'Caffè', [['Caffè solubile', null, '2 cucchiaini sciolti in 100 ml d\'acqua'], ['Orzo solubile', 1, 'Senza caffeina'], ['Cacao sciolto in acqua', 1, 'Nei dolci']]]
+    ];
+    const SUBS_INDEX = SUBS_DB.map(([keys, name, subs]) => ({ keys: keys.split('|').map(nameKey), name, subs }));
+    // Trova le sostituzioni per un ingrediente: vince la corrispondenza più specifica (es. "farina di mandorle" prima di "farina")
+    function findSubs(ingName) {
+        const k = ' ' + nameKey(ingName) + ' ';
+        let best = null, bestLen = 0;
+        SUBS_INDEX.forEach((entry) => entry.keys.forEach((key) => {
+            if (key && k.includes(' ' + key + ' ') && key.length > bestLen) { best = entry; bestLen = key.length; }
+        }));
+        return best;
+    }
+    const UNIT_LABEL = { g: 'g', ml: 'ml', pz: 'pz', cucchiai: 'cucchiai', cucchiaini: 'cucchiaini' };
+    function describeRatio(ratio, unitOut) {
+        if (ratio === null) return '';
+        if (unitOut) return `${numFmt.format(ratio)} ${UNIT_LABEL[unitOut] || unitOut} per pezzo`;
+        if (ratio === 1) return 'stessa dose';
+        return ratio < 1 ? `${numFmt.format(Math.round(ratio * 100))}% della dose` : `${numFmt.format(ratio)} volte la dose`;
+    }
+    // Quantità dell'alternativa, calcolata dalla dose dell'ingrediente (già scalata per persone/teglia)
+    function subAmount(ing, sub, scale) {
+        const [, ratio, , unitOut] = sub;
+        const n = toNum(ing.qty);
+        if (ratio === null) return '';
+        if (ing.qty === '' || isNaN(n) || ing.unit === 'q.b.') return describeRatio(ratio, unitOut);
+        const [fam, mult] = famOf(ing.unit);
+        if (unitOut) {
+            if (fam !== 'pz') return describeRatio(ratio, unitOut); // proporzione "per pezzo": serve la quantità in pezzi
+            return formatQty(famOf(unitOut)[0], n * scale * ratio);
+        }
+        return formatQty(fam, n * scale * mult * ratio);
+    }
+    function openSubsSheet(ing, scale) {
+        const entry = findSubs(ing.name); if (!entry) return;
+        const f = formatIngredient(ing, scale);
+        $('subs-title').textContent = `Al posto di ${f.amount ? f.amount + ' ' : ''}${ing.name}`;
+        $('subs-options').innerHTML = entry.subs.map((s) => {
+            const amount = subAmount(ing, s, scale);
+            return `<div class="sub-card"><div class="sub-amount">${esc(amount || '—')}</div><div class="sub-text"><strong>${esc(s[0])}</strong>${s[2] ? `<span>${esc(s[2])}</span>` : ''}</div></div>`;
+        }).join('') + `<p class="form-hint" style="margin-top:12px;"><i class="ri-information-line"></i> Dosi indicative: nei dolci sostituisci un ingrediente alla volta.</p>`;
+        openModal('subs-sheet');
+    }
+
+    // Pagina "Sostituzioni" dalle Impostazioni: cerca e consulta tutte le alternative
+    let subsOpenName = null;
+    function renderSubsPage() {
+        const q = norm($('subs-search').value.trim());
+        const list = SUBS_DB.map(([keys, name, subs]) => ({ keys, name, subs }))
+            .filter((e) => !q || norm(e.name).includes(q) || norm(e.keys).includes(q) || e.subs.some((s) => norm(s[0]).includes(q)))
+            .sort((a, b) => a.name.localeCompare(b.name, 'it'));
+        $('subs-count').textContent = plural(SUBS_DB.length, 'ingrediente', 'ingredienti');
+        $('subs-list').innerHTML = list.length ? list.map((e) => {
+            const open = subsOpenName === e.name;
+            return `<li class="page-row sub-row${open ? ' open' : ''}" data-name="${esc(e.name)}">
+                <button type="button" class="sub-toggle" aria-expanded="${open}">
+                    <span class="row-avatar" aria-hidden="true"><i class="ri-arrow-left-right-line"></i></span>
+                    <span class="row-main"><span class="row-title">${esc(e.name)}</span><span class="row-sub">${plural(e.subs.length, 'alternativa', 'alternative')}</span></span>
+                    <i class="ri-arrow-down-s-line sub-chevron" aria-hidden="true"></i>
+                </button>
+                ${open ? `<div class="sub-details">${e.subs.map((s) => `<div class="sub-card"><div class="sub-amount">${esc(describeRatio(s[1], s[3]) || '—')}</div><div class="sub-text"><strong>${esc(s[0])}</strong>${s[2] ? `<span>${esc(s[2])}</span>` : ''}</div></div>`).join('')}</div>` : ''}
+            </li>`;
+        }).join('') : `<li class="page-empty"><i class="ri-search-eye-line"></i>Nessun ingrediente trovato.</li>`;
+    }
+    $('subs-search').addEventListener('input', () => { subsOpenName = null; renderSubsPage(); });
+    $('subs-search').addEventListener('keydown', (e) => { if (e.key === 'Escape' && e.target.value) { e.preventDefault(); e.stopPropagation(); e.target.value = ''; renderSubsPage(); } });
+    $('subs-list').addEventListener('click', (e) => {
+        const t = e.target.closest('.sub-toggle'); if (!t) return;
+        const name = t.closest('.page-row').dataset.name;
+        subsOpenName = subsOpenName === name ? null : name;
+        renderSubsPage();
+    });
+    $('tile-subs').onclick = () => { subsOpenName = null; openPage('subs-page', 'subs-search', renderSubsPage); };
+    // Pulsante ⇄ accanto agli ingredienti (dettaglio e modalità cucina)
+    function onSubClick(e) {
+        const btn = e.target.closest('.sub-btn'); if (!btn) return;
+        const ing = currentDetailIngredients[parseInt(btn.dataset.sub, 10)];
+        if (ing) openSubsSheet(ing, detailRatio());
+    }
+    $('detail-content').addEventListener('click', onSubClick);
+    $('cook-ing-list').addEventListener('click', onSubClick);
     // --- DETTAGLIO RICETTA E PORZIONI ---
     function ingredientsListHTML(ings, ratio) {
         if (!ings.length) return '';
-        return `<ul class="ing-display-list">${ings.map((i) => {
+        return `<ul class="ing-display-list">${ings.map((i, idx) => {
             const f = formatIngredient(i, ratio);
-            return `<li>${f.amount ? `<strong>${esc(f.amount)}</strong>` : ''}<span>${esc(f.name)}</span></li>`;
+            const sub = findSubs(i.name) ? `<button type="button" class="sub-btn" data-sub="${idx}" aria-label="Sostituzioni per ${esc(i.name)}" title="Cosa usare al suo posto"><i class="ri-arrow-left-right-line"></i></button>` : '';
+            return `<li>${f.amount ? `<strong>${esc(f.amount)}</strong>` : ''}<span>${esc(f.name)}</span>${sub}</li>`;
         }).join('')}</ul>`;
     }
     function renderDetailIngredientsHTML() {
