@@ -6,6 +6,8 @@
     <title>ChefBox - Ricettario</title>
     
     <meta name="theme-color" content="#F97316">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,18 +15,16 @@
     
     <style>
         :root {
-            /* Nuovo tema Arancione */
             --primary: #F97316; 
             --primary-dark: #EA580C;
             --primary-light: rgba(249, 115, 22, 0.1);
-            
-            --bg-color: #FFF7ED; /* Panna/Arancione chiarissimo */
+            --bg-color: #FFF7ED; 
             --surface: #FFFFFF;
             --text-main: #1C1917;
             --text-muted: #78716C;
             --border: #FED7AA;
-            --radius-md: 16px;
-            --shadow-sm: 0 4px 12px rgba(249, 115, 22, 0.08);
+            --radius-md: 12px;
+            --shadow-sm: 0 4px 12px rgba(249, 115, 22, 0.05);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -32,24 +32,27 @@
         .app-container { width: 100%; max-width: 480px; background: var(--bg-color); height: 100vh; position: relative; display: flex; flex-direction: column; overflow: hidden; }
 
         header { padding: 24px 20px 16px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        header h1 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        header h1 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .kitchen-icon { width: 26px; height: 26px; display: inline-block; }
         
-        /* Icona cucina personalizzata (Padella) */
-        .kitchen-icon { width: 28px; height: 28px; display: inline-block; }
+        .header-actions { display: flex; gap: 12px; }
+        .btn-icon { background: var(--bg-color); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: var(--primary); transition: 0.2s; }
+        .btn-icon:active { transform: scale(0.9); }
 
         .category-scroll { display: flex; overflow-x: auto; padding: 0 20px 16px; background: var(--surface); gap: 10px; scrollbar-width: none; border-bottom: 1px solid var(--border); }
         .category-scroll::-webkit-scrollbar { display: none; }
         .pill { padding: 8px 16px; background: var(--bg-color); border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;}
         .pill.active { background: var(--primary); color: white; }
 
-        /* WIDGET GRID - 2 COLONNE */
+        /* WIDGET GRID OTTIMIZZATA */
         .recipe-feed { 
             flex: 1; 
             overflow-y: auto; 
             padding: 16px; 
-            padding-bottom: 120px; /* Spazio vitale per il FAB */
+            padding-bottom: 120px; 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
+            grid-auto-rows: max-content; /* Altezze basate sul contenuto */
             gap: 12px; 
             align-content: start;
         }
@@ -60,24 +63,28 @@
         .recipe-widget {
             background: var(--surface);
             border-radius: var(--radius-md);
-            padding: 16px;
+            padding: 14px;
             box-shadow: var(--shadow-sm);
             cursor: pointer;
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            aspect-ratio: 1; /* Card quadrata perfetta */
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 70px; /* Piccolo quanto basta */
             transition: transform 0.2s;
+            gap: 6px;
         }
         .recipe-widget:active { transform: scale(0.96); }
         
         .widget-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 700;
             line-height: 1.3;
+            width: 100%;
+            /* Taglio testo se eccessivo */
             display: -webkit-box;
-            -webkit-line-clamp: 3; 
+            -webkit-line-clamp: 2; 
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -85,75 +92,64 @@
         .widget-badge {
             background: var(--primary-light);
             color: var(--primary-dark);
-            padding: 6px 10px;
-            border-radius: 10px;
-            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            align-self: flex-start;
-            margin-top: 10px;
         }
 
-        /* FAB Corretto con "+" SVG vettoriale centrato */
-        .fab { 
-            position: absolute; 
-            bottom: 80px; 
-            right: 24px; 
-            width: 60px; 
-            height: 60px; 
-            background: var(--primary); 
-            color: white; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4); 
-            cursor: pointer; 
-            border: none; 
-            z-index: 20;
-            transition: transform 0.2s;
-        }
+        .fab { position: absolute; bottom: 80px; right: 24px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4); cursor: pointer; border: none; z-index: 20; transition: transform 0.2s; }
         .fab:active { transform: scale(0.9); }
 
         .overlay { position: absolute; top:0;left:0;right:0;bottom:0; background: rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: 0.3s; z-index: 30; }
         .overlay.active { opacity: 1; pointer-events: all; }
+        
+        /* LAYOUT SCHERMATE (Modals / Details) */
         .sheet, .detail-view { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-color); height: 90vh; transform: translateY(100%); transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 40; display: flex; flex-direction: column; border-radius: 24px 24px 0 0;}
         .sheet.active { transform: translateY(0); }
+        
         .detail-view { height: 100vh; transform: translateX(100%); border-radius: 0; z-index: 50;}
         .detail-view.active { transform: translateX(0); }
+        
         .sheet-header, .detail-header { padding: 20px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); border-radius: 24px 24px 0 0;}
         .detail-header { border-radius: 0; }
         .sheet-content, .detail-content { padding: 20px; overflow-y: auto; flex: 1; }
         
+        /* FORM E INPUTS */
         .form-control { width: 100%; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font-family: inherit; font-size: 1rem; color: var(--text-main);}
         .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         .time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .btn-submit { width: 100%; padding: 16px; background: var(--text-main); color: white; border: none; border-radius: 12px; font-weight: 700; margin-bottom: 40px; cursor: pointer;}
         
-        .detail-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 20px;}
-        .time-banner { display: flex; justify-content: space-between; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 20px;}
+        /* DETTAGLI RICETTA */
+        .detail-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 20px; line-height: 1.2;}
+        .time-banner { display: flex; justify-content: space-around; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 20px;}
         .time-item span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;}
         .time-item strong { font-size: 1.1rem; }
         .content-box { background: var(--surface); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border); white-space: pre-wrap; margin-bottom: 20px; line-height: 1.6;}
         
+        /* LISTA CATEGORIE */
+        .cat-list { list-style: none; margin-bottom: 20px; }
+        .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; font-weight: 600;}
+        .btn-del-cat { background: rgba(239, 68, 68, 0.1); color: #EF4444; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .btn-del-cat.confirming { background: #EF4444; color: white; }
+        
+        /* NOTIFICHE */
         .toast { position: absolute; top: 20px; left: 50%; transform: translate(-50%, -100px); background: var(--text-main); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 100; display: flex; align-items: center; gap: 8px; }
         .toast.show { transform: translate(-50%, 0); }
     </style>
 </head>
 <body>
 
-<!-- Setup dinamico della PWA con l'icona Cucina Arancione (per evitare di creare file esterni) -->
+<!-- Generazione automatica PWA per anteprima/uso -->
 <script>
     const iconSVG = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="1em" font-size="80">🍳</text></svg>`;
     const manifest = {
-        name: "ChefBox",
-        short_name: "ChefBox",
-        display: "standalone",
-        start_url: ".",
-        background_color: "#FFF7ED",
-        theme_color: "#F97316",
+        name: "ChefBox", short_name: "ChefBox", display: "standalone", start_url: ".",
+        background_color: "#FFF7ED", theme_color: "#F97316",
         icons: [{ src: iconSVG, sizes: "192x192", type: "image/svg+xml" }]
     };
     const manifestLink = document.createElement('link');
@@ -167,20 +163,24 @@
 
     <header>
         <h1>
-            <!-- Icona Cucina Dinamica -->
             <img src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="1em" font-size="80">🍳</text></svg>' class="kitchen-icon" alt="ChefBox"> 
             ChefBox
         </h1>
+        <div class="header-actions">
+            <!-- Pulsante Gestione Categorie -->
+            <button class="btn-icon" id="btn-open-cats"><i class="ri-settings-3-fill"></i></button>
+        </div>
     </header>
 
+    <!-- Scroll Categorie -->
     <div class="category-scroll" id="category-filters">
         <div class="pill active" data-filter="All">Tutte</div>
     </div>
 
-    <!-- GRID A DUE COLONNE -->
+    <!-- Feed Ricette (Widget) -->
     <main class="recipe-feed" id="recipe-feed"></main>
 
-    <!-- FAB RIALZATO CON SIMBOLO "+" VETTORIALE PERFETTAMENTE CENTRATO -->
+    <!-- FAB Aggiungi -->
     <button class="fab" id="fab-add">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -190,18 +190,19 @@
 
     <div class="overlay" id="overlay"></div>
 
-    <!-- BOTTOM SHEET FORM -->
+    <!-- BOTTOM SHEET: Aggiungi Ricetta -->
     <div class="sheet" id="add-sheet">
         <div class="sheet-header">
             <h3 style="font-size: 1.2rem;">Nuova Ricetta</h3>
-            <button style="background:none;border:none;font-size:1.5rem;color:var(--text-muted);cursor:pointer;" id="btn-close-sheet"><i class="ri-close-line"></i></button>
+            <button class="btn-icon" style="color:var(--text-muted)" id="btn-close-sheet"><i class="ri-close-line"></i></button>
         </div>
         <div class="sheet-content">
             <form id="recipe-form">
                 <input type="text" class="form-control" id="title" required placeholder="Titolo (Es. Carbonara)">
                 <select class="form-control" id="category" required><option value="" disabled selected>Scegli Categoria...</option></select>
+                <!-- Tempi Opzionali -->
                 <div class="time-grid">
-                    <input type="number" class="form-control" id="timeTotal" required placeholder="Tot(m)">
+                    <input type="number" class="form-control" id="timeTotal" placeholder="Tot(m)">
                     <input type="number" class="form-control" id="timeLeav" placeholder="Liev(m)">
                     <input type="number" class="form-control" id="timeCook" placeholder="Cott(m)">
                 </div>
@@ -212,10 +213,25 @@
         </div>
     </div>
 
-    <!-- DETAIL VIEW -->
+    <!-- BOTTOM SHEET: Gestione Categorie -->
+    <div class="sheet" id="cats-sheet">
+        <div class="sheet-header">
+            <h3 style="font-size: 1.2rem;">Categorie</h3>
+            <button class="btn-icon" style="color:var(--text-muted)" id="btn-close-cats"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="sheet-content">
+            <ul class="cat-list" id="cat-list-ui"></ul>
+            <div style="display:flex; gap:8px;">
+                <input type="text" class="form-control" id="new-cat-name" placeholder="Nuova categoria..." style="margin-bottom:0;">
+                <button class="btn-submit" id="btn-add-cat" style="width:auto; margin:0; padding:14px 20px;">+</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETAIL VIEW (Lettura Ricetta) -->
     <div class="detail-view" id="detail-view">
         <div class="detail-header">
-            <button style="background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--text-main);" id="btn-back"><i class="ri-arrow-left-s-line"></i></button>
+            <button style="background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text-main);" id="btn-back"><i class="ri-arrow-left-s-line"></i></button>
             <button style="background:var(--primary-light);color:var(--primary-dark);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;" id="btn-delete"><i class="ri-delete-bin-line"></i></button>
         </div>
         <div class="detail-content" id="detail-content"></div>
@@ -223,98 +239,201 @@
 </div>
 
 <script>
-    const Categorie = ["Antipasti", "Primi piatti", "Secondi piatti", "Contorni", "Dolci", "Lievitati salati", "Lievitati dolci", "Piatti unici", "Salse", "Zuppe", "Bevande", "Snack"];
-    let recipes = JSON.parse(localStorage.getItem('chefbox_recipes_v2')) || [];
-    let currentId = null;
+    // --- GESTIONE DATI ---
+    let defaultCats = ["Antipasti", "Primi", "Secondi", "Contorni", "Dolci", "Lievitati", "Salse", "Bevande"];
+    let categories = JSON.parse(localStorage.getItem('chefbox_cats')) || defaultCats;
+    let recipes = JSON.parse(localStorage.getItem('chefbox_recipes_v3')) || [];
+    let currentRecipeId = null;
 
-    const feed = document.getElementById('recipe-feed'), filters = document.getElementById('category-filters');
-    const form = document.getElementById('recipe-form'), catSelect = document.getElementById('category');
+    // --- ELEMENTI DOM ---
+    const feed = document.getElementById('recipe-feed');
+    const filtersContainer = document.getElementById('category-filters');
+    const catSelect = document.getElementById('category');
+    const catListUI = document.getElementById('cat-list-ui');
     
-    // Inizializzazione
-    Categorie.forEach(cat => {
-        catSelect.add(new Option(cat, cat));
-        const pill = document.createElement('div');
-        pill.className = 'pill'; pill.innerText = cat;
-        pill.onclick = () => {
-            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            renderFeed(cat);
-        };
-        filters.appendChild(pill);
-    });
-
-    document.querySelector('.pill').onclick = function() {
-        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-        this.classList.add('active'); renderFeed('All');
+    // --- STORICO E TASTO INDIETRO (HISTORY API) ---
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+        if(id.includes('sheet')) document.getElementById('overlay').classList.add('active');
+        history.pushState({ modal: id }, "", `#${id}`);
+    }
+    
+    function closeAllModals() {
+        document.querySelectorAll('.sheet, .detail-view, .overlay').forEach(el => el.classList.remove('active'));
     }
 
-    // Controlli Modali
-    document.getElementById('fab-add').onclick = () => { document.getElementById('overlay').classList.add('active'); document.getElementById('add-sheet').classList.add('active'); }
-    document.getElementById('btn-close-sheet').onclick = document.getElementById('overlay').onclick = () => { document.getElementById('overlay').classList.remove('active'); document.getElementById('add-sheet').classList.remove('active'); }
-    document.getElementById('btn-back').onclick = () => document.getElementById('detail-view').classList.remove('active');
+    window.addEventListener('popstate', (e) => {
+        closeAllModals();
+        if (e.state && e.state.modal) {
+            document.getElementById(e.state.modal).classList.add('active');
+            if(e.state.modal.includes('sheet')) document.getElementById('overlay').classList.add('active');
+        }
+    });
 
-    // Salvataggio
-    form.onsubmit = (e) => {
-        e.preventDefault();
-        recipes.unshift({
-            id: 'r_' + Date.now(), title: document.getElementById('title').value, category: document.getElementById('category').value,
-            timeTotal: document.getElementById('timeTotal').value, timeLeav: document.getElementById('timeLeav').value || '0', timeCook: document.getElementById('timeCook').value || '0',
-            ingredients: document.getElementById('ingredients').value, procedure: document.getElementById('procedure').value
+    const triggerBack = () => history.back();
+    document.getElementById('btn-close-sheet').onclick = triggerBack;
+    document.getElementById('btn-close-cats').onclick = triggerBack;
+    document.getElementById('btn-back').onclick = triggerBack;
+    document.getElementById('overlay').onclick = triggerBack;
+
+    document.getElementById('fab-add').onclick = () => openModal('add-sheet');
+    document.getElementById('btn-open-cats').onclick = () => openModal('cats-sheet');
+
+
+    // --- INIZIALIZZAZIONE UI CATEGORIE ---
+    function renderCategories() {
+        // Ripulisce
+        filtersContainer.innerHTML = '<div class="pill active" data-filter="All">Tutte</div>';
+        catSelect.innerHTML = '<option value="" disabled selected>Scegli Categoria...</option>';
+        catListUI.innerHTML = '';
+
+        categories.forEach(cat => {
+            // 1. Aggiungi alla select nel form
+            catSelect.add(new Option(cat, cat));
+            
+            // 2. Aggiungi ai filtri a pillola
+            const pill = document.createElement('div');
+            pill.className = 'pill'; pill.innerText = cat;
+            pill.onclick = () => {
+                document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                renderFeed(cat);
+            };
+            filtersContainer.appendChild(pill);
+
+            // 3. Aggiungi alla lista di gestione (Sheet)
+            const li = document.createElement('li');
+            li.className = 'cat-item';
+            li.innerHTML = `<span>${cat}</span>`;
+            
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn-del-cat';
+            delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+            
+            delBtn.onclick = () => {
+                const count = recipes.filter(r => r.category === cat).length;
+                if(count > 0) {
+                    if(!delBtn.classList.contains('confirming')) {
+                        delBtn.classList.add('confirming');
+                        delBtn.innerHTML = 'Elimina le ' + count + ' ricette?';
+                        setTimeout(() => { 
+                            delBtn.classList.remove('confirming'); 
+                            delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>'; 
+                        }, 3000);
+                        return;
+                    } else {
+                        // Elimina anche le ricette collegate se confermato
+                        recipes = recipes.filter(r => r.category !== cat);
+                        localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
+                        renderFeed('All');
+                    }
+                }
+                
+                categories = categories.filter(c => c !== cat);
+                localStorage.setItem('chefbox_cats', JSON.stringify(categories));
+                renderCategories();
+                showToast('Categoria eliminata');
+            };
+            
+            li.appendChild(delBtn);
+            catListUI.appendChild(li);
         });
-        localStorage.setItem('chefbox_recipes_v2', JSON.stringify(recipes));
-        form.reset(); document.getElementById('btn-close-sheet').click();
-        document.querySelector('.pill').click(); 
-        showToast('Ricetta aggiunta!');
+
+        // Click sulla prima pillola ("Tutte")
+        filtersContainer.firstElementChild.onclick = function() {
+            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+            this.classList.add('active'); renderFeed('All');
+        }
+    }
+
+    // Aggiungi nuova categoria
+    document.getElementById('btn-add-cat').onclick = () => {
+        const val = document.getElementById('new-cat-name').value.trim();
+        if(val && !categories.includes(val)) {
+            categories.push(val);
+            localStorage.setItem('chefbox_cats', JSON.stringify(categories));
+            document.getElementById('new-cat-name').value = '';
+            renderCategories();
+            showToast('Categoria aggiunta!');
+        }
     };
 
-    // Rendering Griglia a Widget
+    // --- LOGICA RICETTE ---
+    document.getElementById('recipe-form').onsubmit = (e) => {
+        e.preventDefault();
+        recipes.unshift({
+            id: 'r_' + Date.now(), 
+            title: document.getElementById('title').value, 
+            category: document.getElementById('category').value,
+            timeTotal: document.getElementById('timeTotal').value, 
+            timeLeav: document.getElementById('timeLeav').value, 
+            timeCook: document.getElementById('timeCook').value,
+            ingredients: document.getElementById('ingredients').value, 
+            procedure: document.getElementById('procedure').value
+        });
+        localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
+        document.getElementById('recipe-form').reset(); 
+        triggerBack(); // Chiude sheet
+        filtersContainer.firstElementChild.click(); // Reset a "Tutte"
+        showToast('Ricetta salvata!');
+    };
+
     function renderFeed(filter = 'All') {
         feed.innerHTML = '';
         const filtered = filter === 'All' ? recipes : recipes.filter(r => r.category === filter);
-        if(filtered.length === 0) return feed.innerHTML = `<div class="empty-state"><i class="ri-book-3-line"></i><br><span style="margin-top:10px; display:block;">Nessuna ricetta qui.</span></div>`;
+        
+        if(filtered.length === 0) {
+            feed.innerHTML = `<div class="empty-state"><i class="ri-book-3-line"></i><br><span style="margin-top:10px; display:block;">Nessuna ricetta.</span></div>`;
+            return;
+        }
         
         filtered.forEach(r => {
             const div = document.createElement('div');
             div.className = 'recipe-widget'; 
             div.onclick = () => openRecipe(r.id);
-            div.innerHTML = `
-                <div class="widget-title">${r.title}</div>
-                <div class="widget-badge"><i class="ri-time-line"></i> ${r.timeTotal}m</div>
-            `;
+            
+            // Badge Opzionale
+            const badgeHtml = r.timeTotal ? `<div class="widget-badge"><i class="ri-time-line"></i> ${r.timeTotal}m</div>` : '';
+            
+            div.innerHTML = `<div class="widget-title">${r.title}</div>${badgeHtml}`;
             feed.appendChild(div);
         });
     }
 
-    // Apertura Lettura
     function openRecipe(id) {
         const r = recipes.find(rec => rec.id === id);
-        currentId = id;
+        currentRecipeId = id;
+        
+        // Costruzione dinamica del banner dei tempi (se esistono)
+        let timeBannerHtml = '';
+        if(r.timeTotal || r.timeLeav || r.timeCook) {
+            timeBannerHtml = `<div class="time-banner">`;
+            if(r.timeTotal) timeBannerHtml += `<div class="time-item"><span>Totale</span><strong>${r.timeTotal}m</strong></div>`;
+            if(r.timeLeav) timeBannerHtml += `<div class="time-item"><span>Lievitazione</span><strong>${r.timeLeav}m</strong></div>`;
+            if(r.timeCook) timeBannerHtml += `<div class="time-item"><span>Cottura</span><strong>${r.timeCook}m</strong></div>`;
+            timeBannerHtml += `</div>`;
+        }
+
         document.getElementById('detail-content').innerHTML = `
             <div style="color:var(--primary); font-weight:bold; font-size:0.9rem; margin-bottom:10px; letter-spacing:0.5px;">${r.category.toUpperCase()}</div>
             <h2 class="detail-title">${r.title}</h2>
-            <div class="time-banner">
-                <div class="time-item"><span>Totale</span><strong>${r.timeTotal}m</strong></div>
-                <div class="time-item"><span>Lievitaz.</span><strong>${r.timeLeav}m</strong></div>
-                <div class="time-item"><span>Cottura</span><strong>${r.timeCook}m</strong></div>
-            </div>
+            ${timeBannerHtml}
             <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;"><i class="ri-shopping-basket-line" style="color:var(--primary)"></i> Ingredienti</h3>
             <div class="content-box">${r.ingredients}</div>
             <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;"><i class="ri-list-check-2" style="color:var(--primary)"></i> Procedimento</h3>
             <div class="content-box">${r.procedure}</div>
         `;
-        document.getElementById('detail-view').classList.add('active');
+        openModal('detail-view');
     }
 
-    // Eliminazione
     document.getElementById('btn-delete').onclick = () => {
-        recipes = recipes.filter(r => r.id !== currentId);
-        localStorage.setItem('chefbox_recipes_v2', JSON.stringify(recipes));
-        document.getElementById('btn-back').click();
+        recipes = recipes.filter(r => r.id !== currentRecipeId);
+        localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
+        triggerBack();
         renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText);
         showToast('Ricetta eliminata');
     };
 
-    // Toast
     function showToast(msg) {
         const t = document.getElementById('toast');
         document.getElementById('toast-msg').innerText = msg;
@@ -322,6 +441,8 @@
         setTimeout(() => t.classList.remove('show'), 3000);
     }
 
+    // Start App
+    renderCategories();
     renderFeed();
 </script>
 </body>
