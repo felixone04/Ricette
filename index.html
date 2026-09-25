@@ -347,6 +347,29 @@
         .pick-option i { font-size: 1.3rem; color: var(--primary); }
         .pick-option small { margin-left: auto; color: var(--text-muted); font-weight: 600; }
         .toast-action[hidden] { display: none; }
+        /* --- Incolla / scansiona ricetta --- */
+        .import-cta { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; margin-bottom: 20px; background: linear-gradient(135deg, #FFF1E6, #FFFFFF); border: 1px dashed var(--primary); border-radius: 16px; cursor: pointer; text-align: left; font-family: inherit; color: inherit; }
+        .import-cta > i { margin-left: auto; font-size: 1.4rem; color: var(--primary); }
+        .import-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .import-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; font-weight: 800; font-size: 0.95rem; cursor: pointer; font-family: inherit; color: var(--text-main); }
+        .import-btn i { font-size: 1.8rem; color: var(--primary); }
+        .import-btn:disabled { opacity: 0.5; cursor: wait; }
+        .import-text { min-height: 220px; font-size: 0.95rem; }
+        .scan-progress { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+        .scan-progress[hidden] { display: none; }
+        .scan-top { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; }
+        #scan-bar-fill { background: var(--primary); }
+        .import-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-top: 16px; }
+        .import-card h4 { font-size: 1.05rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .import-field { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 0.95rem; }
+        .import-field:last-of-type { border-bottom: none; }
+        .import-field b { min-width: 92px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.4px; padding-top: 2px; }
+        .import-field span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .import-ings { list-style: none; margin: 4px 0 0; }
+        .import-ings li { padding: 3px 0; }
+        .import-ings li strong { color: var(--primary-dark); }
+        .import-ings li.loose { color: var(--text-muted); }
+        .import-proc { white-space: pre-wrap; max-height: 160px; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
         /* --- Sostituzioni --- */
         .tile-wide { grid-column: 1 / -1; flex-direction: row; align-items: center; }
         .tile-wide .tile-arrow { position: static; margin-left: auto; }
@@ -536,6 +559,11 @@
         </div>
         <div class="sheet-content">
             <form id="recipe-form" novalidate>
+                <button type="button" class="import-cta" id="btn-open-import">
+                    <span class="tile-icon"><i class="ri-magic-line"></i></span>
+                    <span class="tile-text"><strong>Incolla o scansiona una ricetta</strong><small>Da un sito, da WhatsApp o dalla foto di un libro: compilo io il modulo</small></span>
+                    <i class="ri-arrow-right-s-line" aria-hidden="true"></i>
+                </button>
 
                 <div class="form-section-title"><i class="ri-information-line"></i> 1. Info Generali</div>
                 <div class="form-group">
@@ -675,6 +703,28 @@
         <div class="page-content"><div class="page-inner">
             <p class="page-hint" id="prods-hint" hidden></p>
             <ul class="page-list" id="prod-list-ui"></ul>
+        </div></div>
+    </div>
+
+    <!-- PAGINA A TUTTO SCHERMO: INCOLLA O SCANSIONA UNA RICETTA -->
+    <div class="page-view" id="import-page" role="dialog" aria-modal="true" aria-labelledby="import-title">
+        <div class="page-header">
+            <button type="button" class="btn-icon page-back" data-page-close aria-label="Torna al modulo"><i class="ri-arrow-left-s-line"></i></button>
+            <div class="page-heading"><h2 id="import-title">Incolla o scansiona</h2><span>Il modulo si compila da solo</span></div>
+        </div>
+        <div class="page-content"><div class="page-inner">
+            <div class="import-actions">
+                <button type="button" class="import-btn" id="btn-import-paste"><i class="ri-clipboard-line"></i><span>Incolla testo</span></button>
+                <button type="button" class="import-btn" id="btn-import-scan"><i class="ri-camera-lens-line"></i><span>Scansiona foto</span></button>
+            </div>
+            <input type="file" id="scan-input" accept="image/*" hidden>
+            <div class="scan-progress" id="scan-progress" hidden>
+                <div class="scan-top"><span id="scan-status">Preparazione…</span><span id="scan-pct">0%</span></div>
+                <div class="shop-bar"><div id="scan-bar-fill"></div></div>
+            </div>
+            <textarea class="form-control import-text" id="import-text" aria-label="Testo della ricetta" placeholder="Incolla qui la ricetta, per esempio:&#10;&#10;Torta di mele&#10;Per 8 persone · Cottura 45 minuti&#10;&#10;Ingredienti&#10;300 g di farina&#10;3 uova&#10;sale q.b.&#10;&#10;Procedimento&#10;Sbatti le uova con lo zucchero…"></textarea>
+            <button type="button" class="btn-submit" id="btn-import-analyze"><i class="ri-magic-line"></i> Analizza il testo</button>
+            <div id="import-preview"></div>
         </div></div>
     </div>
 
@@ -1202,6 +1252,8 @@
         const n = toNum(qty);
         if (qty !== '' && !isNaN(n)) qty = numFmt.format(n * ratio);
         if (unit === 'q.b.') return { amount: qty ? `${qty} q.b.` : 'q.b.', name: ing.name };
+        if (qty === '1' && unit === 'cucchiai') unit = 'cucchiaio'; // "1 cucchiaio", non "1 cucchiai"
+        if (qty === '1' && unit === 'cucchiaini') unit = 'cucchiaino';
         return { amount: qty ? `${qty} ${unit}`.trim() : '', name: ing.name };
     }
     function renderActiveIngredients() {
@@ -1751,7 +1803,7 @@
         if (next < 0) return;
         if (next >= cook.steps.length) { cook.index = 0; cook.recipeId = null; closeTopModal(); showToast('Buon appetito! 🍽️'); speakText('Buon appetito!'); return; }
         cook.index = next; renderCookStep(delta); speakCookStep();
-        if (navigator.vibrate) navigator.vibrate(15);
+        if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(15);
     }
     $('btn-cook-next').onclick = () => cookMove(1);
     $('btn-cook-prev').onclick = () => cookMove(-1);
@@ -2529,6 +2581,293 @@
     }
     $('detail-content').addEventListener('click', onSubClick);
     $('cook-ing-list').addEventListener('click', onSubClick);
+    // --- INCOLLA O SCANSIONA UNA RICETTA: dal testo al modulo compilato ---
+    const WORD_NUM = { dodici: 12, quattro: 4, cinque: 5, sette: 7, dieci: 10, mezzo: 0.5, mezza: 0.5, nove: 9, otto: 8, uno: 1, una: 1, due: 2, tre: 3, sei: 6, un: 1 };
+    const FRAC = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3 };
+    const QTY_RE = `(\\d+(?:[.,]\\d+)?(?:\\s*\\/\\s*\\d+)?(?:\\s*[-–]\\s*\\d+(?:[.,]\\d+)?)?|[½¼¾⅓⅔]|(?:${Object.keys(WORD_NUM).join('|')})(?![a-zà-ù]))`;
+    const QTY_FIRST_RE = new RegExp(`^${QTY_RE}\\s*([a-zà-ù]+\\.?)?\\s*(.*)$`, 'i');
+    const QTY_LAST_RE = new RegExp(`^(.+?)[\\s,:–-]*\\(?\\s*${QTY_RE}\\s*([a-zà-ù]+\\.?)?\\s*\\)?$`, 'i');
+    const UNIT_MAP = [
+        [/^(kg|chili|chilo|chilogramm[io])$/, 'kg', 1], [/^(g|gr|grammi|grammo)$/, 'g', 1], [/^(hg|etti|etto)$/, 'g', 100],
+        [/^(l|lt|litri|litro)$/, 'l', 1], [/^(ml|millilitri|millilitro)$/, 'ml', 1], [/^cl$/, 'ml', 10], [/^dl$/, 'ml', 100],
+        [/^(cucchiai|cucchiaio|cucchiaiate|cucchiaiata|cucch)$/, 'cucchiai', 1], [/^(cucchiaini|cucchiaino)$/, 'cucchiaini', 1],
+        [/^(pz|pezzi|pezzo)$/, 'pz', 1]
+    ];
+    const COUNT_WORDS = /^(spicch[io]|foglie|foglia|fette|fetta|bustine|bustina|bicchier[ie]|tazz[ae]|tazzine|tazzina|ramett[io]|mazzett[io]|cubett[io]|vasett[io]|scatol[ae]|confezion[ei]|barattol[io]|manciat[ae]|filett[io]|gamb[io]|ciuff[io]|noce|noci|rotol[io]|panett[io]|lattin[ae]|dadi|dado|fogli|foglio)$/;
+    const fmtQ = (n) => String(+n.toFixed(3));
+    function parseQtyText(s) {
+        s = s.trim().toLowerCase();
+        if (s in FRAC) return FRAC[s];
+        if (s in WORD_NUM) return WORD_NUM[s];
+        return toNum(s.split(/\s*[-–]\s*/)[0].replace(/\s+/g, '')); // "2-3" → 2, "1/2" → 0,5
+    }
+    const capFirst = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+    const cleanIngName = (x) => capFirst(x.replace(/^(di|d['’])\s*/i, '').replace(/\s*[:–-]\s*$/, '').replace(/\s+/g, ' ').trim());
+    function parseIngredientLine(line) {
+        const s = line.replace(/^[\s\-–—•*·▪►✓✔☐○●◦>]+/, '').replace(/\s+/g, ' ').trim().replace(/[;,.]$/, '');
+        if (!s || s.length > 120) return null;
+        let m = s.match(/^(.+?)[\s,:–-]+(q\.?\s?b\.?|quanto basta|a piacere|qb)$/i);
+        if (m) return { name: cleanIngName(m[1]), qty: '', unit: 'q.b.' };
+        m = s.match(QTY_FIRST_RE);                          // "300 g di farina", "3 uova", "2 spicchi d'aglio"
+        if (m) {
+            const qty = parseQtyText(m[1]), tok = (m[2] || '').replace('.', '').toLowerCase(), rest = m[3] || '';
+            if (!isNaN(qty) && qty > 0) {
+                const u = UNIT_MAP.find(([re]) => re.test(tok));
+                if (u && rest) return { name: cleanIngName(rest), qty: fmtQ(qty * u[2]), unit: u[1] };
+                if (/^pizzic/.test(tok) && rest) return { name: cleanIngName(rest), qty: '', unit: 'q.b.' };
+                const name = cleanIngName(`${tok} ${rest}`);
+                if (name) return { name, qty: fmtQ(qty), unit: 'pz' };
+            }
+        }
+        m = s.match(QTY_LAST_RE);                           // "Farina 00 300 g", "Uova: 3", "Burro (100 g)"
+        if (m) {
+            const qty = parseQtyText(m[2]), tok = (m[3] || '').replace('.', '').toLowerCase(), u = UNIT_MAP.find(([re]) => re.test(tok));
+            if (!isNaN(qty) && qty > 0 && (u || !tok)) return { name: cleanIngName(m[1]), qty: fmtQ(qty * (u ? u[2] : 1)), unit: u ? u[1] : 'pz' };
+        }
+        return { name: cleanIngName(s), qty: '', unit: '', loose: true };
+    }
+    function durationToMin(text) {
+        const re = new RegExp(TIMER_RE.source, 'gi'); let m, secs = 0;
+        while ((m = re.exec(text))) { secs += Math.round(timerSeconds(m)); if (m[0].length === 0) re.lastIndex++; }
+        return secs ? String(Math.round(secs / 60)) : '';
+    }
+    const isIngHead = (l) => l.length < 70 && /^(ingredienti|ingredients|occorrente|cosa (ti )?serve|lista degli ingredienti)\b/i.test(l);
+    const isProcHead = (l) => l.length < 60 && /^(procedimento|preparazione|come si prepara|come preparare|metodo|istruzioni|esecuzione|passaggi|realizzazione|method|directions|instructions)\b/i.test(l) && !durationToMin(l);
+    const isSubHead = (l) => /^per (l['’]|il |la |lo |i |gli |le |un |una )?[a-zà-ù' ]{2,32}:?$/i.test(l);
+    const CAT_HINTS = [
+        ['Dolci', /\b(torta|torte|biscott|crostat|tiramis|dolce|dolci|muffin|ciambell|plumcake|budino|mousse|semifreddo|gelato|cheesecake|brownie|panna cotta|frittelle|cannoli|strudel|pasticcin|crepes|pancake|cupcake|sbriciolona|castagnaccio)/],
+        ['Lievitati', /\b(pizza|pane|focacc|panini|brioche|piadin|lievitat|grissin|panettone|colomba|taralli|cornetti|bomboloni)/],
+        ['Primi', /\b(pasta|spaghett|risott|lasagn|gnocch|tagliatell|penne|fusilli|ravioli|tortellini|minestr|zuppa|vellutat|carbonara|amatriciana|orecchiette|paccheri|linguine|farfalle|cannelloni|pappardelle|bucatini|rigatoni)/],
+        ['Secondi', /\b(pollo|manzo|arrosto|polpett|bistecc|scaloppin|frittata|pesce|salmone|tonno|orata|branzino|spezzatino|involtini|cotolett|hamburger|salsicc|filetto|tacchino|maiale|vitello|gamberi|calamari|merluzzo|baccala|stinco|brasato)/],
+        ['Contorni', /\b(insalat|patate|verdure|contorno|peperonata|caponata|zucchine|melanzane|spinaci|carciofi|fagiolini|funghi trifolati)/],
+        ['Antipasti', /\b(antipast|bruschett|crostini|tartine|finger|stuzzichin|tartare|carpaccio|vol au vent)/],
+        ['Salse', /\b(salsa|pesto|sugo|ragu|besciamella|maionese|ketchup|dressing|vinaigrette)/],
+        ['Bevande', /\b(cocktail|frullato|smoothie|spremuta|succo|tisana|limonata|centrifugato|liquore|sangria)/]
+    ];
+    function guessCategory(title) {
+        const t = norm(title);
+        for (const [cat, re] of CAT_HINTS) {
+            if (re.test(t)) { const found = categories.find((c) => sameText(c, cat)); if (found) return found; }
+        }
+        return '';
+    }
+    // Le righe spezzate (foto di libri, copia da siti) vengono riunite in frasi complete
+    function joinBrokenLines(lines) {
+        const out = [];
+        lines.forEach((l) => {
+            const prev = out[out.length - 1];
+            if (prev && /-$/.test(prev) && /^[a-zà-ù]/.test(l)) out[out.length - 1] = prev.slice(0, -1) + l;          // "mesco-" + "lare"
+            else if (prev && !/[.!?:;]$/.test(prev) && /^[a-zà-ù(]/.test(l)) out[out.length - 1] = prev + ' ' + l;   // frase che continua
+            else out.push(l);
+        });
+        return out;
+    }
+    function parseRecipeText(text) {
+        const lines = String(text || '').replace(/\r/g, '').split('\n').map((l) => l.replace(/\s+/g, ' ').trim());
+        const res = { title: '', servings: '', timeTotal: '', timeCook: '', timeLeav: '', timePrep: '', ingredients: [], procedure: '', category: '' };
+        const ingIdx = lines.findIndex(isIngHead), procIdx = lines.findIndex(isProcHead);
+        const readMeta = (l) => {
+            if (!l || l.length > 90) return false;
+            let found = false, m;
+            if ((m = l.match(/(\d+)\s*(?:[-–]\s*\d+\s*)?(persone|porzioni|pers\b|pezzi\b)/i)) || (m = l.match(/(?:dosi|dose|porzioni|persone|servings)\s*(?:per)?\s*:?\s*(\d+)/i))) { if (!res.servings) res.servings = m[1]; found = true; }
+            const time = (re, key) => { const t = l.match(re); if (t) { const v = durationToMin(t[1]); if (v) { if (!res[key]) res[key] = v; found = true; } } };
+            time(/(?:tempo (?:di )?cottura|cottura)\s*:?\s*(.+)/i, 'timeCook');
+            time(/(?:tempo (?:di )?preparazione|preparazione)\s*:?\s*(.+)/i, 'timePrep');
+            time(/(?:lievitazione|riposo|tempo di riposo)\s*:?\s*(.+)/i, 'timeLeav');
+            time(/(?:tempo totale|totale)\s*:?\s*(.+)/i, 'timeTotal');
+            return found;
+        };
+        const nonEmpty = (from, to) => lines.slice(from, to).filter(Boolean);
+        // Titolo: la prima riga "normale" prima degli ingredienti ("Carbonara per 4" → titolo + 4 persone)
+        const headEnd = ingIdx >= 0 ? ingIdx : (procIdx >= 0 ? procIdx : lines.length);
+        const META_START = /^(dosi|dose|porzioni|persone|preparazione|cottura|tempo|difficolt|lievitazione|riposo|totale|costo|calorie|servings|ricetta di|di |by )/i;
+        const looksLikeIngredient = (l) => /^[\-–—•*·▪►✓✔☐○●◦>]/.test(l) || (QTY_FIRST_RE.test(l) && !parseIngredientLine(l).loose);
+        let titleLine = null;
+        for (const l of nonEmpty(0, headEnd)) {
+            if (isIngHead(l) || isProcHead(l) || looksLikeIngredient(l)) break; // gli ingredienti sono iniziati
+            if (META_START.test(l) || res.title) { readMeta(l); continue; }
+            if (l.length > 80) break;
+            readMeta(l); // "Torta di mele per 8 persone"
+            const t = l.replace(/[\s,·–-]+(?:per|x|dosi per)\s*\d+\s*(?:persone|porzioni|pers\.?)?\s*$/i, '').replace(/[.:]$/, '').trim();
+            const letters = t.replace(/[^a-zà-ù]/gi, '');
+            res.title = letters && t === t.toUpperCase() ? capFirst(t.toLowerCase()) : capFirst(t); // "FOCACCIA" → "Focaccia"
+            const m = l.match(/(?:per|x)\s*(\d+)\s*(?:persone|porzioni|pers\.?)?\s*$/i);
+            if (m && !res.servings) res.servings = m[1];
+            titleLine = l;
+        }
+        let ingLines = [], procLines = [];
+        if (ingIdx >= 0) {
+            readMeta(lines[ingIdx]); // "Ingredienti per 4 persone"
+            ingLines = nonEmpty(ingIdx + 1, procIdx > ingIdx ? procIdx : lines.length);
+            if (procIdx > ingIdx) procLines = nonEmpty(procIdx + 1, lines.length);
+            else {
+                // Nessun titolo "Procedimento": gli ingredienti finiscono alla prima frase lunga
+                const cut = ingLines.findIndex((l) => l.length > 70 || (/[.!?]$/.test(l) && l.split(' ').length > 6));
+                if (cut >= 0) { procLines = ingLines.slice(cut); ingLines = ingLines.slice(0, cut); }
+            }
+        } else {
+            // Nessun titolo "Ingredienti": righe brevi con quantità = ingredienti, il resto = procedimento
+            const body = nonEmpty(0, procIdx >= 0 ? procIdx : lines.length).filter((l) => l !== titleLine && !readMeta(l));
+            body.forEach((l) => {
+                const p = parseIngredientLine(l);
+                if (p && !p.loose && l.length <= 70 && !(/[.!?]$/.test(l) && l.split(' ').length > 6)) ingLines.push(l);
+                else if (procIdx < 0) procLines.push(l);
+            });
+            if (procIdx >= 0) procLines = nonEmpty(procIdx + 1, lines.length);
+        }
+        ingLines.filter((l) => !isSubHead(l) && !readMeta(l)).forEach((l) => {
+            const p = parseIngredientLine(l);
+            if (p && p.name && p.name.length > 1) res.ingredients.push(p);
+        });
+        procLines = procLines.filter((l) => !readMeta(l) || l.length > 60)
+            .map((l) => l.replace(/^\s*(?:passo|step|fase)?\s*\d+\s*[.):\-]\s+/i, '').replace(/^[\-–•*]\s+/, ''));
+        res.procedure = joinBrokenLines(procLines).join('\n').trim();
+        if (!res.timeTotal) {
+            const sum = ['timePrep', 'timeCook', 'timeLeav'].reduce((s, k) => s + (toNum(res[k]) || 0), 0);
+            if (sum) res.timeTotal = String(sum);
+        }
+        res.category = guessCategory(res.title);
+        return res;
+    }
+
+    let lastImport = null;
+    function renderImportPreview(p) {
+        const box = $('import-preview');
+        const found = p.title || p.ingredients.length || p.procedure;
+        if (!found) { box.innerHTML = `<div class="import-card"><h4><i class="ri-error-warning-line"></i> Non ho trovato una ricetta</h4><p class="form-hint">Controlla il testo: servono almeno ingredienti o procedimento.</p></div>`; return; }
+        const times = [['Totale', p.timeTotal], ['Cottura', p.timeCook], ['Lievitaz.', p.timeLeav]].filter(([, v]) => v).map(([k, v]) => `${k} ${formatMinutes(v)}`).join(' · ');
+        box.innerHTML = `<div class="import-card">
+            <h4><i class="ri-checkbox-circle-line" style="color:#10B981;"></i> Ecco cosa ho capito</h4>
+            <div class="import-field"><b>Titolo</b><span>${esc(p.title) || '<em>non trovato</em>'}</span></div>
+            <div class="import-field"><b>Categoria</b><span>${esc(p.category) || '<em>da scegliere</em>'}</span></div>
+            <div class="import-field"><b>Persone</b><span>${esc(p.servings) || '<em>non indicato</em>'}</span></div>
+            ${times ? `<div class="import-field"><b>Tempi</b><span>${times}</span></div>` : ''}
+            <div class="import-field"><b>Ingredienti</b><span>${p.ingredients.length ? `<ul class="import-ings">${p.ingredients.map((i) => { const f = formatIngredient(i); return `<li class="${i.loose ? 'loose' : ''}">${f.amount ? `<strong>${esc(f.amount)}</strong> ` : ''}${esc(i.name)}</li>`; }).join('')}</ul>` : '<em>nessuno</em>'}</span></div>
+            <div class="import-field"><b>Procedimento</b><span class="import-proc">${esc(p.procedure) || '<em>non trovato</em>'}</span></div>
+            <button type="button" class="btn-submit" id="btn-import-apply" style="margin:14px 0 0;"><i class="ri-file-edit-line"></i> Compila il modulo</button>
+            <p class="form-hint" style="margin-top:8px;">Potrai correggere tutto prima di salvare.</p>
+        </div>`;
+        $('btn-import-apply').onclick = applyImport;
+        box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function analyzeImport() {
+        const text = $('import-text').value;
+        if (!text.trim()) { showToast('Incolla prima il testo della ricetta', 'error'); $('import-text').focus(); return; }
+        lastImport = parseRecipeText(text);
+        renderImportPreview(lastImport);
+    }
+    function applyImport() {
+        const p = lastImport; if (!p) return;
+        const hasData = $('title').value.trim() || activeIngredients.length || $('procedure').value.trim();
+        if (hasData && !confirm('Sostituire i dati già inseriti nel modulo?')) return;
+        if (p.title) $('title').value = p.title;
+        if (p.servings) $('servings').value = p.servings;
+        if (p.category) catSelect.value = p.category;
+        const hasTimes = !!(p.timeTotal || p.timeCook || p.timeLeav);
+        $('toggle-times').checked = hasTimes; $('time-grid-container').classList.toggle('active', hasTimes);
+        $('timeTotal').value = p.timeTotal; $('timeCook').value = p.timeCook; $('timeLeav').value = p.timeLeav;
+        if (p.ingredients.length) {
+            activeIngredients = p.ingredients.map(({ name, qty, unit }) => ({ name, qty, unit }));
+            renderActiveIngredients();
+            p.ingredients.forEach((i) => autoAddProduct(i.name));
+        }
+        if (p.procedure) $('procedure').value = p.procedure;
+        closeTopModal();
+        showToast(p.category ? 'Modulo compilato: controlla e salva' : 'Modulo compilato: scegli la categoria e salva');
+    }
+    $('btn-open-import').onclick = () => {
+        $('import-preview').innerHTML = ''; lastImport = null;
+        openPage('import-page', 'import-text', () => { });
+    };
+    $('btn-import-analyze').onclick = analyzeImport;
+    $('btn-import-paste').onclick = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (!text.trim()) return showToast('Gli appunti sono vuoti', 'error');
+            $('import-text').value = text; analyzeImport();
+        } catch {
+            showToast('Tieni premuto nel riquadro e scegli «Incolla»', 'error');
+            $('import-text').focus();
+        }
+    };
+
+    // Scansione da foto: riconoscimento del testo (OCR) con Tesseract.js, caricato solo quando serve
+    let ocrScript = null;
+    function loadTesseract() {
+        if (window.Tesseract) return Promise.resolve();
+        if (!ocrScript) ocrScript = new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+            s.onload = resolve;
+            s.onerror = () => { ocrScript = null; s.remove(); reject(new Error('rete')); };
+            document.head.appendChild(s);
+        });
+        return ocrScript;
+    }
+    function loadImageFromFile(file) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file), img = new Image();
+            img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('formato')); };
+            img.src = url;
+        });
+    }
+    // Ridimensiona e rende la foto in bianco e nero ad alto contrasto: il testo si legge meglio
+    async function prepareScan(file) {
+        const img = await loadImageFromFile(file);
+        const scale = Math.min(1, 2200 / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * scale); c.height = Math.round(img.naturalHeight * scale);
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        const data = ctx.getImageData(0, 0, c.width, c.height), px = data.data;
+        for (let i = 0; i < px.length; i += 4) {
+            const g = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+            const v = Math.max(0, Math.min(255, (g - 128) * 1.5 + 128));
+            px[i] = px[i + 1] = px[i + 2] = v;
+        }
+        ctx.putImageData(data, 0, 0);
+        return c;
+    }
+    const OCR_STEPS = { 'loading tesseract core': 'Carico il lettore di testo…', 'initializing tesseract': 'Avvio il lettore…', 'loading language traineddata': 'Scarico l\'italiano (solo la prima volta)…', 'initializing api': 'Quasi pronto…', 'recognizing text': 'Leggo la ricetta…' };
+    function setScanProgress(label, pct) {
+        $('scan-progress').hidden = false;
+        $('scan-status').textContent = label;
+        $('scan-pct').textContent = Math.round(pct * 100) + '%';
+        $('scan-bar-fill').style.width = Math.round(pct * 100) + '%';
+    }
+    let scanning = false;
+    $('btn-import-scan').onclick = () => { if (!scanning) $('scan-input').click(); };
+    $('scan-input').onchange = async (e) => {
+        const input = e.target, file = input.files[0]; input.value = '';
+        if (!file) return;
+        if (file.type && !file.type.startsWith('image/')) return showToast('Scegli una foto', 'error');
+        scanning = true; $('btn-import-scan').disabled = true;
+        let worker = null;
+        try {
+            setScanProgress('Preparo la foto…', 0.02);
+            const canvas = await prepareScan(file);
+            setScanProgress('Carico il lettore di testo…', 0.05);
+            await loadTesseract();
+            worker = await Tesseract.createWorker('ita', 1, {
+                logger: (m) => { if (typeof m.progress === 'number') setScanProgress(OCR_STEPS[m.status] || 'Elaborazione…', m.status === 'recognizing text' ? 0.3 + m.progress * 0.7 : Math.min(0.3, 0.05 + m.progress * 0.25)); }
+            });
+            const { data } = await worker.recognize(canvas);
+            const text = (data && data.text || '').trim();
+            if (!text) { showToast('Non riesco a leggere il testo: prova con più luce e la pagina dritta', 'error'); return; }
+            const area = $('import-text');
+            area.value = area.value.trim() ? area.value.trim() + '\n\n' + text : text;
+            setScanProgress('Fatto! Controlla il testo letto', 1);
+            analyzeImport();
+        } catch (err) {
+            showToast(err && err.message === 'rete' ? 'Per la prima scansione serve la connessione' : 'Scansione non riuscita, riprova', 'error');
+            $('scan-progress').hidden = true;
+        } finally {
+            if (worker) worker.terminate().catch(() => { });
+            scanning = false; $('btn-import-scan').disabled = false;
+        }
+    };
+
     // --- DETTAGLIO RICETTA E PORZIONI ---
     function ingredientsListHTML(ings, ratio) {
         if (!ings.length) return '';

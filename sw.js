@@ -1,6 +1,6 @@
 // Incrementa la versione ad ogni rilascio: i client vecchi riceveranno i nuovi file
 const CACHE_PREFIX = 'chefbox-';
-const CACHE_NAME = CACHE_PREFIX + 'v14';
+const CACHE_NAME = CACHE_PREFIX + 'v15';
 const ASSETS = [
     './',
     './index.html',
