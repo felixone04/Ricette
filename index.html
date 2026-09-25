@@ -377,6 +377,11 @@
         .cook-next { background: var(--primary); color: #fff; box-shadow: 0 10px 28px rgba(249, 115, 22, 0.35); }
         .cook-next.finish { background: #10B981; box-shadow: 0 10px 28px rgba(16, 185, 129, 0.35); }
         .cook-btn:disabled { opacity: 0.35; cursor: default; }
+        .cook-tts { width: 56px; padding: 0; justify-content: center; font-size: 1.45rem; }
+        .cook-tts[hidden] { display: none; }
+        .cook-tts.off { background: var(--bg-color); color: var(--text-muted); }
+        .cook-tts.speaking i { animation: tts-pulse 1s ease-in-out infinite; }
+        @keyframes tts-pulse { 50% { transform: scale(1.2); } }
         .cook-ing-panel { position: absolute; inset: 0; background: rgba(28, 25, 23, 0.55); display: flex; align-items: flex-end; justify-content: center; z-index: 2; }
         .cook-ing-panel[hidden] { display: none; }
         .cook-ing-card { background: var(--surface); width: min(640px, 100%); max-height: 82%; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 20px 20px calc(20px + var(--safe-bottom)); font-size: 1.25rem; }
@@ -690,6 +695,7 @@
         <div class="cook-top">
             <button type="button" class="cook-close" id="btn-cook-close" aria-label="Esci dalla modalità cucina"><i class="ri-close-line"></i></button>
             <div class="cook-heading"><span id="cook-recipe"></span><strong id="cook-count" aria-live="polite"></strong></div>
+            <button type="button" class="cook-ing-btn cook-tts" id="btn-cook-tts" aria-pressed="true" aria-label="Lettura ad alta voce" title="Lettura ad alta voce" hidden><i class="ri-volume-up-fill"></i></button>
             <button type="button" class="cook-ing-btn" id="btn-cook-ing" aria-label="Mostra ingredienti"><i class="ri-shopping-basket-line"></i><span class="cook-ing-label">Ingredienti</span></button>
         </div>
         <div class="cook-progress"><div id="cook-progress-bar"></div></div>
@@ -874,6 +880,7 @@
         overlay.classList.toggle('active', modalStack.length > 0);
         overlay.classList.toggle('top', modalStack.some((id) => id.endsWith('-sheet')));
         syncWakeLock();
+        if (!modalStack.includes('cook-view')) stopSpeaking();
         // Uscendo dalla modalità cucina si esce anche dallo schermo intero
         if (!modalStack.includes('cook-view') && cook.fullscreen) {
             cook.fullscreen = false;
@@ -1453,8 +1460,14 @@
     }
     function tickTimers() {
         let changed = false;
-        timers.forEach((t) => { if (t.endAt && t.endAt <= Date.now()) { t.endAt = null; t.remaining = 0; t.ringing = true; changed = true; } });
-        if (changed) { saveTimers(); renderTimers(); return; }
+        const rang = [];
+        timers.forEach((t) => { if (t.endAt && t.endAt <= Date.now()) { t.endAt = null; t.remaining = 0; t.ringing = true; changed = true; rang.push(t.label); } });
+        if (changed) {
+            saveTimers(); renderTimers();
+            // In modalità cucina la voce avvisa quale timer è scaduto
+            if (rang.length && modalStack.includes('cook-view')) speakText(`Tempo scaduto: ${rang.join(', ')}`);
+            return;
+        }
         document.querySelectorAll('.timer-card').forEach((el) => {
             const t = timers.find((x) => x.id === el.dataset.id);
             if (t) el.querySelector('.timer-time').textContent = fmtClock(remainingMs(t));
@@ -1671,6 +1684,7 @@
         $('cook-ing-panel').hidden = true;
         renderCookStep();
         openModal('cook-view');
+        speakCookStep();
         getAudio(); // prepara l'audio dei timer sfruttando il tocco
         if (resume) showToast(`Riprendi dal passo ${cook.index + 1}`);
         // Schermo intero vero sui dispositivi touch (su iPhone non è disponibile: resta comunque a tutta pagina)
@@ -1686,8 +1700,8 @@
         cook.lastMove = now;
         const next = cook.index + delta;
         if (next < 0) return;
-        if (next >= cook.steps.length) { cook.index = 0; cook.recipeId = null; closeTopModal(); showToast('Buon appetito! 🍽️'); return; }
-        cook.index = next; renderCookStep(delta);
+        if (next >= cook.steps.length) { cook.index = 0; cook.recipeId = null; closeTopModal(); showToast('Buon appetito! 🍽️'); speakText('Buon appetito!'); return; }
+        cook.index = next; renderCookStep(delta); speakCookStep();
         if (navigator.vibrate) navigator.vibrate(15);
     }
     $('btn-cook-next').onclick = () => cookMove(1);
@@ -1714,6 +1728,74 @@
         startTimer(parseInt(chip.dataset.sec, 10), chip.dataset.label, r ? r.title : 'Timer');
     });
     document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) cook.fullscreen = false; });
+
+    // --- LETTURA AD ALTA VOCE in modalità cucina (Speech Synthesis), con tasto per silenziare ---
+    const ttsSupported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+    let ttsOn = (() => { try { return localStorage.getItem(KEYS.tts) !== 'off'; } catch { return true; } })();
+    let itVoice = null;
+    function pickVoice() {
+        const voices = speechSynthesis.getVoices().filter((v) => /^it([-_]|$)/i.test(v.lang));
+        // Preferisco le voci più naturali quando il sistema le offre
+        itVoice = voices.find((v) => /natural|premium|enhanced|neural|google/i.test(v.name)) || voices[0] || null;
+    }
+    // Trasforma abbreviazioni e simboli in parole: "30'" → "30 minuti", "180°" → "180 gradi"...
+    function spokenForm(text) {
+        return String(text)
+            .replace(/(\d+)\s*['’](?![a-zà-ù])/gi, '$1 minuti')
+            .replace(/(\d+)\s*°(\s*C\b)?/g, '$1 gradi')
+            .replace(/(\d+)\s*[-–]\s*(\d+)/g, 'da $1 a $2')
+            .replace(/\bq\.?\s?b\.?(?=\s|$|[,;])/gi, 'quanto basta')
+            .replace(/(\d)\s*kg\b/gi, '$1 chili').replace(/(\d)\s*g\b/g, '$1 grammi')
+            .replace(/(\d)\s*ml\b/gi, '$1 millilitri').replace(/(\d)\s*l\b/g, '$1 litri')
+            .replace(/(\d)\s*min\b/gi, '$1 minuti').replace(/(\d)\s*h\b/gi, '$1 ore')
+            .replace(/[×x](\d)/g, 'per $1');
+    }
+    function stopSpeaking() {
+        if (!ttsSupported) return;
+        speechSynthesis.cancel();
+        $('btn-cook-tts').classList.remove('speaking');
+    }
+    function speakText(text) {
+        if (!ttsSupported || !ttsOn) return;
+        speechSynthesis.cancel();
+        // Frase per frase: evita che Chrome si interrompa sui testi lunghi
+        const parts = spokenForm(text).replace(/([.!?;:])\s+/g, '$1\u0001').split('\u0001').map((s) => s.trim()).filter(Boolean);
+        const btn = $('btn-cook-tts');
+        parts.forEach((part, i) => {
+            const u = new SpeechSynthesisUtterance(part);
+            u.lang = 'it-IT'; u.rate = 0.95;
+            if (itVoice) u.voice = itVoice;
+            if (i === 0) u.onstart = () => btn.classList.add('speaking');
+            if (i === parts.length - 1) u.onend = u.onerror = () => btn.classList.remove('speaking');
+            speechSynthesis.speak(u);
+        });
+    }
+    function speakCookStep() {
+        if (!modalStack.includes('cook-view') || !cook.steps.length) return;
+        const last = cook.index === cook.steps.length - 1;
+        speakText(`Passo ${cook.index + 1}${last ? ', ultimo' : ''}. ${cook.steps[cook.index]}`);
+    }
+    function updateTtsButton() {
+        const btn = $('btn-cook-tts');
+        btn.classList.toggle('off', !ttsOn);
+        btn.setAttribute('aria-pressed', String(ttsOn));
+        btn.setAttribute('aria-label', ttsOn ? 'Disattiva la lettura ad alta voce' : 'Attiva la lettura ad alta voce');
+        btn.title = ttsOn ? 'Audio attivo: tocca per silenziare' : 'Audio spento: tocca per ascoltare';
+        btn.innerHTML = `<i class="${ttsOn ? 'ri-volume-up-fill' : 'ri-volume-mute-fill'}"></i>`;
+    }
+    if (ttsSupported) {
+        pickVoice();
+        speechSynthesis.addEventListener?.('voiceschanged', pickVoice);
+        $('btn-cook-tts').hidden = false;
+        updateTtsButton();
+        $('btn-cook-tts').onclick = () => {
+            ttsOn = !ttsOn;
+            try { localStorage.setItem(KEYS.tts, ttsOn ? 'on' : 'off'); } catch { }
+            updateTtsButton();
+            if (ttsOn) speakCookStep(); else stopSpeaking();
+            showToast(ttsOn ? '🔊 Lettura ad alta voce attiva' : '🔇 Audio disattivato');
+        };
+    }
 
     // --- LISTA DELLA SPESA (divisa per reparto) E DISPENSA ---
     const AISLES = [['orto', '🥬', 'Ortofrutta'], ['carne', '🥩', 'Carne e Pesce'], ['frigo', '🧀', 'Frigo e Latticini'], ['dispensa', '🥫', 'Dispensa'], ['bevande', '🍷', 'Bevande'], ['altro', '🛍️', 'Altro']];
