@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ChefBox - Ricettario</title>
     
     <meta name="theme-color" content="#F97316">
@@ -25,13 +25,16 @@
             --border: #FED7AA;
             --radius-md: 12px;
             --shadow-sm: 0 4px 12px rgba(249, 115, 22, 0.05);
+            /* Variabili per la Safe Area mobile (Evita sovrapposizioni) */
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #E5E7EB; color: var(--text-main); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
         .app-container { width: 100%; max-width: 480px; background: var(--bg-color); height: 100vh; position: relative; display: flex; flex-direction: column; overflow: hidden; }
 
-        header { padding: 24px 20px 16px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        /* HEADER */
+        header { padding: calc(24px + env(safe-area-inset-top, 0)) 20px 16px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
         header h1 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .kitchen-icon { width: 26px; height: 26px; display: inline-block; }
         
@@ -39,20 +42,21 @@
         .btn-icon { background: var(--bg-color); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: var(--primary); transition: 0.2s; }
         .btn-icon:active { transform: scale(0.9); }
 
+        /* FILTRI */
         .category-scroll { display: flex; overflow-x: auto; padding: 0 20px 16px; background: var(--surface); gap: 10px; scrollbar-width: none; border-bottom: 1px solid var(--border); }
         .category-scroll::-webkit-scrollbar { display: none; }
         .pill { padding: 8px 16px; background: var(--bg-color); border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;}
         .pill.active { background: var(--primary); color: white; }
 
-        /* WIDGET GRID OTTIMIZZATA */
+        /* WIDGET GRID (Home) */
         .recipe-feed { 
             flex: 1; 
             overflow-y: auto; 
             padding: 16px; 
-            padding-bottom: 120px; 
+            padding-bottom: calc(140px + var(--safe-bottom)); /* Margine di sicurezza elevato per il FAB */
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
-            grid-auto-rows: max-content; /* Altezze basate sul contenuto */
+            grid-auto-rows: max-content; 
             gap: 12px; 
             align-content: start;
         }
@@ -71,44 +75,24 @@
             flex-direction: column;
             justify-content: center;
             align-items: flex-start;
-            min-height: 70px; /* Piccolo quanto basta */
+            min-height: 70px; 
             transition: transform 0.2s;
             gap: 6px;
         }
         .recipe-widget:active { transform: scale(0.96); }
         
-        .widget-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            line-height: 1.3;
-            width: 100%;
-            /* Taglio testo se eccessivo */
-            display: -webkit-box;
-            -webkit-line-clamp: 2; 
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
+        .widget-title { font-size: 0.95rem; font-weight: 700; line-height: 1.3; width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .widget-badge { background: var(--primary-light); color: var(--primary-dark); padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
 
-        .widget-badge {
-            background: var(--primary-light);
-            color: var(--primary-dark);
-            padding: 4px 8px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .fab { position: absolute; bottom: 80px; right: 24px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4); cursor: pointer; border: none; z-index: 20; transition: transform 0.2s; }
+        /* FAB ALZATO E SICURO */
+        .fab { position: absolute; bottom: calc(40px + var(--safe-bottom)); right: 24px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4); cursor: pointer; border: none; z-index: 20; transition: transform 0.2s; }
         .fab:active { transform: scale(0.9); }
 
+        /* MODALS & BOTTOM SHEETS */
         .overlay { position: absolute; top:0;left:0;right:0;bottom:0; background: rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: 0.3s; z-index: 30; }
         .overlay.active { opacity: 1; pointer-events: all; }
         
-        /* LAYOUT SCHERMATE (Modals / Details) */
-        .sheet, .detail-view { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-color); height: 90vh; transform: translateY(100%); transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 40; display: flex; flex-direction: column; border-radius: 24px 24px 0 0;}
+        .sheet, .detail-view { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-color); height: 92vh; transform: translateY(100%); transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 40; display: flex; flex-direction: column; border-radius: 24px 24px 0 0;}
         .sheet.active { transform: translateY(0); }
         
         .detail-view { height: 100vh; transform: translateX(100%); border-radius: 0; z-index: 50;}
@@ -116,13 +100,21 @@
         
         .sheet-header, .detail-header { padding: 20px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); border-radius: 24px 24px 0 0;}
         .detail-header { border-radius: 0; }
-        .sheet-content, .detail-content { padding: 20px; overflow-y: auto; flex: 1; }
+        
+        /* Padding bottom elevato per poter scrollare bene fino in fondo anche con tastiera aperta */
+        .sheet-content, .detail-content { padding: 20px; padding-bottom: calc(100px + var(--safe-bottom)); overflow-y: auto; flex: 1; }
         
         /* FORM E INPUTS */
+        .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
         .form-control { width: 100%; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font-family: inherit; font-size: 1rem; color: var(--text-main);}
         .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         .time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .btn-submit { width: 100%; padding: 16px; background: var(--text-main); color: white; border: none; border-radius: 12px; font-weight: 700; margin-bottom: 40px; cursor: pointer;}
+        .btn-submit { width: 100%; padding: 16px; background: var(--text-main); color: white; border: none; border-radius: 12px; font-weight: 700; margin-bottom: 10px; cursor: pointer; display:flex; justify-content:center; align-items:center; gap:8px;}
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        
+        /* MAGIC PARSER AREA */
+        .magic-box { background: var(--primary-light); border: 1px dashed var(--primary); padding: 16px; border-radius: 12px; margin-bottom: 20px; display: none;}
+        .magic-box.active { display: block; }
         
         /* DETTAGLI RICETTA */
         .detail-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 20px; line-height: 1.2;}
@@ -131,31 +123,24 @@
         .time-item strong { font-size: 1.1rem; }
         .content-box { background: var(--surface); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border); white-space: pre-wrap; margin-bottom: 20px; line-height: 1.6;}
         
-        /* LISTA CATEGORIE */
+        /* LISTA CATEGORIE E SETTINGS */
         .cat-list { list-style: none; margin-bottom: 20px; }
         .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; font-weight: 600;}
         .btn-del-cat { background: rgba(239, 68, 68, 0.1); color: #EF4444; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;}
         .btn-del-cat.confirming { background: #EF4444; color: white; }
+        .settings-card { background: var(--surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 16px;}
         
         /* NOTIFICHE */
-        .toast { position: absolute; top: 20px; left: 50%; transform: translate(-50%, -100px); background: var(--text-main); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 100; display: flex; align-items: center; gap: 8px; }
+        .toast { position: absolute; top: 20px; left: 50%; transform: translate(-50%, -100px); background: var(--text-main); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 100; display: flex; align-items: center; gap: 8px; width:max-content;}
         .toast.show { transform: translate(-50%, 0); }
     </style>
 </head>
 <body>
 
-<!-- Generazione automatica PWA per anteprima/uso -->
 <script>
     const iconSVG = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="1em" font-size="80">🍳</text></svg>`;
-    const manifest = {
-        name: "ChefBox", short_name: "ChefBox", display: "standalone", start_url: ".",
-        background_color: "#FFF7ED", theme_color: "#F97316",
-        icons: [{ src: iconSVG, sizes: "192x192", type: "image/svg+xml" }]
-    };
-    const manifestLink = document.createElement('link');
-    manifestLink.rel = 'manifest';
-    manifestLink.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
-    document.head.appendChild(manifestLink);
+    const manifest = { name: "ChefBox", short_name: "ChefBox", display: "standalone", start_url: ".", background_color: "#FFF7ED", theme_color: "#F97316", icons: [{ src: iconSVG, sizes: "192x192", type: "image/svg+xml" }] };
+    const manifestLink = document.createElement('link'); manifestLink.rel = 'manifest'; manifestLink.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest)); document.head.appendChild(manifestLink);
 </script>
 
 <div class="app-container">
@@ -167,91 +152,127 @@
             ChefBox
         </h1>
         <div class="header-actions">
-            <!-- Pulsante Gestione Categorie -->
-            <button class="btn-icon" id="btn-open-cats"><i class="ri-settings-3-fill"></i></button>
+            <!-- Pulsante Impostazioni / Categorie -->
+            <button class="btn-icon" id="btn-open-settings"><i class="ri-settings-3-fill"></i></button>
         </div>
     </header>
 
-    <!-- Scroll Categorie -->
     <div class="category-scroll" id="category-filters">
         <div class="pill active" data-filter="All">Tutte</div>
     </div>
 
-    <!-- Feed Ricette (Widget) -->
+    <!-- FEED RICETTE -->
     <main class="recipe-feed" id="recipe-feed"></main>
 
     <!-- FAB Aggiungi -->
     <button class="fab" id="fab-add">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
     </button>
 
     <div class="overlay" id="overlay"></div>
 
-    <!-- BOTTOM SHEET: Aggiungi Ricetta -->
+    <!-- SHEET: Form Inserimento / Modifica -->
     <div class="sheet" id="add-sheet">
         <div class="sheet-header">
-            <h3 style="font-size: 1.2rem;">Nuova Ricetta</h3>
+            <h3 style="font-size: 1.2rem;" id="form-title">Nuova Ricetta</h3>
             <button class="btn-icon" style="color:var(--text-muted)" id="btn-close-sheet"><i class="ri-close-line"></i></button>
         </div>
         <div class="sheet-content">
+            
+            <button class="btn-submit btn-outline" id="btn-toggle-magic" type="button" style="margin-bottom: 20px;">
+                <i class="ri-magic-line"></i> Incolla Testo Veloce
+            </button>
+            
+            <!-- Magic Text Parser -->
+            <div class="magic-box" id="magic-box">
+                <span class="form-label">Incolla qui la ricetta copiata</span>
+                <textarea class="form-control" id="magic-text" style="height:120px;" placeholder="Copia e incolla tutto il testo della ricetta da internet. L'app proverà a dividerlo in automatico!"></textarea>
+                <button type="button" class="btn-submit" id="btn-run-magic" style="background:var(--primary);"><i class="ri-ai-generate"></i> Analizza Testo</button>
+            </div>
+
             <form id="recipe-form">
-                <input type="text" class="form-control" id="title" required placeholder="Titolo (Es. Carbonara)">
+                <span class="form-label">Nome e Categoria</span>
+                <input type="text" class="form-control" id="title" required placeholder="Es. Pasta alla Carbonara">
                 <select class="form-control" id="category" required><option value="" disabled selected>Scegli Categoria...</option></select>
-                <!-- Tempi Opzionali -->
+                
+                <span class="form-label">Tempi (Opzionali)</span>
                 <div class="time-grid">
-                    <input type="number" class="form-control" id="timeTotal" placeholder="Tot(m)">
-                    <input type="number" class="form-control" id="timeLeav" placeholder="Liev(m)">
-                    <input type="number" class="form-control" id="timeCook" placeholder="Cott(m)">
+                    <input type="number" class="form-control" id="timeTotal" placeholder="Tot (m)">
+                    <input type="number" class="form-control" id="timeLeav" placeholder="Liev (m)">
+                    <input type="number" class="form-control" id="timeCook" placeholder="Cott (m)">
                 </div>
+                
+                <span class="form-label">Ingredienti</span>
                 <textarea class="form-control" id="ingredients" required placeholder="- Spaghetti&#10;- Guanciale&#10;- Uova..." style="height:100px;"></textarea>
+                
+                <span class="form-label">Procedimento</span>
                 <textarea class="form-control" id="procedure" required placeholder="1. Metti l'acqua a bollire...&#10;2. Taglia il guanciale..." style="height:120px;"></textarea>
-                <button type="submit" class="btn-submit">Salva Ricetta</button>
+                
+                <button type="submit" class="btn-submit" id="btn-save-recipe">Salva Ricetta</button>
             </form>
         </div>
     </div>
 
-    <!-- BOTTOM SHEET: Gestione Categorie -->
-    <div class="sheet" id="cats-sheet">
+    <!-- SHEET: Impostazioni & Backup -->
+    <div class="sheet" id="settings-sheet">
         <div class="sheet-header">
-            <h3 style="font-size: 1.2rem;">Categorie</h3>
-            <button class="btn-icon" style="color:var(--text-muted)" id="btn-close-cats"><i class="ri-close-line"></i></button>
+            <h3 style="font-size: 1.2rem;">Impostazioni</h3>
+            <button class="btn-icon" style="color:var(--text-muted)" id="btn-close-settings"><i class="ri-close-line"></i></button>
         </div>
         <div class="sheet-content">
-            <ul class="cat-list" id="cat-list-ui"></ul>
-            <div style="display:flex; gap:8px;">
-                <input type="text" class="form-control" id="new-cat-name" placeholder="Nuova categoria..." style="margin-bottom:0;">
-                <button class="btn-submit" id="btn-add-cat" style="width:auto; margin:0; padding:14px 20px;">+</button>
+            
+            <div class="settings-card">
+                <span class="form-label">Esporta / Importa Backup (Formato JSON)</span>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="btn-submit btn-outline" id="btn-export" style="margin:0;"><i class="ri-download-2-line"></i> Esporta</button>
+                    <!-- Label mascherata per l'input file -->
+                    <label for="file-import" class="btn-submit btn-outline" style="margin:0; cursor:pointer;"><i class="ri-upload-2-line"></i> Importa</label>
+                    <input type="file" id="file-import" accept=".json" style="display:none;">
+                </div>
             </div>
+
+            <div class="settings-card">
+                <span class="form-label">Gestisci Categorie</span>
+                <div style="display:flex; gap:8px; margin-top:10px; margin-bottom:16px;">
+                    <input type="text" class="form-control" id="new-cat-name" placeholder="Nuova categoria..." style="margin-bottom:0;">
+                    <button class="btn-submit" id="btn-add-cat" style="width:auto; margin:0; padding:14px 20px;">+</button>
+                </div>
+                <ul class="cat-list" id="cat-list-ui"></ul>
+            </div>
+            
         </div>
     </div>
 
-    <!-- DETAIL VIEW (Lettura Ricetta) -->
+    <!-- DETAIL VIEW -->
     <div class="detail-view" id="detail-view">
         <div class="detail-header">
             <button style="background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text-main);" id="btn-back"><i class="ri-arrow-left-s-line"></i></button>
-            <button style="background:var(--primary-light);color:var(--primary-dark);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;" id="btn-delete"><i class="ri-delete-bin-line"></i></button>
+            <div style="display:flex; gap:12px;">
+                <!-- Tasto Modifica -->
+                <button style="background:rgba(249,115,22,0.1);color:var(--primary);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;" id="btn-edit"><i class="ri-pencil-line"></i></button>
+                <!-- Tasto Elimina -->
+                <button style="background:rgba(239,68,68,0.1);color:#EF4444;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;" id="btn-delete"><i class="ri-delete-bin-line"></i></button>
+            </div>
         </div>
         <div class="detail-content" id="detail-content"></div>
     </div>
 </div>
 
 <script>
-    // --- GESTIONE DATI ---
+    // --- DATI ---
     let defaultCats = ["Antipasti", "Primi", "Secondi", "Contorni", "Dolci", "Lievitati", "Salse", "Bevande"];
     let categories = JSON.parse(localStorage.getItem('chefbox_cats')) || defaultCats;
     let recipes = JSON.parse(localStorage.getItem('chefbox_recipes_v3')) || [];
     let currentRecipeId = null;
+    let isEditing = false; // Stato per capire se creiamo o modifichiamo
 
-    // --- ELEMENTI DOM ---
-    const feed = document.getElementById('recipe-feed');
-    const filtersContainer = document.getElementById('category-filters');
-    const catSelect = document.getElementById('category');
-    const catListUI = document.getElementById('cat-list-ui');
+    // --- DOM ---
+    const feed = document.getElementById('recipe-feed'), filters = document.getElementById('category-filters');
+    const catSelect = document.getElementById('category'), catListUI = document.getElementById('cat-list-ui');
     
-    // --- STORICO E TASTO INDIETRO (HISTORY API) ---
+    // --- HISTORY API (Tasto Indietro) ---
     function openModal(id) {
         document.getElementById(id).classList.add('active');
         if(id.includes('sheet')) document.getElementById('overlay').classList.add('active');
@@ -272,26 +293,109 @@
 
     const triggerBack = () => history.back();
     document.getElementById('btn-close-sheet').onclick = triggerBack;
-    document.getElementById('btn-close-cats').onclick = triggerBack;
+    document.getElementById('btn-close-settings').onclick = triggerBack;
     document.getElementById('btn-back').onclick = triggerBack;
     document.getElementById('overlay').onclick = triggerBack;
 
-    document.getElementById('fab-add').onclick = () => openModal('add-sheet');
-    document.getElementById('btn-open-cats').onclick = () => openModal('cats-sheet');
+    document.getElementById('btn-open-settings').onclick = () => openModal('settings-sheet');
+    
+    // Reset Form quando si clicca "+"
+    document.getElementById('fab-add').onclick = () => {
+        isEditing = false;
+        document.getElementById('form-title').innerText = "Nuova Ricetta";
+        document.getElementById('recipe-form').reset();
+        document.getElementById('magic-box').classList.remove('active');
+        openModal('add-sheet');
+    };
 
+    // --- MAGIC PARSER (Auto-compilazione da Testo Incollato) ---
+    document.getElementById('btn-toggle-magic').onclick = () => {
+        document.getElementById('magic-box').classList.toggle('active');
+    };
 
-    // --- INIZIALIZZAZIONE UI CATEGORIE ---
+    document.getElementById('btn-run-magic').onclick = () => {
+        const text = document.getElementById('magic-text').value;
+        if(!text.trim()) return;
+
+        let lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        
+        // 1. Il titolo è solitamente la prima riga
+        document.getElementById('title').value = lines[0] || '';
+
+        // 2. Cerco indici parole chiave
+        const txtLower = lines.map(l => l.toLowerCase());
+        const ingIndex = txtLower.findIndex(l => l.includes('ingredient') || l.includes('occorrente'));
+        const procIndex = txtLower.findIndex(l => l.includes('procediment') || l.includes('preparazion') || l.includes('istruzion'));
+
+        // 3. Compilo Ingredienti e Procedimento
+        if(ingIndex !== -1 && procIndex !== -1 && procIndex > ingIndex) {
+            document.getElementById('ingredients').value = lines.slice(ingIndex + 1, procIndex).join('\n');
+            document.getElementById('procedure').value = lines.slice(procIndex + 1).join('\n');
+        } else if (ingIndex !== -1) {
+            document.getElementById('ingredients').value = lines.slice(ingIndex + 1).join('\n');
+            document.getElementById('procedure').value = "Compila manualmente";
+        } else {
+            document.getElementById('ingredients').value = "Controlla il testo...";
+            document.getElementById('procedure').value = lines.slice(1).join('\n');
+        }
+
+        // 4. Cerco i tempi (es: "Tempo totale 30 min", "Cottura 40")
+        const fullText = text.toLowerCase();
+        const timeMatch = fullText.match(/(tempo|totale|preparazione).*?(\d+)/);
+        if(timeMatch) document.getElementById('timeTotal').value = timeMatch[2];
+        
+        const cookMatch = fullText.match(/(cottura|forno).*?(\d+)/);
+        if(cookMatch) document.getElementById('timeCook').value = cookMatch[2];
+
+        showToast("Testo analizzato!");
+        document.getElementById('magic-box').classList.remove('active');
+        document.getElementById('magic-text').value = '';
+    };
+
+    // --- IMPORT / EXPORT BACKUP ---
+    document.getElementById('btn-export').onclick = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(recipes));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute("href", dataStr);
+        dlAnchor.setAttribute("download", "chefbox_backup_" + new Date().toISOString().slice(0,10) + ".json");
+        dlAnchor.click();
+        showToast("Backup scaricato!");
+    };
+
+    document.getElementById('file-import').onchange = (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const importedRecipes = JSON.parse(event.target.result);
+                if(Array.isArray(importedRecipes)) {
+                    // Unisce le ricette, evitando duplicati esatti per ID (se esistono)
+                    const existingIds = new Set(recipes.map(r => r.id));
+                    importedRecipes.forEach(r => {
+                        if(!existingIds.has(r.id)) recipes.push(r);
+                    });
+                    localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
+                    triggerBack(); // chiude modale settings
+                    renderFeed('All');
+                    showToast("Ricette importate con successo!");
+                }
+            } catch(err) {
+                alert("Errore file. Assicurati sia un backup valido in JSON.");
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    // --- CATEGORIE ---
     function renderCategories() {
-        // Ripulisce
-        filtersContainer.innerHTML = '<div class="pill active" data-filter="All">Tutte</div>';
+        filters.innerHTML = '<div class="pill active" data-filter="All">Tutte</div>';
         catSelect.innerHTML = '<option value="" disabled selected>Scegli Categoria...</option>';
         catListUI.innerHTML = '';
 
         categories.forEach(cat => {
-            // 1. Aggiungi alla select nel form
             catSelect.add(new Option(cat, cat));
             
-            // 2. Aggiungi ai filtri a pillola
             const pill = document.createElement('div');
             pill.className = 'pill'; pill.innerText = cat;
             pill.onclick = () => {
@@ -299,9 +403,8 @@
                 pill.classList.add('active');
                 renderFeed(cat);
             };
-            filtersContainer.appendChild(pill);
+            filters.appendChild(pill);
 
-            // 3. Aggiungi alla lista di gestione (Sheet)
             const li = document.createElement('li');
             li.className = 'cat-item';
             li.innerHTML = `<span>${cat}</span>`;
@@ -309,44 +412,35 @@
             const delBtn = document.createElement('button');
             delBtn.className = 'btn-del-cat';
             delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
-            
             delBtn.onclick = () => {
                 const count = recipes.filter(r => r.category === cat).length;
                 if(count > 0) {
                     if(!delBtn.classList.contains('confirming')) {
                         delBtn.classList.add('confirming');
-                        delBtn.innerHTML = 'Elimina le ' + count + ' ricette?';
-                        setTimeout(() => { 
-                            delBtn.classList.remove('confirming'); 
-                            delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>'; 
-                        }, 3000);
+                        delBtn.innerHTML = 'Elimina ' + count + ' ricette?';
+                        setTimeout(() => { delBtn.classList.remove('confirming'); delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>'; }, 3000);
                         return;
                     } else {
-                        // Elimina anche le ricette collegate se confermato
                         recipes = recipes.filter(r => r.category !== cat);
                         localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
                         renderFeed('All');
                     }
                 }
-                
                 categories = categories.filter(c => c !== cat);
                 localStorage.setItem('chefbox_cats', JSON.stringify(categories));
                 renderCategories();
-                showToast('Categoria eliminata');
+                showToast('Categoria rimossa');
             };
-            
             li.appendChild(delBtn);
             catListUI.appendChild(li);
         });
 
-        // Click sulla prima pillola ("Tutte")
-        filtersContainer.firstElementChild.onclick = function() {
+        filters.firstElementChild.onclick = function() {
             document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
             this.classList.add('active'); renderFeed('All');
         }
     }
 
-    // Aggiungi nuova categoria
     document.getElementById('btn-add-cat').onclick = () => {
         const val = document.getElementById('new-cat-name').value.trim();
         if(val && !categories.includes(val)) {
@@ -358,11 +452,12 @@
         }
     };
 
-    // --- LOGICA RICETTE ---
+    // --- LOGICA SALVATAGGIO (Crea / Modifica) ---
     document.getElementById('recipe-form').onsubmit = (e) => {
         e.preventDefault();
-        recipes.unshift({
-            id: 'r_' + Date.now(), 
+        
+        const recData = {
+            id: isEditing ? currentRecipeId : ('r_' + Date.now()), 
             title: document.getElementById('title').value, 
             category: document.getElementById('category').value,
             timeTotal: document.getElementById('timeTotal').value, 
@@ -370,12 +465,22 @@
             timeCook: document.getElementById('timeCook').value,
             ingredients: document.getElementById('ingredients').value, 
             procedure: document.getElementById('procedure').value
-        });
+        };
+
+        if(isEditing) {
+            const idx = recipes.findIndex(r => r.id === currentRecipeId);
+            recipes[idx] = recData;
+            // Aggiorno la vista dettaglio aperta
+            openRecipe(currentRecipeId);
+            showToast('Ricetta modificata!');
+        } else {
+            recipes.unshift(recData);
+            showToast('Ricetta salvata!');
+        }
+
         localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
-        document.getElementById('recipe-form').reset(); 
         triggerBack(); // Chiude sheet
-        filtersContainer.firstElementChild.click(); // Reset a "Tutte"
-        showToast('Ricetta salvata!');
+        renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText);
     };
 
     function renderFeed(filter = 'All') {
@@ -383,7 +488,7 @@
         const filtered = filter === 'All' ? recipes : recipes.filter(r => r.category === filter);
         
         if(filtered.length === 0) {
-            feed.innerHTML = `<div class="empty-state"><i class="ri-book-3-line"></i><br><span style="margin-top:10px; display:block;">Nessuna ricetta.</span></div>`;
+            feed.innerHTML = `<div class="empty-state"><i class="ri-book-3-line"></i><br><span style="margin-top:10px; display:block;">Nessuna ricetta qui.</span></div>`;
             return;
         }
         
@@ -392,9 +497,8 @@
             div.className = 'recipe-widget'; 
             div.onclick = () => openRecipe(r.id);
             
-            // Badge Opzionale
+            // Se il tempo non esiste, non genera il badge html!
             const badgeHtml = r.timeTotal ? `<div class="widget-badge"><i class="ri-time-line"></i> ${r.timeTotal}m</div>` : '';
-            
             div.innerHTML = `<div class="widget-title">${r.title}</div>${badgeHtml}`;
             feed.appendChild(div);
         });
@@ -404,12 +508,12 @@
         const r = recipes.find(rec => rec.id === id);
         currentRecipeId = id;
         
-        // Costruzione dinamica del banner dei tempi (se esistono)
+        // Costruzione dinamica del banner dei tempi. Se nessuno dei tre tempi è inserito, l'intera sezione scompare.
         let timeBannerHtml = '';
         if(r.timeTotal || r.timeLeav || r.timeCook) {
             timeBannerHtml = `<div class="time-banner">`;
             if(r.timeTotal) timeBannerHtml += `<div class="time-item"><span>Totale</span><strong>${r.timeTotal}m</strong></div>`;
-            if(r.timeLeav) timeBannerHtml += `<div class="time-item"><span>Lievitazione</span><strong>${r.timeLeav}m</strong></div>`;
+            if(r.timeLeav) timeBannerHtml += `<div class="time-item"><span>Lievitaz.</span><strong>${r.timeLeav}m</strong></div>`;
             if(r.timeCook) timeBannerHtml += `<div class="time-item"><span>Cottura</span><strong>${r.timeCook}m</strong></div>`;
             timeBannerHtml += `</div>`;
         }
@@ -423,15 +527,39 @@
             <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;"><i class="ri-list-check-2" style="color:var(--primary)"></i> Procedimento</h3>
             <div class="content-box">${r.procedure}</div>
         `;
-        openModal('detail-view');
+        
+        // Se non siamo già nella vista dettaglio (es: dopo un edit), apriamo la modale
+        if(!document.getElementById('detail-view').classList.contains('active')) {
+            openModal('detail-view');
+        }
     }
 
+    // --- MODIFICA E ELIMINA ---
+    document.getElementById('btn-edit').onclick = () => {
+        const r = recipes.find(rec => rec.id === currentRecipeId);
+        isEditing = true;
+        document.getElementById('form-title').innerText = "Modifica Ricetta";
+        
+        document.getElementById('title').value = r.title;
+        document.getElementById('category').value = r.category;
+        document.getElementById('timeTotal').value = r.timeTotal || '';
+        document.getElementById('timeLeav').value = r.timeLeav || '';
+        document.getElementById('timeCook').value = r.timeCook || '';
+        document.getElementById('ingredients').value = r.ingredients;
+        document.getElementById('procedure').value = r.procedure;
+        
+        document.getElementById('magic-box').classList.remove('active');
+        openModal('add-sheet'); // Apre sopra la vista dettaglio
+    };
+
     document.getElementById('btn-delete').onclick = () => {
-        recipes = recipes.filter(r => r.id !== currentRecipeId);
-        localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
-        triggerBack();
-        renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText);
-        showToast('Ricetta eliminata');
+        if(confirm("Sei sicuro di eliminare questa ricetta?")) {
+            recipes = recipes.filter(r => r.id !== currentRecipeId);
+            localStorage.setItem('chefbox_recipes_v3', JSON.stringify(recipes));
+            triggerBack(); // Torna alla home
+            renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText);
+            showToast('Ricetta eliminata');
+        }
     };
 
     function showToast(msg) {
@@ -441,7 +569,7 @@
         setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // Start App
+    // Inizializza
     renderCategories();
     renderFeed();
 </script>
