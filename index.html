@@ -25,7 +25,7 @@
             --border: #FED7AA;
             --radius-md: 12px;
             --shadow-sm: 0 4px 12px rgba(249, 115, 22, 0.05);
-            --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --safe-bottom: env(safe-area-inset-bottom, 30px);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -38,8 +38,7 @@
         .kitchen-icon { width: 26px; height: 26px; display: inline-block; }
         .header-actions { display: flex; gap: 12px; }
         .btn-icon { background: var(--bg-color); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: var(--primary); transition: 0.2s; }
-        .btn-icon:active { transform: scale(0.9); }
-
+        
         /* FILTRI */
         .category-scroll { display: flex; overflow-x: auto; padding: 0 20px 16px; background: var(--surface); gap: 10px; scrollbar-width: none; border-bottom: 1px solid var(--border); }
         .category-scroll::-webkit-scrollbar { display: none; }
@@ -50,7 +49,6 @@
         .recipe-feed { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: calc(140px + var(--safe-bottom)); display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: max-content; gap: 12px; align-content: start; }
         .empty-state { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted); }
         .empty-state i { font-size: 3rem; color: #FDBA74; }
-        
         .recipe-widget { background: var(--surface); border-radius: var(--radius-md); padding: 14px; box-shadow: var(--shadow-sm); cursor: pointer; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 70px; transition: transform 0.2s; gap: 6px; }
         .recipe-widget:active { transform: scale(0.96); }
         .widget-title { font-size: 0.95rem; font-weight: 700; line-height: 1.3; width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -58,8 +56,7 @@
 
         /* FAB ALZATO E SICURO */
         .fab { position: absolute; bottom: calc(40px + var(--safe-bottom)); right: 24px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4); cursor: pointer; border: none; z-index: 20; transition: transform 0.2s; }
-        .fab:active { transform: scale(0.9); }
-
+        
         /* MODALS & BOTTOM SHEETS */
         .overlay { position: absolute; top:0;left:0;right:0;bottom:0; background: rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: 0.3s; z-index: 30; }
         .overlay.active { opacity: 1; pointer-events: all; }
@@ -69,31 +66,31 @@
         .detail-view.active { transform: translateX(0); }
         .sheet-header, .detail-header { padding: 20px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); border-radius: 24px 24px 0 0;}
         .detail-header { border-radius: 0; }
-        .sheet-content, .detail-content { padding: 20px; padding-bottom: calc(100px + var(--safe-bottom)); overflow-y: auto; flex: 1; }
+        .sheet-content, .detail-content { padding: 20px; padding-bottom: calc(150px + var(--safe-bottom)); overflow-y: auto; flex: 1; }
         
         /* FORM E INPUTS */
-        .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
-        .form-control { width: 100%; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font-family: inherit; font-size: 1rem; color: var(--text-main);}
+        .form-group { margin-bottom: 16px; background: var(--surface); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid #E5E7EB; border-radius: 8px; background: var(--bg-color); font-family: inherit; font-size: 1rem; color: var(--text-main);}
         .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         textarea.form-control { resize: vertical; min-height: 80px; }
 
-        .time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .btn-submit { width: 100%; padding: 16px; background: var(--text-main); color: white; border: none; border-radius: 12px; font-weight: 700; margin-bottom: 10px; cursor: pointer; display:flex; justify-content:center; align-items:center; gap:8px;}
+        .time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; display: none; }
+        .time-grid.active { display: grid; }
+        .time-grid-item label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;}
+
+        .btn-submit { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; cursor: pointer; display:flex; justify-content:center; align-items:center; gap:8px;}
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         
         /* INGREDIENT BUILDER */
-        .ing-row { display: flex; gap: 6px; margin-bottom: 16px; }
-        .ing-row input, .ing-row select { margin-bottom: 0; padding: 12px 8px; }
-        .ing-row .btn-add-ing { background: var(--primary); color: white; border: none; border-radius: 12px; width: 48px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer;}
+        .ing-labels { display: flex; gap: 6px; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; padding: 0 4px;}
+        .ing-row { display: flex; gap: 6px; margin-bottom: 12px; }
+        .ing-row input, .ing-row select { padding: 10px 8px; }
+        .ing-row .btn-add-ing { background: var(--text-main); color: white; border: none; border-radius: 8px; width: 48px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer;}
         
-        .cat-list { list-style: none; margin-bottom: 20px; }
-        .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; font-weight: 600; font-size:0.9rem;}
-        .btn-del-cat { background: rgba(239, 68, 68, 0.1); color: #EF4444; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;}
-        .btn-del-cat.confirming { background: #EF4444; color: white; }
-        
-        /* MAGIC PARSER AREA */
-        .magic-box { background: var(--primary-light); border: 1px dashed var(--primary); padding: 16px; border-radius: 12px; margin-bottom: 20px; display: none;}
-        .magic-box.active { display: block; }
+        .cat-list { list-style: none; margin-bottom: 10px; }
+        .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-weight: 600; font-size:0.9rem;}
+        .btn-del-cat { background: rgba(239, 68, 68, 0.1); color: #EF4444; border: none; padding: 6px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
         /* DETTAGLI RICETTA & SERVINGS */
         .detail-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 20px; line-height: 1.2;}
@@ -113,11 +110,12 @@
         .ing-display-list li:last-child { border-bottom: none; padding-bottom: 0;}
         .ing-display-list li strong { color: var(--primary-dark); white-space: nowrap;}
         
-        .settings-card { background: var(--surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 16px;}
-        .scroll-list { max-height: 250px; overflow-y: auto; padding-right: 5px;}
-        
-        .toast { position: absolute; top: 20px; left: 50%; transform: translate(-50%, -100px); background: var(--text-main); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 100; display: flex; align-items: center; gap: 8px; width:max-content;}
+        /* NOTIFICHE E TOGGLE */
+        .toast { position: absolute; top: 20px; left: 50%; transform: translate(-50%, -100px); background: var(--text-main); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; transition: 0.3s; z-index: 100; display: flex; align-items: center; gap: 8px; width:max-content;}
         .toast.show { transform: translate(-50%, 0); }
+
+        .checkbox-container { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
+        .checkbox-container input { width: 20px; height: 20px; accent-color: var(--primary); }
     </style>
 </head>
 <body>
@@ -139,7 +137,7 @@
     </header>
 
     <div class="category-scroll" id="category-filters">
-        <div class="pill active" data-filter="All">Tutte</div>
+        <!-- Generato via JS -->
     </div>
 
     <!-- FEED RICETTE -->
@@ -155,7 +153,7 @@
     <div class="overlay" id="overlay"></div>
     <datalist id="db-ingredients"></datalist>
 
-    <!-- SHEET: Form Inserimento / Modifica -->
+    <!-- SHEET: Form Inserimento / Modifica (DEBUGGATO E CON TITOLI CHIARI) -->
     <div class="sheet" id="add-sheet">
         <div class="sheet-header">
             <h3 style="font-size: 1.2rem;" id="form-title">Nuova Ricetta</h3>
@@ -163,97 +161,123 @@
         </div>
         <div class="sheet-content">
             
-            <button class="btn-submit btn-outline" id="btn-toggle-magic" type="button" style="margin-bottom: 20px;">
-                <i class="ri-magic-line"></i> Incolla Testo Veloce
-            </button>
-            
-            <div class="magic-box" id="magic-box">
-                <span class="form-label">Incolla qui la ricetta</span>
-                <textarea class="form-control" id="magic-text" style="height:120px;" placeholder="Copia e incolla tutto il testo della ricetta da internet..."></textarea>
-                <button type="button" class="btn-submit" id="btn-run-magic" style="background:var(--primary);"><i class="ri-ai-generate"></i> Estrai Dati</button>
-            </div>
-
             <form id="recipe-form">
-                <span class="form-label">Nome e Categoria</span>
-                <input type="text" class="form-control" id="title" required placeholder="Es. Pasta alla Carbonara">
-                <select class="form-control" id="category" required><option value="" disabled selected>Scegli Categoria...</option></select>
                 
-                <span class="form-label">Dettagli Preparazione</span>
-                <div style="display:flex; gap:8px;">
-                    <!-- NUOVO CAMPO PORZIONI BASE -->
-                    <input type="number" class="form-control" id="servings" required placeholder="Persone" min="0.5" step="0.5" style="flex:1;">
-                    <input type="number" class="form-control" id="timeTotal" placeholder="Tot (m)" style="flex:1;">
-                    <input type="number" class="form-control" id="timeLeav" placeholder="Liev (m)" style="flex:1;">
-                    <input type="number" class="form-control" id="timeCook" placeholder="Cott (m)" style="flex:1;">
+                <div class="form-group">
+                    <label class="form-label" for="title">Nome della Ricetta</label>
+                    <input type="text" class="form-control" id="title" required placeholder="Es. Pasta alla Carbonara">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="category">Categoria</label>
+                    <select class="form-control" id="category" required></select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="servings">Per quante persone?</label>
+                    <input type="number" class="form-control" id="servings" required placeholder="Es. 4" min="0.5" step="0.5">
+                </div>
+
+                <!-- SEZIONE TEMPI (OPZIONALE E A SCOMPARSA) -->
+                <div class="form-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="toggle-times">
+                        ⏱️ Aggiungi Tempi (Opzionale)
+                    </label>
+                    
+                    <div class="time-grid" id="time-grid-container">
+                        <div class="time-grid-item">
+                            <label for="timeTotal">Totale (min)</label>
+                            <input type="number" class="form-control" id="timeTotal" placeholder="Es. 40">
+                        </div>
+                        <div class="time-grid-item">
+                            <label for="timeLeav">Lievitazione</label>
+                            <input type="number" class="form-control" id="timeLeav" placeholder="Es. 120">
+                        </div>
+                        <div class="time-grid-item">
+                            <label for="timeCook">Cottura</label>
+                            <input type="number" class="form-control" id="timeCook" placeholder="Es. 15">
+                        </div>
+                    </div>
                 </div>
                 
-                <span class="form-label" style="display:flex; justify-content:space-between; margin-top:8px;">Ingredienti</span>
-                <ul class="cat-list" id="current-ing-list" style="margin-bottom:10px;"></ul>
-                
-                <div class="ing-row">
-                    <input type="text" class="form-control" id="ing-name" list="db-ingredients" placeholder="Nome" style="flex:2;">
-                    <input type="number" step="0.1" class="form-control" id="ing-qty" placeholder="Q.tà" style="flex:1; padding-right:2px;">
-                    <select class="form-control" id="ing-unit" style="flex:1; padding-left:4px; padding-right:4px;">
-                        <option value="g">g</option>
-                        <option value="kg">kg</option>
-                        <option value="ml">ml</option>
-                        <option value="l">l</option>
-                        <option value="pz">pz</option>
-                        <option value="q.b.">q.b.</option>
-                        <option value="">-</option>
-                    </select>
-                    <button type="button" class="btn-add-ing" id="btn-add-ing"><i class="ri-add-line"></i></button>
+                <!-- SEZIONE INGREDIENTI (CON TITOLI) -->
+                <div class="form-group">
+                    <label class="form-label">Ingredienti (Aggiungi uno alla volta)</label>
+                    
+                    <div class="ing-labels">
+                        <span style="flex:2;">Prodotto</span>
+                        <span style="flex:1;">Quantità</span>
+                        <span style="flex:1;">Unità</span>
+                        <span style="width:48px;"></span>
+                    </div>
+                    
+                    <div class="ing-row">
+                        <input type="text" class="form-control" id="ing-name" list="db-ingredients" placeholder="Es. Farina" style="flex:2;">
+                        <input type="number" step="0.1" class="form-control" id="ing-qty" placeholder="Es. 200" style="flex:1; padding-right:2px;">
+                        <select class="form-control" id="ing-unit" style="flex:1; padding-left:4px; padding-right:4px;">
+                            <option value="g">g</option><option value="kg">kg</option>
+                            <option value="ml">ml</option><option value="l">l</option>
+                            <option value="pz">pz</option><option value="q.b.">q.b.</option><option value="">-</option>
+                        </select>
+                        <button type="button" class="btn-add-ing" id="btn-add-ing"><i class="ri-add-line"></i></button>
+                    </div>
+                    
+                    <!-- Lista ingredienti aggiunti -->
+                    <ul class="cat-list" id="current-ing-list"></ul>
                 </div>
                 
-                <span class="form-label">Procedimento</span>
-                <textarea class="form-control" id="procedure" required placeholder="1. Metti l'acqua a bollire..." style="height:120px;"></textarea>
+                <div class="form-group">
+                    <label class="form-label" for="procedure">Procedimento passo passo</label>
+                    <textarea class="form-control" id="procedure" required placeholder="1. Taglia a cubetti...&#10;2. Metti in padella..."></textarea>
+                </div>
                 
-                <button type="submit" class="btn-submit" id="btn-save-recipe">Salva Ricetta</button>
+                <button type="submit" class="btn-submit" id="btn-save-recipe"><i class="ri-save-3-line"></i> Salva Ricetta</button>
             </form>
         </div>
     </div>
 
-    <!-- SHEET: Impostazioni & Database -->
+    <!-- SHEET: Impostazioni -->
     <div class="sheet" id="settings-sheet">
         <div class="sheet-header">
             <h3 style="font-size: 1.2rem;">Impostazioni</h3>
             <button class="btn-icon" style="color:var(--text-muted)" id="btn-close-settings"><i class="ri-close-line"></i></button>
         </div>
         <div class="sheet-content">
-            <div class="settings-card">
-                <span class="form-label">Database Ingredienti</span>
+            <div class="form-group">
+                <label class="form-label">Database Ingredienti veloci</label>
                 <div style="display:flex; gap:8px; margin-bottom:10px;">
                     <input type="text" class="form-control" id="new-prod-name" placeholder="Nuovo prodotto..." style="margin-bottom:0;">
-                    <button class="btn-submit" id="btn-add-prod" style="width:auto; margin:0; padding:14px 20px;">+</button>
+                    <button type="button" class="btn-submit" id="btn-add-prod" style="width:auto; margin:0; padding:14px 20px;">+</button>
                 </div>
-                <div class="scroll-list"><ul class="cat-list" id="prod-list-ui" style="margin-bottom:0;"></ul></div>
+                <div style="max-height: 200px; overflow-y:auto;"><ul class="cat-list" id="prod-list-ui"></ul></div>
             </div>
-            <div class="settings-card">
-                <span class="form-label">Gestisci Categorie</span>
+            
+            <div class="form-group">
+                <label class="form-label">Gestisci Categorie</label>
                 <div style="display:flex; gap:8px; margin-bottom:10px;">
                     <input type="text" class="form-control" id="new-cat-name" placeholder="Nuova categoria..." style="margin-bottom:0;">
-                    <button class="btn-submit" id="btn-add-cat" style="width:auto; margin:0; padding:14px 20px;">+</button>
+                    <button type="button" class="btn-submit" id="btn-add-cat" style="width:auto; margin:0; padding:14px 20px;">+</button>
                 </div>
-                <div class="scroll-list"><ul class="cat-list" id="cat-list-ui" style="margin-bottom:0;"></ul></div>
+                <div style="max-height: 200px; overflow-y:auto;"><ul class="cat-list" id="cat-list-ui"></ul></div>
             </div>
-            <div class="settings-card">
-                <span class="form-label">Backup Data</span>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button class="btn-submit btn-outline" id="btn-export" style="margin:0;"><i class="ri-download-2-line"></i> Esporta</button>
-                    <label for="file-import" class="btn-submit btn-outline" style="margin:0; cursor:pointer; flex:1; justify-content:center;"><i class="ri-upload-2-line"></i> Importa</label>
-                    <input type="file" id="file-import" accept=".json" style="display:none;">
-                </div>
+            
+            <div class="form-group">
+                <label class="form-label">Backup dei Dati</label>
+                <button type="button" class="btn-submit btn-outline" id="btn-export" style="margin-bottom:10px;"><i class="ri-download-2-line"></i> Scarica Backup (.json)</button>
+                <label for="file-import" class="btn-submit btn-outline" style="cursor:pointer; text-align:center;"><i class="ri-upload-2-line"></i> Ripristina da file</label>
+                <input type="file" id="file-import" accept=".json" style="display:none;">
             </div>
         </div>
     </div>
 
-    <!-- DETAIL VIEW -->
+    <!-- DETAIL VIEW (Lettura) -->
     <div class="detail-view" id="detail-view">
         <div class="detail-header">
-            <button style="background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text-main);" id="btn-back"><i class="ri-arrow-left-s-line"></i></button>
+            <button type="button" style="background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text-main);" id="btn-back"><i class="ri-arrow-left-s-line"></i></button>
             <div style="display:flex; gap:12px;">
-                <button style="background:rgba(249,115,22,0.1);color:var(--primary);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;" id="btn-edit"><i class="ri-pencil-line"></i></button>
-                <button style="background:rgba(239,68,68,0.1);color:#EF4444;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;" id="btn-delete"><i class="ri-delete-bin-line"></i></button>
+                <button type="button" style="background:rgba(249,115,22,0.1);color:var(--primary);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;" id="btn-edit"><i class="ri-pencil-line"></i></button>
+                <button type="button" style="background:rgba(239,68,68,0.1);color:#EF4444;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;" id="btn-delete"><i class="ri-delete-bin-line"></i></button>
             </div>
         </div>
         <div class="detail-content" id="detail-content"></div>
@@ -266,19 +290,18 @@
     
     let categories = JSON.parse(localStorage.getItem('chefbox_cats')) || defaultCats;
     let productsDB = JSON.parse(localStorage.getItem('chefbox_products')) || defaultProds;
-    let recipes = JSON.parse(localStorage.getItem('chefbox_recipes_v4')) || [];
+    let recipes = JSON.parse(localStorage.getItem('chefbox_recipes_v5')) || JSON.parse(localStorage.getItem('chefbox_recipes_v4')) || [];
     
     let currentRecipeId = null;
     let isEditing = false;
     let activeIngredients = []; 
-    // Variabili per gestire i calcoli live nel Dettaglio Ricetta
     let currentBaseServings = 1;
     let currentTargetServings = 1;
     let currentDetailIngredients = [];
 
     const feed = document.getElementById('recipe-feed'), filters = document.getElementById('category-filters'), catSelect = document.getElementById('category');
     
-    // --- HISTORY API ---
+    // --- GESTIONE SCHERMATE (MODALS E BACK) ---
     function openModal(id) { document.getElementById(id).classList.add('active'); if(id.includes('sheet')) document.getElementById('overlay').classList.add('active'); history.pushState({ modal: id }, "", `#${id}`); }
     function closeAllModals() { document.querySelectorAll('.sheet, .detail-view, .overlay').forEach(el => el.classList.remove('active')); }
     window.addEventListener('popstate', (e) => { closeAllModals(); if (e.state && e.state.modal) { document.getElementById(e.state.modal).classList.add('active'); if(e.state.modal.includes('sheet')) document.getElementById('overlay').classList.add('active'); }});
@@ -286,6 +309,16 @@
     document.getElementById('btn-close-sheet').onclick = document.getElementById('btn-close-settings').onclick = document.getElementById('btn-back').onclick = document.getElementById('overlay').onclick = triggerBack;
     document.getElementById('btn-open-settings').onclick = () => openModal('settings-sheet');
     
+    // --- TOGGLE TEMPI ---
+    document.getElementById('toggle-times').addEventListener('change', function() {
+        document.getElementById('time-grid-container').classList.toggle('active', this.checked);
+        if(!this.checked) {
+            document.getElementById('timeTotal').value = '';
+            document.getElementById('timeLeav').value = '';
+            document.getElementById('timeCook').value = '';
+        }
+    });
+
     // --- DB PRODOTTI ---
     function renderProducts() {
         const datalist = document.getElementById('db-ingredients'); const prodUI = document.getElementById('prod-list-ui');
@@ -293,7 +326,7 @@
         productsDB.sort((a,b) => a.localeCompare(b)).forEach(p => {
             datalist.appendChild(new Option(p, p));
             const li = document.createElement('li'); li.className = 'cat-item'; li.innerHTML = `<span>${p}</span>`;
-            const delBtn = document.createElement('button'); delBtn.className = 'btn-del-cat'; delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+            const delBtn = document.createElement('button'); delBtn.className = 'btn-del-cat'; delBtn.type="button"; delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
             delBtn.onclick = () => { productsDB = productsDB.filter(x => x !== p); saveProducts(); };
             li.appendChild(delBtn); prodUI.appendChild(li);
         });
@@ -311,7 +344,7 @@
         activeIngredients.forEach((ing, index) => {
             const li = document.createElement('li'); li.className = 'cat-item'; li.style.padding = '8px 12px';
             li.innerHTML = `<span><strong>${ing.qty} ${ing.unit}</strong> ${ing.name}</span>`;
-            const del = document.createElement('button'); del.className = 'btn-del-cat'; del.style.padding = '4px 8px'; del.innerHTML = '<i class="ri-close-line"></i>';
+            const del = document.createElement('button'); del.className = 'btn-del-cat'; del.type="button"; del.style.padding = '4px 8px'; del.innerHTML = '<i class="ri-close-line"></i>';
             del.onclick = () => { activeIngredients.splice(index, 1); renderActiveIngredients(); };
             li.appendChild(del); ul.appendChild(li);
         });
@@ -320,64 +353,35 @@
         const name = document.getElementById('ing-name').value.trim();
         const qty = document.getElementById('ing-qty').value.replace(',', '.').trim();
         const unit = document.getElementById('ing-unit').value;
-        if(!name) return showToast("Inserisci il nome!");
+        if(!name) return showToast("Inserisci il nome del prodotto!");
         activeIngredients.push({ name, qty, unit }); autoAddProduct(name);
         document.getElementById('ing-name').value = ''; document.getElementById('ing-qty').value = ''; document.getElementById('ing-name').focus();
         renderActiveIngredients();
     };
 
-    // --- MAGIC PARSER (Ora cattura le Porzioni!) ---
-    document.getElementById('btn-toggle-magic').onclick = () => { document.getElementById('magic-box').classList.toggle('active'); };
-    document.getElementById('btn-run-magic').onclick = () => {
-        const text = document.getElementById('magic-text').value; if(!text.trim()) return;
-        let lines = text.split('\n').map(l => l.trim()).filter(l => l);
-        document.getElementById('title').value = lines[0] || '';
-        const txtLower = lines.map(l => l.toLowerCase());
-        const ingIndex = txtLower.findIndex(l => l.includes('ingredient') || l.includes('occorrente'));
-        const procIndex = txtLower.findIndex(l => l.includes('procediment') || l.includes('preparazion') || l.includes('istruzion'));
+    // Previene submit se premo Invio sull'input degli ingredienti
+    document.getElementById('ing-name').addEventListener('keypress', function(e){ if(e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-add-ing').click(); }});
+    document.getElementById('ing-qty').addEventListener('keypress', function(e){ if(e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-add-ing').click(); }});
 
-        let rawIngs = [];
-        if(ingIndex !== -1 && procIndex !== -1 && procIndex > ingIndex) {
-            rawIngs = lines.slice(ingIndex + 1, procIndex); document.getElementById('procedure').value = lines.slice(procIndex + 1).join('\n');
-        } else if (ingIndex !== -1) {
-            rawIngs = lines.slice(ingIndex + 1); document.getElementById('procedure').value = "Compila manualmente";
-        } else { document.getElementById('procedure').value = lines.slice(1).join('\n'); }
-
-        rawIngs.forEach(line => {
-            const match = line.match(/^([\d.,]+)\s*(g|kg|ml|l|pz|cucchiaio|cucchiai|cucchiaino|cucchiaini|q\.b\.)?\s+(.*)$/i);
-            if(match) { activeIngredients.push({ qty: match[1].replace(',', '.'), unit: (match[2]||'').toLowerCase(), name: match[3].trim() }); autoAddProduct(match[3].trim()); }
-            else { activeIngredients.push({ qty: '', unit: '', name: line.replace(/^- /, '').trim() }); autoAddProduct(line.replace(/^- /, '').trim()); }
-        });
-        renderActiveIngredients();
-
-        const fullText = text.toLowerCase();
-        // Cerca i Tempi
-        const timeMatch = fullText.match(/(tempo|totale|preparazione).*?(\d+)/); if(timeMatch) document.getElementById('timeTotal').value = timeMatch[2];
-        const cookMatch = fullText.match(/(cottura|forno).*?(\d+)/); if(cookMatch) document.getElementById('timeCook').value = cookMatch[2];
-        // Cerca Porzioni
-        const servMatch = fullText.match(/(per|porzioni|persone)\s*(\d+(\.\d+)?)/); 
-        if(servMatch) document.getElementById('servings').value = servMatch[2];
-
-        showToast("Dati estratti!"); document.getElementById('magic-box').classList.remove('active'); document.getElementById('magic-text').value = '';
-    };
-
-    // --- SALVATAGGIO ---
+    // --- SALVATAGGIO RICETTA ---
     document.getElementById('fab-add').onclick = () => {
         isEditing = false; document.getElementById('form-title').innerText = "Nuova Ricetta"; document.getElementById('recipe-form').reset();
-        document.getElementById('servings').value = 4; // Default
-        activeIngredients = []; renderActiveIngredients(); document.getElementById('magic-box').classList.remove('active'); openModal('add-sheet');
+        document.getElementById('servings').value = 4;
+        document.getElementById('toggle-times').checked = false;
+        document.getElementById('time-grid-container').classList.remove('active');
+        activeIngredients = []; renderActiveIngredients(); openModal('add-sheet');
     };
 
     document.getElementById('recipe-form').onsubmit = (e) => {
         e.preventDefault();
         const pendName = document.getElementById('ing-name').value; if(pendName) document.getElementById('btn-add-ing').click();
-        if(activeIngredients.length === 0) { alert("Aggiungi almeno un ingrediente cliccando sul tasto '+' !"); return; }
+        if(activeIngredients.length === 0) { alert("Attenzione: Aggiungi almeno un ingrediente cliccando sul tasto '+' nella riga apposita."); return; }
 
         const recData = {
             id: isEditing ? currentRecipeId : ('r_' + Date.now()), 
             title: document.getElementById('title').value, 
             category: document.getElementById('category').value,
-            servings: parseFloat(document.getElementById('servings').value) || 1, // NUOVO
+            servings: parseFloat(document.getElementById('servings').value) || 1,
             timeTotal: document.getElementById('timeTotal').value, 
             timeLeav: document.getElementById('timeLeav').value, 
             timeCook: document.getElementById('timeCook').value,
@@ -388,17 +392,17 @@
         if(isEditing) {
             recipes[recipes.findIndex(r => r.id === currentRecipeId)] = recData;
             openRecipe(currentRecipeId); showToast('Ricetta modificata!');
-        } else {
-            recipes.unshift(recData); showToast('Ricetta salvata!');
-        }
-        localStorage.setItem('chefbox_recipes_v4', JSON.stringify(recipes));
+        } else { recipes.unshift(recData); showToast('Ricetta salvata!'); }
+        
+        localStorage.setItem('chefbox_recipes_v5', JSON.stringify(recipes));
         triggerBack(); renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText);
     };
 
+    // --- FEED RICETTE ---
     function renderFeed(filter = 'All') {
         feed.innerHTML = '';
         const filtered = filter === 'All' ? recipes : recipes.filter(r => r.category === filter);
-        if(filtered.length === 0) return feed.innerHTML = `<div class="empty-state"><i class="ri-book-3-line"></i><br><span style="margin-top:10px; display:block;">Nessuna ricetta qui.</span></div>`;
+        if(filtered.length === 0) return feed.innerHTML = `<div class="empty-state"><i class="ri-book-3-line"></i><br><span style="margin-top:10px; display:block;">Nessuna ricetta trovata.</span></div>`;
         
         filtered.forEach(r => {
             const div = document.createElement('div'); div.className = 'recipe-widget'; div.onclick = () => openRecipe(r.id);
@@ -407,7 +411,7 @@
         });
     }
 
-    // --- ENGINE RICALCOLO PORZIONI ---
+    // --- RICALCOLO PORZIONI ---
     function renderDetailIngredientsHTML() {
         const ratio = currentTargetServings / currentBaseServings;
         let html = `<ul class="ing-display-list">`;
@@ -415,10 +419,7 @@
             let displayQty = i.qty;
             if(displayQty && displayQty !== '') {
                 let parsed = parseFloat(displayQty);
-                if(!isNaN(parsed)) {
-                    // Calcolo ed arrotondamento a max 2 decimali (elimina zeri inutili finali grazie al + unario)
-                    displayQty = +(parsed * ratio).toFixed(2);
-                }
+                if(!isNaN(parsed)) displayQty = +(parsed * ratio).toFixed(2);
             }
             html += `<li><strong>${displayQty} ${i.unit}</strong> ${i.name}</li>`;
         });
@@ -426,22 +427,16 @@
         document.getElementById('dynamic-ingredients-box').innerHTML = html;
     }
 
-    // Gestione pulsanti Stepper (+ / -)
     function changeServings(delta) {
-        let newVal = currentTargetServings + delta;
-        if(newVal < 0.5) newVal = 0.5;
-        currentTargetServings = newVal;
-        document.getElementById('detail-servings').value = currentTargetServings;
+        let newVal = currentTargetServings + delta; if(newVal < 0.5) newVal = 0.5;
+        currentTargetServings = newVal; document.getElementById('detail-servings').value = currentTargetServings;
         renderDetailIngredientsHTML();
     }
 
+    // --- LETTURA RICETTA ---
     function openRecipe(id) {
-        const r = recipes.find(rec => rec.id === id);
-        currentRecipeId = id;
-        
-        // Inizializza Variabili Dettaglio
-        currentBaseServings = r.servings || 1;
-        currentTargetServings = currentBaseServings;
+        const r = recipes.find(rec => rec.id === id); currentRecipeId = id;
+        currentBaseServings = r.servings || 1; currentTargetServings = currentBaseServings;
         currentDetailIngredients = Array.isArray(r.ingredients) ? r.ingredients : [];
 
         let timeBannerHtml = '';
@@ -453,63 +448,51 @@
             timeBannerHtml += `</div>`;
         }
 
-        // Stepper UI per le porzioni
-        const stepperHtml = `
+        document.getElementById('detail-content').innerHTML = `
+            <div style="color:var(--primary); font-weight:bold; font-size:0.9rem; margin-bottom:10px; letter-spacing:0.5px; text-transform:uppercase;">${r.category}</div>
+            <h2 class="detail-title">${r.title}</h2>
+            ${timeBannerHtml}
             <div class="servings-stepper">
                 <span>Porzioni</span>
                 <div class="stepper-controls">
-                    <button class="stepper-btn" onclick="changeServings(-0.5)">-</button>
+                    <button type="button" class="stepper-btn" onclick="changeServings(-0.5)">-</button>
                     <input type="number" id="detail-servings" class="stepper-input" step="0.5" min="0.5" value="${currentTargetServings}">
-                    <button class="stepper-btn" onclick="changeServings(0.5)">+</button>
+                    <button type="button" class="stepper-btn" onclick="changeServings(0.5)">+</button>
                 </div>
             </div>
-        `;
-
-        document.getElementById('detail-content').innerHTML = `
-            <div style="color:var(--primary); font-weight:bold; font-size:0.9rem; margin-bottom:10px; letter-spacing:0.5px;">${r.category.toUpperCase()}</div>
-            <h2 class="detail-title">${r.title}</h2>
-            ${timeBannerHtml}
-            
-            ${stepperHtml}
             <div id="dynamic-ingredients-box"></div>
-            
             <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;"><i class="ri-list-check-2" style="color:var(--primary)"></i> Procedimento</h3>
             <div class="content-box">${r.procedure}</div>
         `;
         
-        // Renderizza la prima volta gli ingredienti (con il ratio = 1)
-        if(currentDetailIngredients.length > 0) {
-            renderDetailIngredientsHTML();
-        } else {
-            // Retrocompatibilità
-            document.getElementById('dynamic-ingredients-box').innerHTML = `<div class="content-box">${r.ingredients}</div>`;
-        }
+        if(currentDetailIngredients.length > 0) renderDetailIngredientsHTML();
+        else document.getElementById('dynamic-ingredients-box').innerHTML = `<div class="content-box">Ricetta senza formato ingredienti aggiornato. Clicca Modifica per aggiornarla.</div>`;
 
-        // Listener sul campo input digitato a mano
         document.getElementById('detail-servings').addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            if(val && val >= 0.5) {
-                currentTargetServings = val;
-                renderDetailIngredientsHTML();
-            }
+            let val = parseFloat(e.target.value); if(val && val >= 0.5) { currentTargetServings = val; renderDetailIngredientsHTML(); }
         });
-        
         if(!document.getElementById('detail-view').classList.contains('active')) openModal('detail-view');
     }
 
-    // --- MODIFICA E ELIMINA ---
+    // --- MODIFICA / ELIMINA ---
     document.getElementById('btn-edit').onclick = () => {
         const r = recipes.find(rec => rec.id === currentRecipeId); isEditing = true; document.getElementById('form-title').innerText = "Modifica Ricetta";
         document.getElementById('title').value = r.title; document.getElementById('category').value = r.category;
         document.getElementById('servings').value = r.servings || 1;
         document.getElementById('timeTotal').value = r.timeTotal || ''; document.getElementById('timeLeav').value = r.timeLeav || ''; document.getElementById('timeCook').value = r.timeCook || '';
         document.getElementById('procedure').value = r.procedure;
+        
+        // Attiva o disattiva il blocco tempi se ci sono valori
+        const hasTimes = (r.timeTotal || r.timeLeav || r.timeCook);
+        document.getElementById('toggle-times').checked = hasTimes;
+        document.getElementById('time-grid-container').classList.toggle('active', hasTimes);
+
         activeIngredients = Array.isArray(r.ingredients) ? [...r.ingredients] : []; renderActiveIngredients();
-        document.getElementById('magic-box').classList.remove('active'); openModal('add-sheet'); 
+        openModal('add-sheet'); 
     };
 
     document.getElementById('btn-delete').onclick = () => {
-        if(confirm("Sei sicuro di eliminare questa ricetta?")) { recipes = recipes.filter(r => r.id !== currentRecipeId); localStorage.setItem('chefbox_recipes_v4', JSON.stringify(recipes)); triggerBack(); renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText); showToast('Ricetta eliminata'); }
+        if(confirm("Sei sicuro di eliminare questa ricetta definitivamente?")) { recipes = recipes.filter(r => r.id !== currentRecipeId); localStorage.setItem('chefbox_recipes_v5', JSON.stringify(recipes)); triggerBack(); renderFeed(document.querySelector('.pill.active').innerText === 'Tutte' ? 'All' : document.querySelector('.pill.active').innerText); showToast('Ricetta eliminata'); }
     };
 
     // --- CATEGORIE ED EXPORT ---
@@ -523,7 +506,7 @@
         reader.onload = (event) => {
             try { const importedRecipes = JSON.parse(event.target.result); if(Array.isArray(importedRecipes)) {
                     const existingIds = new Set(recipes.map(r => r.id)); importedRecipes.forEach(r => { if(!existingIds.has(r.id)) recipes.push(r); });
-                    localStorage.setItem('chefbox_recipes_v4', JSON.stringify(recipes)); triggerBack(); renderFeed('All'); showToast("Ricette importate!");
+                    localStorage.setItem('chefbox_recipes_v5', JSON.stringify(recipes)); triggerBack(); renderFeed('All'); showToast("Ricette importate!");
                 }
             } catch(err) { alert("Errore file. Assicurati sia un backup valido in JSON."); }
         }; reader.readAsText(file);
@@ -536,11 +519,11 @@
             const pill = document.createElement('div'); pill.className = 'pill'; pill.innerText = cat;
             pill.onclick = () => { document.querySelectorAll('.pill').forEach(p => p.classList.remove('active')); pill.classList.add('active'); renderFeed(cat); }; filters.appendChild(pill);
             const li = document.createElement('li'); li.className = 'cat-item'; li.innerHTML = `<span>${cat}</span>`;
-            const delBtn = document.createElement('button'); delBtn.className = 'btn-del-cat'; delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+            const delBtn = document.createElement('button'); delBtn.className = 'btn-del-cat'; delBtn.type="button"; delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
             delBtn.onclick = () => {
                 const count = recipes.filter(r => r.category === cat).length;
                 if(count > 0 && !delBtn.classList.contains('confirming')) { delBtn.classList.add('confirming'); delBtn.innerHTML = 'Elimina ' + count + ' ricette?'; setTimeout(() => { delBtn.classList.remove('confirming'); delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>'; }, 3000); return; }
-                else if(count > 0) { recipes = recipes.filter(r => r.category !== cat); localStorage.setItem('chefbox_recipes_v4', JSON.stringify(recipes)); renderFeed('All'); }
+                else if(count > 0) { recipes = recipes.filter(r => r.category !== cat); localStorage.setItem('chefbox_recipes_v5', JSON.stringify(recipes)); renderFeed('All'); }
                 categories = categories.filter(c => c !== cat); localStorage.setItem('chefbox_cats', JSON.stringify(categories)); renderCategories(); showToast('Categoria rimossa');
             }; li.appendChild(delBtn); document.getElementById('cat-list-ui').appendChild(li);
         });
