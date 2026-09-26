@@ -355,6 +355,14 @@
         .import-btn i { font-size: 1.8rem; color: var(--primary); }
         .import-btn:disabled { opacity: 0.5; cursor: wait; }
         .import-text { min-height: 220px; font-size: 0.95rem; }
+        .scan-editor { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 12px; margin-bottom: 12px; }
+        .scan-editor[hidden] { display: none; }
+        .scan-canvas-wrap { position: relative; width: 100%; display: flex; justify-content: center; touch-action: none; user-select: none; -webkit-user-select: none; background: var(--bg-color); border-radius: 12px; overflow: hidden; cursor: crosshair; }
+        #scan-preview { display: block; max-width: 100%; max-height: 55vh; max-height: 55dvh; }
+        .crop-box { position: absolute; border: 3px solid var(--primary); background: rgba(249, 115, 22, 0.12); box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45); pointer-events: none; border-radius: 4px; }
+        .crop-box[hidden] { display: none; }
+        .scan-editor .form-hint { margin: 10px 2px; }
+        .scan-tools { display: flex; gap: 8px; flex-wrap: wrap; }
         .scan-progress { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
         .scan-progress[hidden] { display: none; }
         .scan-top { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; }
@@ -718,6 +726,16 @@
                 <button type="button" class="import-btn" id="btn-import-scan"><i class="ri-camera-lens-line"></i><span>Scansiona foto</span></button>
             </div>
             <input type="file" id="scan-input" accept="image/*" hidden>
+            <div class="scan-editor" id="scan-editor" hidden>
+                <div class="scan-canvas-wrap" id="scan-wrap"><canvas id="scan-preview" aria-label="Anteprima della foto"></canvas><div class="crop-box" id="crop-box" hidden></div></div>
+                <p class="form-hint" id="scan-hint"><i class="ri-crop-line"></i> Trascina il dito sulla foto per scegliere solo la ricetta (facoltativo).</p>
+                <div class="scan-tools">
+                    <button type="button" class="btn-mini" id="btn-scan-rotate"><i class="ri-clockwise-line"></i> Ruota</button>
+                    <button type="button" class="btn-mini" id="btn-scan-full"><i class="ri-fullscreen-line"></i> Tutta la foto</button>
+                    <button type="button" class="btn-mini" id="btn-scan-other"><i class="ri-image-add-line"></i> Altra foto</button>
+                </div>
+                <button type="button" class="btn-submit" id="btn-scan-read" style="margin:12px 0 0;"><i class="ri-text"></i> Leggi il testo</button>
+            </div>
             <div class="scan-progress" id="scan-progress" hidden>
                 <div class="scan-top"><span id="scan-status">Preparazione…</span><span id="scan-pct">0%</span></div>
                 <div class="shop-bar"><div id="scan-bar-fill"></div></div>
@@ -977,6 +995,7 @@
         overlay.classList.toggle('top', modalStack.some((id) => id.endsWith('-sheet')));
         syncWakeLock();
         if (!modalStack.includes('cook-view')) stopSpeaking();
+        if (!modalStack.includes('import-page')) releaseOcrWorker(); // libera la memoria del lettore di testo
         // Uscendo dalla modalità cucina si esce anche dallo schermo intero
         if (!modalStack.includes('cook-view') && cook.fullscreen) {
             cook.fullscreen = false;
@@ -2818,6 +2837,7 @@
     }
     $('btn-open-import').onclick = () => {
         $('import-preview').innerHTML = ''; lastImport = null; $('scan-progress').hidden = true;
+        $('scan-editor').hidden = true; scan.img = null; scan.crop = null; scan.lastText = '';
         openPage('import-page', 'import-text', () => { });
     };
     $('btn-import-analyze').onclick = analyzeImport;
@@ -2832,8 +2852,8 @@
         }
     };
 
-    // Scansione da foto: riconoscimento del testo (OCR) con Tesseract.js, caricato solo quando serve
-    let ocrScript = null;
+    // --- SCANSIONE DA FOTO: riconoscimento del testo (OCR) con Tesseract.js, caricato solo quando serve ---
+    let ocrScript = null, ocrWorker = null;
     function loadTesseract() {
         if (window.Tesseract) return Promise.resolve();
         if (!ocrScript) ocrScript = new Promise((resolve, reject) => {
@@ -2845,6 +2865,23 @@
         });
         return ocrScript;
     }
+    const OCR_STEPS = { 'loading tesseract core': 'Carico il lettore di testo…', 'initializing tesseract': 'Avvio il lettore…', 'loading language traineddata': 'Scarico l\'italiano (solo la prima volta)…', 'initializing api': 'Quasi pronto…', 'recognizing text': 'Leggo la ricetta…' };
+    let ocrStage = { label: '', from: 0, to: 1 };
+    async function getOcrWorker() {
+        if (ocrWorker) return ocrWorker;
+        await loadTesseract();
+        ocrWorker = await Tesseract.createWorker('ita', 1, {
+            logger: (m) => {
+                if (typeof m.progress !== 'number') return;
+                if (m.status === 'recognizing text') setScanProgress(ocrStage.label, ocrStage.from + m.progress * (ocrStage.to - ocrStage.from));
+                else setScanProgress(OCR_STEPS[m.status] || 'Preparazione…', Math.min(0.25, 0.05 + m.progress * 0.2));
+            }
+        });
+        return ocrWorker;
+    }
+    // Il lettore resta pronto finché la pagina è aperta (le nuove letture sono più veloci), poi si libera la memoria
+    function releaseOcrWorker() { if (ocrWorker) { ocrWorker.terminate().catch(() => { }); ocrWorker = null; } }
+
     function loadImageFromFile(file) {
         return new Promise((resolve, reject) => {
             const url = URL.createObjectURL(file), img = new Image();
@@ -2853,24 +2890,122 @@
             img.src = url;
         });
     }
-    // Ridimensiona e rende la foto in bianco e nero ad alto contrasto: il testo si legge meglio
-    async function prepareScan(file) {
-        const img = await loadImageFromFile(file);
-        const scale = Math.min(1, 2200 / Math.max(img.naturalWidth, img.naturalHeight));
+
+    // Stato dell'anteprima: foto, rotazione (0/90/180/270) e ritaglio (in proporzione 0..1 sulla foto ruotata)
+    const scan = { img: null, rotation: 0, crop: null, lastText: '' };
+    function rotatedCanvas(img, rotation, maxSide) {
+        const w = img.naturalWidth, h = img.naturalHeight, swap = rotation % 180 !== 0;
+        const scale = Math.min(1, maxSide / Math.max(w, h));
         const c = document.createElement('canvas');
-        c.width = Math.round(img.naturalWidth * scale); c.height = Math.round(img.naturalHeight * scale);
-        const ctx = c.getContext('2d');
-        ctx.drawImage(img, 0, 0, c.width, c.height);
-        const data = ctx.getImageData(0, 0, c.width, c.height), px = data.data;
-        for (let i = 0; i < px.length; i += 4) {
-            const g = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
-            const v = Math.max(0, Math.min(255, (g - 128) * 1.5 + 128));
-            px[i] = px[i + 1] = px[i + 2] = v;
-        }
-        ctx.putImageData(data, 0, 0);
+        c.width = Math.round((swap ? h : w) * scale); c.height = Math.round((swap ? w : h) * scale);
+        const x = c.getContext('2d');
+        x.translate(c.width / 2, c.height / 2); x.rotate(rotation * Math.PI / 180);
+        x.drawImage(img, -w * scale / 2, -h * scale / 2, w * scale, h * scale);
         return c;
     }
-    const OCR_STEPS = { 'loading tesseract core': 'Carico il lettore di testo…', 'initializing tesseract': 'Avvio il lettore…', 'loading language traineddata': 'Scarico l\'italiano (solo la prima volta)…', 'initializing api': 'Quasi pronto…', 'recognizing text': 'Leggo la ricetta…' };
+    function drawScanPreview() {
+        const src = rotatedCanvas(scan.img, scan.rotation, 1400), cv = $('scan-preview');
+        cv.width = src.width; cv.height = src.height;
+        cv.getContext('2d').drawImage(src, 0, 0);
+        drawCropBox();
+    }
+    function drawCropBox() {
+        const box = $('crop-box'), cv = $('scan-preview');
+        if (!scan.crop) { box.hidden = true; return; }
+        const r = cv.getBoundingClientRect(), wrap = $('scan-wrap').getBoundingClientRect();
+        box.hidden = false;
+        box.style.left = (r.left - wrap.left + scan.crop.x * r.width) + 'px';
+        box.style.top = (r.top - wrap.top + scan.crop.y * r.height) + 'px';
+        box.style.width = (scan.crop.w * r.width) + 'px';
+        box.style.height = (scan.crop.h * r.height) + 'px';
+    }
+    // Ritaglio: si trascina un rettangolo sulla foto (dito o mouse)
+    let dragStart = null;
+    const relPoint = (e) => {
+        const r = $('scan-preview').getBoundingClientRect();
+        return { x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) };
+    };
+    $('scan-wrap').addEventListener('pointerdown', (e) => { if (!scan.img) return; dragStart = relPoint(e); $('scan-wrap').setPointerCapture(e.pointerId); });
+    $('scan-wrap').addEventListener('pointermove', (e) => {
+        if (!dragStart) return;
+        const p = relPoint(e);
+        scan.crop = { x: Math.min(dragStart.x, p.x), y: Math.min(dragStart.y, p.y), w: Math.abs(p.x - dragStart.x), h: Math.abs(p.y - dragStart.y) };
+        drawCropBox();
+    });
+    const endDrag = () => {
+        if (!dragStart) return;
+        dragStart = null;
+        if (scan.crop && (scan.crop.w < 0.05 || scan.crop.h < 0.05)) scan.crop = null; // tocco singolo: nessun ritaglio
+        drawCropBox();
+    };
+    $('scan-wrap').addEventListener('pointerup', endDrag);
+    $('scan-wrap').addEventListener('pointercancel', endDrag);
+    window.addEventListener('resize', () => { if (scan.img) drawCropBox(); });
+
+    // Prepara la foto per la lettura: rotazione, ritaglio, dimensione adatta e scala di grigi.
+    // mode 'bin': bianco e nero con soglia adattiva (toglie ombre e luce non uniforme).
+    function prepareOcrCanvas(rotation, mode) {
+        const full = rotatedCanvas(scan.img, rotation, 4000);
+        let sx = 0, sy = 0, sw = full.width, sh = full.height;
+        if (scan.crop && rotation === scan.rotation) {
+            sx = Math.round(scan.crop.x * full.width); sy = Math.round(scan.crop.y * full.height);
+            sw = Math.max(1, Math.round(scan.crop.w * full.width)); sh = Math.max(1, Math.round(scan.crop.h * full.height));
+        }
+        const big = Math.max(sw, sh), scale = big > 2600 ? 2600 / big : (big < 1600 ? 1600 / big : 1);
+        const W = Math.round(sw * scale), H = Math.round(sh * scale);
+        const c = document.createElement('canvas'); c.width = W; c.height = H;
+        const x = c.getContext('2d');
+        x.imageSmoothingQuality = 'high';
+        x.drawImage(full, sx, sy, sw, sh, 0, 0, W, H);
+        const id = x.getImageData(0, 0, W, H), p = id.data, gray = new Float32Array(W * H);
+        for (let i = 0, j = 0; i < p.length; i += 4, j++) gray[j] = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2];
+        if (mode === 'bin') {
+            // Soglia adattiva di Bradley: ogni punto viene confrontato con la media della sua zona
+            const integ = new Float64Array((W + 1) * (H + 1));
+            for (let yy = 1; yy <= H; yy++) {
+                let row = 0;
+                for (let xx = 1; xx <= W; xx++) { row += gray[(yy - 1) * W + xx - 1]; integ[yy * (W + 1) + xx] = integ[(yy - 1) * (W + 1) + xx] + row; }
+            }
+            const s = Math.max(8, Math.round(Math.max(W, H) / 48)), T = 0.15;
+            for (let yy = 0; yy < H; yy++) {
+                const y1 = Math.max(0, yy - s), y2 = Math.min(H - 1, yy + s);
+                for (let xx = 0; xx < W; xx++) {
+                    const x1 = Math.max(0, xx - s), x2 = Math.min(W - 1, xx + s), count = (x2 - x1 + 1) * (y2 - y1 + 1);
+                    const sum = integ[(y2 + 1) * (W + 1) + x2 + 1] - integ[y1 * (W + 1) + x2 + 1] - integ[(y2 + 1) * (W + 1) + x1] + integ[y1 * (W + 1) + x1];
+                    gray[yy * W + xx] = gray[yy * W + xx] * count <= sum * (1 - T) ? 0 : 255;
+                }
+            }
+        }
+        for (let i = 0, j = 0; i < p.length; i += 4, j++) p[i] = p[i + 1] = p[i + 2] = gray[j];
+        x.putImageData(id, 0, 0);
+        return c;
+    }
+
+    // Ripulisce il testo letto: tiene solo parole affidabili, scarta le righe nate da foto, ombre e bordi,
+    // e corregge gli errori tipici ("8g" → "g", "l00" → "100", legature)
+    function cleanOcrResult(data) {
+        const lines = data.lines || (data.blocks || []).flatMap((b) => (b.paragraphs || []).flatMap((pp) => pp.lines || []));
+        const out = []; let good = 0, confSum = 0, confN = 0;
+        lines.forEach((l) => {
+            const kept = [];
+            (l.words || []).forEach((w) => {
+                let t = String(w.text || '').normalize('NFKC').trim(); const c = w.confidence;
+                if (!t || /^[|\\/_~^*=<>«»"“”`]+$/.test(t)) return;                    // simboli isolati: rumore
+                const prevNum = kept.length && /^\d+([.,]\d+)?$/.test(kept[kept.length - 1]);
+                if (prevNum && /^8?[gq9]$/i.test(t) && c < 90) { kept.push('g'); return; } // "300 8g" → "300 g"
+                if (/\d/.test(t) && /^[\dlIoO|.,]+$/.test(t)) t = t.replace(/[oO]/g, '0').replace(/[lI|]/g, '1');
+                const letters = (t.match(/[a-zà-ÿ]/gi) || []).length;
+                const ok = c >= 70 || (c >= 45 && (/^[\d.,/°'’%-]+$/.test(t) || (letters >= 4 && /[aeiouàèéìòù]/i.test(t))));
+                if (!ok) return;
+                kept.push(t); confSum += c; confN++;
+                if (c >= 80 && letters >= 3) good++;
+            });
+            const text = kept.join(' ').replace(/(\d)\s+8\s+(di|d['’])(?=\s)/g, '$1 g $2');
+            if (kept.some((k) => (k.match(/[a-zà-ÿ]/gi) || []).length >= 3)) out.push(text); // almeno una parola vera
+        });
+        return { text: out.join('\n'), good, conf: confN ? Math.round(confSum / confN) : 0 };
+    }
+
     function setScanProgress(label, pct) {
         $('scan-progress').hidden = false;
         $('scan-status').textContent = label;
@@ -2878,35 +3013,71 @@
         $('scan-bar-fill').style.width = Math.round(pct * 100) + '%';
     }
     let scanning = false;
+    async function readScan() {
+        if (scanning || !scan.img) return;
+        scanning = true;
+        ['btn-scan-read', 'btn-import-scan', 'btn-scan-rotate'].forEach((id) => { $(id).disabled = true; });
+        try {
+            setScanProgress('Carico il lettore di testo…', 0.03);
+            const worker = await getOcrWorker();
+            const attempt = async (rotation, mode, label, from, to) => {
+                ocrStage = { label, from, to };
+                const { data } = await worker.recognize(prepareOcrCanvas(rotation, mode), {}, { text: true, blocks: true });
+                return { ...cleanOcrResult(data), rotation };
+            };
+            // 1) foto così com'è; 2) se la lettura è incerta, bianco e nero adattivo; 3) se è quasi illeggibile, provo a ruotarla
+            let best = await attempt(scan.rotation, 'gray', 'Leggo la ricetta…', 0.25, 0.6);
+            if (best.good < 12 || best.conf < 85) {
+                const bin = await attempt(scan.rotation, 'bin', 'Miglioro la lettura…', 0.6, 0.8);
+                if (bin.good > best.good) best = bin;
+            }
+            if (best.good < 5 && !scan.crop) {
+                const turns = [90, 270, 180];
+                for (let i = 0; i < turns.length && best.good < 5; i++) {
+                    const r = (scan.rotation + turns[i]) % 360;
+                    const res = await attempt(r, 'gray', 'Provo a girare la foto…', 0.8 + i * 0.06, 0.86 + i * 0.06);
+                    if (res.good > best.good) best = res;
+                }
+                if (best.rotation !== scan.rotation) { scan.rotation = best.rotation; drawScanPreview(); showToast('Ho girato la foto per leggerla meglio'); }
+            }
+            if (!best.text.trim() || best.good < 3) {
+                $('scan-progress').hidden = true;
+                showToast('Non riesco a leggere la ricetta: più luce, pagina dritta e ritaglia solo il testo', 'error');
+                return;
+            }
+            // Una nuova lettura sostituisce la precedente; il testo scritto a mano resta
+            const area = $('import-text'), cur = area.value.trim();
+            area.value = !cur || cur === scan.lastText ? best.text : cur + '\n\n' + best.text;
+            scan.lastText = best.text;
+            setScanProgress(best.conf >= 80 ? 'Fatto! Controlla il testo letto' : 'Fatto, ma alcune parole potrebbero essere sbagliate: controlla il testo', 1);
+            analyzeImport();
+        } catch (err) {
+            $('scan-progress').hidden = true;
+            if (err && err.message === 'rete') showToast('Per la prima scansione serve la connessione', 'error');
+            else { showToast('Scansione non riuscita, riprova', 'error'); releaseOcrWorker(); }
+        } finally {
+            scanning = false;
+            ['btn-scan-read', 'btn-import-scan', 'btn-scan-rotate'].forEach((id) => { $(id).disabled = false; });
+        }
+    }
+
     $('btn-import-scan').onclick = () => { if (!scanning) $('scan-input').click(); };
+    $('btn-scan-other').onclick = () => { if (!scanning) $('scan-input').click(); };
+    $('btn-scan-rotate').onclick = () => { scan.rotation = (scan.rotation + 90) % 360; scan.crop = null; drawScanPreview(); };
+    $('btn-scan-full').onclick = () => { scan.crop = null; drawCropBox(); };
+    $('btn-scan-read').onclick = readScan;
     $('scan-input').onchange = async (e) => {
         const input = e.target, file = input.files[0]; input.value = '';
         if (!file) return;
         if (file.type && !file.type.startsWith('image/')) return showToast('Scegli una foto', 'error');
-        scanning = true; $('btn-import-scan').disabled = true;
-        let worker = null;
         try {
-            setScanProgress('Preparo la foto…', 0.02);
-            const canvas = await prepareScan(file);
-            setScanProgress('Carico il lettore di testo…', 0.05);
-            await loadTesseract();
-            worker = await Tesseract.createWorker('ita', 1, {
-                logger: (m) => { if (typeof m.progress === 'number') setScanProgress(OCR_STEPS[m.status] || 'Elaborazione…', m.status === 'recognizing text' ? 0.3 + m.progress * 0.7 : Math.min(0.3, 0.05 + m.progress * 0.25)); }
-            });
-            const { data } = await worker.recognize(canvas);
-            const text = (data && data.text || '').trim();
-            if (!text) { showToast('Non riesco a leggere il testo: prova con più luce e la pagina dritta', 'error'); return; }
-            const area = $('import-text');
-            area.value = area.value.trim() ? area.value.trim() + '\n\n' + text : text;
-            setScanProgress('Fatto! Controlla il testo letto', 1);
-            analyzeImport();
-        } catch (err) {
-            showToast(err && err.message === 'rete' ? 'Per la prima scansione serve la connessione' : 'Scansione non riuscita, riprova', 'error');
-            $('scan-progress').hidden = true;
-        } finally {
-            if (worker) worker.terminate().catch(() => { });
-            scanning = false; $('btn-import-scan').disabled = false;
-        }
+            scan.img = await loadImageFromFile(file);
+            scan.rotation = 0; scan.crop = null;
+            $('scan-editor').hidden = false; $('scan-progress').hidden = true;
+            drawScanPreview();
+            $('scan-editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            loadTesseract().catch(() => { }); // intanto scarico il lettore
+        } catch { showToast('Non riesco ad aprire questa foto', 'error'); }
     };
 
     // --- DETTAGLIO RICETTA E PORZIONI ---
