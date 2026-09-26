@@ -24,6 +24,7 @@
         :root {
             --primary: #F97316;
             --primary-dark: #EA580C;
+            --primary-text: #C2410C; /* arancio più scuro per i testi piccoli: si legge meglio */
             --primary-light: rgba(249, 115, 22, 0.1);
             --bg-color: #FFF7ED;
             --surface: #FFFFFF;
@@ -95,7 +96,7 @@
         .widget-open { background: none; border: none; padding: 0; margin: 0; text-align: left; font: inherit; cursor: pointer; width: 100%; color: inherit; }
         .widget-open:focus-visible { outline: none; }
         .widget-open::after { content: ''; position: absolute; inset: 0; z-index: 1; }
-        .widget-cat { overflow-wrap: anywhere; max-width: 100%; font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .widget-cat { overflow-wrap: anywhere; max-width: 100%; font-size: 0.7rem; font-weight: 800; color: var(--primary-text); text-transform: uppercase; letter-spacing: 0.5px; }
         .widget-title { font-size: 0.95rem; font-weight: 800; line-height: 1.3; width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-main); overflow-wrap: anywhere; }
         .widget-match { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; display: flex; gap: 4px; align-items: flex-start; }
         .widget-match i { color: var(--primary); }
@@ -148,10 +149,13 @@
 
         .checkbox-container { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; color: var(--text-main); font-size: 1rem; }
         .checkbox-container input { width: 22px; height: 22px; accent-color: var(--primary); }
-        .time-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; display: none; padding-top: 16px; border-top: 1px dashed var(--border); }
+        .time-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; display: none; padding-top: 16px; border-top: 1px dashed var(--border); }
         .time-grid.active { display: grid; }
         .time-grid-item label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 700; text-align: center; min-height: 2.2em; }
         .time-grid-item input { text-align: center; font-weight: 700; margin-bottom: 0; }
+        /* Totale calcolato da solo: preparazione + lievitazione + cottura */
+        .time-total input { background: var(--primary-light); border-color: var(--border); color: var(--primary-text); cursor: default; }
+        @media (max-width: 480px) { .time-grid { grid-template-columns: 1fr 1fr; } }
 
         .btn-submit { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2); transition: background 0.2s, transform 0.1s, opacity 0.2s; }
         .btn-submit:active { transform: scale(0.98); }
@@ -223,11 +227,13 @@
         .page-empty { text-align: center; color: var(--text-muted); padding: 40px 16px; line-height: 1.5; }
         .page-empty i { display: block; font-size: 3rem; color: #FDBA74; margin-bottom: 8px; }
 
-        .detail-cat { overflow-wrap: anywhere; color: var(--primary); font-weight: 800; font-size: 0.95rem; margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; }
+        .detail-cat { overflow-wrap: anywhere; color: var(--primary-text); font-weight: 800; font-size: 0.95rem; margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; }
         .detail-title { font-size: clamp(1.6rem, 4.5vw + 0.5rem, 2.4rem); font-weight: 800; margin-bottom: 24px; line-height: 1.2; overflow-wrap: anywhere; }
         .time-banner { display: flex; justify-content: space-around; gap: 8px; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px; text-align: center; }
         .time-item span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
         .time-item strong { font-size: 1.2rem; font-weight: 800; }
+        .time-item-total strong { color: var(--primary-text); }
+        .time-banner { flex-wrap: wrap; row-gap: 10px; }
 
         .servings-stepper { display: flex; align-items: center; justify-content: space-between; background: var(--primary-light); padding: 16px; border-radius: var(--radius-md); margin-bottom: 16px; border: 1px solid var(--border); }
         .servings-stepper span { font-weight: 800; color: var(--primary-dark); font-size: 1rem; text-transform: uppercase; }
@@ -313,8 +319,14 @@
         .shop-tip { font-size: 0.85rem; color: var(--text-muted); background: var(--primary-light); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.4; }
         .plan-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; }
         .plan-item .plan-title { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: break-word; }
+        @media (max-width: 400px) {
+            .plan-item { flex-wrap: wrap; }
+            .plan-item .plan-title { flex: 1 1 100%; }
+            .plan-item .plan-stepper { margin-left: auto; }
+        }
+        #current-ing-list .btn-del-cat { min-width: 40px; min-height: 38px; }
         .plan-stepper { display: flex; align-items: center; gap: 4px; font-weight: 800; color: var(--primary-dark); white-space: nowrap; font-size: 0.9rem; }
-        .plan-stepper button { width: 32px; height: 32px; border-radius: 8px; border: 2px solid var(--primary); background: var(--surface); color: var(--primary); font-weight: 800; font-size: 1.1rem; cursor: pointer; }
+        .plan-stepper button { width: 38px; height: 38px; border-radius: 8px; border: 2px solid var(--primary); background: var(--surface); color: var(--primary); font-weight: 800; font-size: 1.1rem; cursor: pointer; }
         .aisle { margin-bottom: 14px; }
         .aisle-title { font-weight: 800; font-size: 1rem; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
         .aisle-title small { color: var(--text-muted); font-weight: 700; }
@@ -414,6 +426,38 @@
         .import-ings li strong { color: var(--primary-dark); }
         .import-ings li.loose { color: var(--text-muted); }
         .import-proc { white-space: pre-wrap; max-height: 160px; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+        /* --- Storico spese e scelta dai tuoi prodotti --- */
+        .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg-color); padding: 5px; border-radius: 14px; border: 1px solid var(--border); flex: 1; }
+        .seg button { border: none; background: none; padding: 11px 8px; border-radius: 10px; font-weight: 800; font-size: 0.95rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit; }
+        .seg button.active { background: var(--primary); color: #fff; }
+        .pick-products-btn { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 11px; border-radius: 10px; border: 1px dashed var(--primary); background: var(--primary-light); color: var(--primary-text); font-weight: 800; font-size: 0.95rem; cursor: pointer; font-family: inherit; }
+        .hist-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 10px; overflow: hidden; }
+        .hist-head { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: none; border: none; text-align: left; cursor: pointer; font-family: inherit; color: inherit; }
+        .hist-date { width: 52px; flex-shrink: 0; text-align: center; background: var(--primary-light); border-radius: 12px; padding: 6px 0; color: var(--primary-text); line-height: 1.1; }
+        .hist-date b { display: block; font-size: 1.3rem; font-weight: 800; }
+        .hist-date small { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }
+        .hist-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .hist-info strong { font-size: 1rem; overflow-wrap: break-word; }
+        .hist-info span { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; overflow-wrap: break-word; }
+        .hist-body { padding: 0 14px 14px; border-top: 1px dashed var(--border); }
+        .hist-aisle { font-weight: 800; font-size: 0.9rem; margin: 12px 0 6px; }
+        .hist-items { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+        .hist-items li { background: var(--bg-color); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; font-weight: 600; }
+        .hist-items li b { color: var(--primary-text); }
+        .hist-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+        .hist-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .hist-filters button { border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 7px 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; color: var(--text-muted); }
+        .hist-filters button.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .hist-summary { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+        .hist-summary p { font-weight: 700; margin-bottom: 10px; }
+        .aisle-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; }
+        .aisle-bar span:first-child { width: 132px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .aisle-bar .bar { flex: 1; height: 10px; background: var(--bg-color); border-radius: 5px; overflow: hidden; }
+        .aisle-bar .bar div { height: 100%; background: var(--primary); border-radius: 5px; }
+        .aisle-bar b { width: 28px; text-align: right; color: var(--primary-text); }
+        .pp-row { display: flex; align-items: center; gap: 10px; }
+        .pp-row .row-main { cursor: pointer; }
+        .pp-add.in-list { background: #ECFDF5; color: #047857; }
         /* --- Sostituzioni --- */
         .tile-wide { grid-column: 1 / -1; flex-direction: row; align-items: center; }
         .tile-wide .tile-arrow { position: static; margin-left: auto; }
@@ -474,7 +518,7 @@
         @keyframes tts-pulse { 50% { transform: scale(1.2); } }
         .cook-ing-panel { position: absolute; inset: 0; background: rgba(28, 25, 23, 0.55); display: flex; align-items: flex-end; justify-content: center; z-index: 2; }
         .cook-ing-panel:not(.active) { display: none; }
-        .cook-ing-card { background: var(--surface); width: min(640px, 100%); max-height: 82%; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 20px 20px calc(20px + var(--safe-bottom)); font-size: 1.25rem; }
+        .cook-ing-card { background: var(--surface); width: min(640px, 100%); max-height: 82%; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 20px 20px calc(20px + var(--safe-bottom) + var(--dock-h)); font-size: 1.25rem; }
         .cook-ing-card .ing-display-list { border: none; padding: 0; font-size: 1.25rem; }
         @media (orientation: landscape) and (max-height: 600px) {
             .cook-view { display: grid; grid-template-columns: minmax(110px, 20%) 1fr minmax(130px, 24%); grid-template-rows: auto auto minmax(0, 1fr); }
@@ -491,6 +535,7 @@
 
         /* --- Telefoni molto stretti (≤360px) --- */
         @media (max-width: 360px) {
+            .widget-title { -webkit-line-clamp: 3; }
             .settings-tiles { gap: 8px; }
             .settings-tile { padding: 14px 12px; }
             .page-add-btn span { display: none; }
@@ -635,9 +680,10 @@
                         <input type="checkbox" id="toggle-times"> Attiva i tempi
                     </label>
                     <div class="time-grid" id="time-grid-container">
-                        <div class="time-grid-item"><label for="timeTotal">Totale (min)</label><input type="number" class="form-control" id="timeTotal" min="0" step="1" inputmode="numeric"></div>
-                        <div class="time-grid-item"><label for="timeLeav">Lievitazione (min)</label><input type="number" class="form-control" id="timeLeav" min="0" step="1" inputmode="numeric"></div>
-                        <div class="time-grid-item"><label for="timeCook">Cottura (min)</label><input type="number" class="form-control" id="timeCook" min="0" step="1" inputmode="numeric"></div>
+                        <div class="time-grid-item"><label for="timePrep">Preparazione (min)</label><input type="number" class="form-control time-part" id="timePrep" min="0" step="1" inputmode="numeric"></div>
+                        <div class="time-grid-item"><label for="timeLeav">Lievitazione (min)</label><input type="number" class="form-control time-part" id="timeLeav" min="0" step="1" inputmode="numeric"></div>
+                        <div class="time-grid-item"><label for="timeCook">Cottura (min)</label><input type="number" class="form-control time-part" id="timeCook" min="0" step="1" inputmode="numeric"></div>
+                        <div class="time-grid-item time-total"><label for="timeTotal">Totale</label><input type="text" class="form-control" id="timeTotal" readonly tabindex="-1" aria-live="polite" placeholder="—"></div>
                     </div>
                 </div>
 
@@ -712,9 +758,9 @@
 
             <div class="form-group">
                 <label class="form-label">Backup Dati</label>
-                <p class="form-hint" style="margin-bottom:12px;">Il backup include ricette (con preferiti e teglie), categorie, prodotti e liste della spesa.</p>
+                <p class="form-hint" style="margin-bottom:12px;">Il backup include ricette, categorie, prodotti, liste della spesa e storico delle spese.</p>
                 <button type="button" class="btn-submit btn-outline" id="btn-export"><i class="ri-download-2-line"></i> Esporta Dati</button>
-                <label for="file-import" class="btn-submit btn-outline" style="margin-bottom:0;" tabindex="0" role="button" id="lbl-import"><i class="ri-upload-2-line"></i> Ripristina Dati</label>
+                <label for="file-import" class="btn-submit btn-outline" style="margin-bottom:0;" tabindex="0" role="button" id="lbl-import"><i class="ri-upload-2-line"></i> Importa backup</label>
                 <input type="file" id="file-import" accept=".json,application/json" style="display:none;">
             </div>
         </div>
@@ -818,7 +864,10 @@
     <div class="sheet" id="shop-sheet" role="dialog" aria-modal="true" aria-labelledby="shop-title">
         <div class="sheet-header">
             <h3 id="shop-title">Lista della spesa</h3>
-            <button type="button" class="btn-icon" style="color:var(--text-muted);" id="btn-close-shop" aria-label="Chiudi"><i class="ri-close-line"></i></button>
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-icon" id="btn-open-history" aria-label="Storico delle spese" title="Storico spese"><i class="ri-history-line"></i></button>
+                <button type="button" class="btn-icon" style="color:var(--text-muted);" id="btn-close-shop" aria-label="Chiudi"><i class="ri-close-line"></i></button>
+            </div>
         </div>
         <div class="sheet-content">
             <div class="list-chips" id="list-chips" role="tablist" aria-label="Le tue liste"></div>
@@ -833,6 +882,7 @@
                 </select>
                 <select class="form-control" id="shop-extra-aisle" aria-label="Reparto del prodotto"></select>
                 <button type="button" class="btn-submit btn-small" id="btn-shop-extra" aria-label="Aggiungi prodotto">+</button>
+                <button type="button" class="pick-products-btn" id="btn-pick-products"><i class="ri-archive-drawer-line"></i> Scegli dai tuoi prodotti</button>
             </div>
             <div id="shop-list"></div>
             <div class="shop-actions" id="shop-actions">
@@ -840,6 +890,36 @@
                 <button type="button" class="btn-submit btn-outline" id="btn-shop-clear" style="border-color:var(--danger); color:var(--danger);"><i class="ri-delete-bin-line"></i> Svuota lista</button>
             </div>
         </div>
+    </div>
+
+    <!-- PAGINA A TUTTO SCHERMO: STORICO DELLE SPESE -->
+    <div class="page-view" id="history-page" role="dialog" aria-modal="true" aria-labelledby="history-title">
+        <div class="page-header">
+            <button type="button" class="btn-icon page-back" data-page-close aria-label="Torna alla lista"><i class="ri-arrow-left-s-line"></i></button>
+            <div class="page-heading"><h2 id="history-title">Storico spese</h2><span id="history-count"></span></div>
+        </div>
+        <div class="page-add history-tools">
+            <div class="seg" role="tablist">
+                <button type="button" role="tab" id="hist-tab-date" class="active" aria-selected="true"><i class="ri-calendar-line"></i> Per data</button>
+                <button type="button" role="tab" id="hist-tab-aisle" aria-selected="false"><i class="ri-store-2-line"></i> Per reparto</button>
+            </div>
+        </div>
+        <div class="page-content"><div class="page-inner" id="history-body"></div></div>
+    </div>
+
+    <!-- PAGINA A TUTTO SCHERMO: AGGIUNGI DAI TUOI PRODOTTI -->
+    <div class="page-view" id="prodpick-page" role="dialog" aria-modal="true" aria-labelledby="prodpick-title">
+        <div class="page-header">
+            <button type="button" class="btn-icon page-back" data-page-close aria-label="Torna alla lista"><i class="ri-arrow-left-s-line"></i></button>
+            <div class="page-heading"><h2 id="prodpick-title">I tuoi prodotti</h2><span id="prodpick-sub">Tocca + per metterli in lista</span></div>
+        </div>
+        <div class="page-add">
+            <div class="page-add-field">
+                <i class="ri-search-line" aria-hidden="true"></i>
+                <input type="text" id="prodpick-search" placeholder="Cerca un prodotto…" autocomplete="off" enterkeyhint="search" aria-label="Cerca tra i tuoi prodotti">
+            </div>
+        </div>
+        <div class="page-content"><div class="page-inner" id="prodpick-list"></div></div>
     </div>
 
     <!-- SCELTA RAPIDA: a quale lista aggiungere la ricetta -->
@@ -981,7 +1061,7 @@
             title: cleanStr(raw.title),
             category: cleanStr(raw.category),
             servings: servings > 0 ? servings : 1,
-            timeTotal: cleanStr(raw.timeTotal), timeLeav: cleanStr(raw.timeLeav), timeCook: cleanStr(raw.timeCook),
+            ...recipeTimes(raw),
             ingredients: (Array.isArray(raw.ingredients) ? raw.ingredients : [])
                 .filter((i) => i && typeof i === 'object' && cleanStr(i.name))
                 .map((i) => ({ name: cleanStr(i.name), qty: cleanStr(i.qty), unit: cleanStr(i.unit) })),
@@ -992,6 +1072,16 @@
         r.pan = normalizePan(raw.pan);
         if (!r.pan) delete r.pan;
         return r;
+    }
+    // Tempi: preparazione + lievitazione + cottura; il totale è sempre la loro somma.
+    // Ricette vecchie (senza preparazione): la differenza tra il totale scritto a mano e gli altri tempi diventa preparazione.
+    function recipeTimes(raw) {
+        const pos = (v) => { const n = toNum(v); return n > 0 ? Math.round(n) : 0; };
+        let prep = pos(raw.timePrep);
+        const leav = pos(raw.timeLeav), cook = pos(raw.timeCook), oldTotal = pos(raw.timeTotal);
+        if (!prep && oldTotal > leav + cook) prep = oldTotal - leav - cook;
+        const s = (n) => (n ? String(n) : '');
+        return { timePrep: s(prep), timeLeav: s(leav), timeCook: s(cook), timeTotal: s(prep + leav + cook) };
     }
     // Teglia: { shape: 'round' | 'square' | 'rect', a: cm, b: cm (solo rettangolare) }
     function normalizePan(p) {
@@ -1029,6 +1119,7 @@
     const LOAD_ID = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     let formToken = 0, activeFormToken = null, updateReady = false;
     function applyModals(stack, form = activeFormToken) {
+        const hadForm = modalStack.includes('add-sheet');
         modalStack = stack.filter((id) => $(id)
             && (id !== 'detail-view' || getRecipe(currentRecipeId))   // non riaprire ricette eliminate
             && (id !== 'add-sheet' || form === activeFormToken)       // non riaprire un form già salvato (tasto "avanti")
@@ -1043,6 +1134,7 @@
         overlay.classList.toggle('active', modalStack.length > 0);
         overlay.classList.toggle('top', modalStack.some((id) => id.endsWith('-sheet')));
         syncWakeLock();
+        if (hadForm && !modalStack.includes('add-sheet')) { if (formSaved) formSaved = false; else saveDraft(); } // modulo chiuso senza salvare: tengo la bozza
         if (!modalStack.includes('cook-view')) stopSpeaking();
         if (!modalStack.includes('import-page')) releaseOcrWorker(); // libera la memoria del lettore di testo
         // Uscendo dalla modalità cucina si esce anche dallo schermo intero
@@ -1097,8 +1189,15 @@
 
     $('toggle-times').addEventListener('change', function () {
         $('time-grid-container').classList.toggle('active', this.checked);
-        if (!this.checked) { $('timeTotal').value = ''; $('timeLeav').value = ''; $('timeCook').value = ''; }
+        if (!this.checked) { $('timePrep').value = ''; $('timeLeav').value = ''; $('timeCook').value = ''; }
+        updateTimeTotal();
     });
+    // Totale = preparazione + lievitazione + cottura, aggiornato mentre scrivi
+    function updateTimeTotal() {
+        const sum = ['timePrep', 'timeLeav', 'timeCook'].reduce((s, id) => { const n = toNum($(id).value); return s + (n > 0 ? n : 0); }, 0);
+        $('timeTotal').value = sum ? `${formatMinutes(Math.round(sum))} (${Math.round(sum)} min)` : '';
+    }
+    document.querySelectorAll('.time-part').forEach((el) => el.addEventListener('input', updateTimeTotal));
 
     // --- PAGINE "CATEGORIE" E "DATABASE PRODOTTI" (a tutto schermo, aperte dalle Impostazioni) ---
     const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
@@ -1264,7 +1363,7 @@
     function renameCategory(old, val) {
         if (!val || val === old) { renderCatPage(); return; }
         if (categories.some((c) => c !== old && sameText(c, val)) || RESERVED_CATS.some((r) => sameText(r, val))) {
-            showToast('Esiste già una categoria con questo nome', 'error'); renderCatPage(); return;
+            showToast(RESERVED_CATS.some((r) => sameText(r, val)) ? `«${val}» è un nome riservato ai filtri: scegline un altro` : 'Esiste già una categoria con questo nome', 'error'); renderCatPage(); return;
         }
         const prevCats = [...categories], prevRecipeCats = recipes.map((r) => r.category);
         categories = categories.map((c) => (c === old ? val : c));
@@ -1318,7 +1417,16 @@
     function formatIngredient(ing, ratio = 1) {
         let qty = ing.qty, unit = ing.unit || '';
         const n = toNum(qty);
-        if (qty !== '' && !isNaN(n)) qty = numFmt.format(n * ratio);
+        if (qty !== '' && !isNaN(n)) {
+            let v = n * ratio;
+            // Dosi scalate leggibili: 256,56 g → 257 g; 3,19 uova → 3; i piccoli numeri restano precisi
+            if (ratio !== 1) {
+                if ((unit === 'g' || unit === 'ml') && v >= 10) v = Math.round(v);
+                else if (unit === 'g' || unit === 'ml') v = Math.round(v * 10) / 10;
+                else if (unit === 'pz' && v >= 1) v = Math.round(v * 2) / 2;
+            }
+            qty = numFmt.format(v);
+        }
         if (unit === 'q.b.') return { amount: qty ? `${qty} q.b.` : 'q.b.', name: ing.name };
         if (qty === '1' && unit === 'cucchiai') unit = 'cucchiaio'; // "1 cucchiaio", non "1 cucchiai"
         if (qty === '1' && unit === 'cucchiaini') unit = 'cucchiaino';
@@ -1343,7 +1451,7 @@
         if (!name) { showToast('Inserisci il nome del prodotto!', 'error'); $('ing-name').focus(); return false; }
         if (/^\d+\s*\/\s*\d+$/.test(qtyRaw) && toNum(qtyRaw) > 0) qtyRaw = String(+toNum(qtyRaw).toFixed(3)); // "1/2" → 0.5
         if (qtyRaw !== '' && !/^\d+(\.\d+)?$/.test(qtyRaw)) { showToast('Quantità non valida (es. 250, 0,5 o 1/2)', 'error'); $('ing-qty').focus(); return false; }
-        activeIngredients.push({ name, qty: qtyRaw, unit }); autoAddProduct(name);
+        activeIngredients.push({ name, qty: qtyRaw, unit });
         $('ing-name').value = ''; $('ing-qty').value = ''; $('ing-name').focus();
         renderActiveIngredients();
         return true;
@@ -1356,18 +1464,72 @@
     // --- NUOVA / MODIFICA / SALVATAGGIO ---
     function resetForm() {
         $('recipe-form').reset();
-        $('ing-name').value = ''; $('ing-qty').value = '';
+        $('ing-name').value = ''; $('ing-qty').value = ''; updateTimeTotal();
         $('add-sheet').querySelector('.sheet-content').scrollTop = 0;
     }
     function focusFirstField() { if (window.matchMedia('(pointer: fine)').matches) setTimeout(() => $('title').focus(), 60); }
 
-    $('fab-add').onclick = () => {
-        if (categories.length === 0) { showToast('Crea prima una categoria', 'error'); openModal('settings-sheet'); return; }
-        isEditing = false; $('form-title').textContent = 'Nuova Ricetta'; resetForm();
+    // --- BOZZA: una ricetta scritta a metà non si perde se il modulo si chiude senza salvare
+    // (tasto indietro, Esc, tocco fuori). Alla riapertura viene riproposta.
+    const DRAFT_KEY = 'chefbox_draft';
+    let formSaved = false;
+    function readForm() {
+        return {
+            title: $('title').value, category: catSelect.value, servings: $('servings').value,
+            times: $('toggle-times').checked, timePrep: $('timePrep').value, timeLeav: $('timeLeav').value, timeCook: $('timeCook').value,
+            ingredients: activeIngredients.map((i) => ({ ...i })), procedure: $('procedure').value,
+            pendingName: $('ing-name').value, pendingQty: $('ing-qty').value, pendingUnit: $('ing-unit').value
+        };
+    }
+    const draftHasContent = (d) => !!d && !!(String(d.title || '').trim() || (d.ingredients || []).length || String(d.procedure || '').trim() || String(d.pendingName || '').trim());
+    function loadDraft() {
+        try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY)); return d && typeof d === 'object' && Array.isArray(d.ingredients) ? d : null; }
+        catch { return null; }
+    }
+    function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch { } }
+    function saveDraft() {
+        const d = { ...readForm(), editId: isEditing ? currentRecipeId : null, at: Date.now() };
+        if (!draftHasContent(d)) { if (!d.editId) clearDraft(); return; }
+        if (d.editId) {
+            // In modifica la bozza serve solo se hai cambiato qualcosa rispetto alla ricetta salvata
+            const r = getRecipe(d.editId);
+            const same = r && r.title === d.title.trim() && r.procedure === d.procedure.trim() && r.category === d.category
+                && String(r.servings) === String(toNum(d.servings)) && JSON.stringify(r.ingredients) === JSON.stringify(d.ingredients) && !d.pendingName.trim();
+            if (!r || same) { clearDraft(); return; }
+        }
+        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch { }
+    }
+    function fillForm(d) {
+        $('title').value = cleanStr(d.title).slice(0, 120);
+        if (d.category && !categories.includes(d.category) && isEditing) catSelect.add(new Option(d.category, d.category));
+        if ([...catSelect.options].some((o) => o.value === d.category)) catSelect.value = d.category;
+        if (toNum(d.servings) > 0) $('servings').value = d.servings;
+        $('timePrep').value = cleanStr(d.timePrep); $('timeLeav').value = cleanStr(d.timeLeav); $('timeCook').value = cleanStr(d.timeCook);
+        $('toggle-times').checked = !!d.times; $('time-grid-container').classList.toggle('active', !!d.times); updateTimeTotal();
+        activeIngredients = (d.ingredients || []).filter((i) => i && typeof i.name === 'string' && i.name.trim())
+            .map((i) => ({ name: cleanStr(i.name), qty: cleanStr(i.qty), unit: cleanStr(i.unit) }));
+        renderActiveIngredients();
+        $('procedure').value = typeof d.procedure === 'string' ? d.procedure : '';
+        $('ing-name').value = cleanStr(d.pendingName); $('ing-qty').value = cleanStr(d.pendingQty);
+        if (d.pendingUnit !== undefined && [...$('ing-unit').options].some((o) => o.value === d.pendingUnit)) $('ing-unit').value = d.pendingUnit;
+    }
+    function blankNewForm() {
+        resetForm();
         renderCategories();
         if (categories.includes(currentFilter)) catSelect.value = currentFilter;
         $('servings').value = 4; $('toggle-times').checked = false; $('time-grid-container').classList.remove('active');
         activeIngredients = []; renderActiveIngredients();
+    }
+
+    $('fab-add').onclick = () => {
+        if (categories.length === 0) { showToast('Crea prima una categoria', 'error'); openModal('settings-sheet'); return; }
+        isEditing = false; $('form-title').textContent = 'Nuova Ricetta';
+        blankNewForm();
+        const draft = loadDraft();
+        if (draft && !draft.editId && draftHasContent(draft)) {
+            fillForm(draft);
+            showToast('Ho ripreso la ricetta che stavi scrivendo', 'success', { label: 'Ricomincia', run: () => { clearDraft(); blankNewForm(); } });
+        }
         openModal('add-sheet'); focusFirstField();
     };
 
@@ -1398,7 +1560,7 @@
             id: isEditing ? currentRecipeId : ('r_' + Date.now()),
             title: $('title').value, category: catSelect.value,
             servings: $('servings').value,
-            timeTotal: $('timeTotal').value, timeLeav: $('timeLeav').value, timeCook: $('timeCook').value,
+            timePrep: $('timePrep').value, timeLeav: $('timeLeav').value, timeCook: $('timeCook').value, timeTotal: '',
             ingredients: activeIngredients, procedure: $('procedure').value.trim(),
         });
 
@@ -1412,6 +1574,9 @@
             if (!saveRecipes()) { recipes.shift(); return; }
             showToast('Ricetta salvata!');
         }
+        // Solo ora, a ricetta salvata, i nuovi ingredienti entrano nel database prodotti (senza note tra parentesi)
+        recData.ingredients.forEach((i) => autoAddProduct(i.name.replace(/\s*\([^)]*\)\s*$/, '').trim()));
+        formSaved = true; clearDraft();
         closeTopModal(); activeFormToken = null; renderFeed();
     };
 
@@ -1528,19 +1693,22 @@
     const N = `(\\d+(?:[.,]\\d+)?|${NUMW})`;
     const TIMER_RE = new RegExp(
         `(^|[^a-zà-ÿ\\d'’])` +                                                    // 1: carattere precedente
-        `(?:(mezz['’]?\\s?ora|mezza\\s+ora)` +                                                  // 2: mezz'ora
-        `|${N}(?:\\s*(?:-|–|o|a)\\s*${N})?['’]?\\s*` +                             // 3: numero, 4: secondo numero (intervallo)
-        `(?:(ore|ora|h)(?:\\s+e\\s+(mezz[ao]|un\\s+quarto|\\d+\\s*(?:minuti|minuto|min)))?` + // 5: ore, 6: "e mezza"...
-        `|(minuti|minuto|min|['’])` +                                              // 7: minuti
-        `|(secondi|secondo|sec)))` +                                               // 8: secondi
+        `(?:(mezz['’]?\\s?ora|mezza\\s+ora|(?:un\\s+)?quarto\\s+d['’]\\s?ora|tre\\s+quarti\\s+d['’]\\s?ora)` + // 2: mezz'ora, un quarto d'ora...
+        `|${N}(?:\\s*(?:-|–|o|a)\\s*${N})?(?:['’](?=\\s?ora))?\\s*` +             // 3: numero, 4: secondo numero (intervallo); "un'ora"
+        `(?:(ore|ora|h)((?:\\s+e\\s+(?:mezz[ao]|un\\s+quarto|\\d{1,2}\\s*(?:minuti|minuto|min)?))|\\s*\\d{1,2}(?![\\d°.,]))?` + // 5: ore, 6: "e mezza", "1h30"
+        `|(minuti|minuto|min|['’](?!['’]))` +                                      // 7: minuti ("30'")
+        `|(secondi|secondo|sec|['’]{2}|")))` +                                     // 8: secondi ("30''")
         `(?![a-zà-ÿ\\d])`, 'gi');
     const wordNum = (s) => { const k = s.toLowerCase(); return k in NUM_WORDS ? NUM_WORDS[k] : toNum(k); };
     function timerSeconds(m) {
-        if (m[2]) return 1800;
+        if (m[2]) { const t = m[2].toLowerCase(); return /tre\s+quarti/.test(t) ? 2700 : /quarto/.test(t) ? 900 : 1800; }
         const n = wordNum(m[3]);
         if (m[5]) {
             let s = n * 3600;
-            if (m[6]) { const extra = m[6].toLowerCase(); s += extra.startsWith('mezz') ? 1800 : extra.includes('quarto') ? 900 : toNum(extra) * 60; }
+            if (m[6]) {
+                const extra = m[6].toLowerCase(), d = extra.match(/\d+/);
+                s += /mezz/.test(extra) ? 1800 : /quarto/.test(extra) ? 900 : d ? Number(d[0]) * 60 : 0;
+            }
             return s;
         }
         if (m[7]) return n * 60;
@@ -1723,6 +1891,7 @@
         if (currentPanFactor !== 1) meta.push(`teglia ${panLabel(panTo)}`);
         lines.push(meta.join(' · '));
         const times = [];
+        if (r.timePrep) times.push(`Preparazione ${formatMinutes(r.timePrep)}`);
         if (r.timeTotal) times.push(`Totale ${formatMinutes(r.timeTotal)}`);
         if (r.timeLeav) times.push(`Lievitazione ${formatMinutes(r.timeLeav)}`);
         if (r.timeCook) times.push(`Cottura ${formatMinutes(r.timeCook)}`);
@@ -2361,9 +2530,15 @@
     // Toglie dalle liste le ricette che non esistono più
     function pruneShopPlan() {
         let changed = false;
-        shopLists.forEach((l) => { const kept = l.plan.filter((p) => getRecipe(p.id)); if (kept.length !== l.plan.length) { l.plan = kept; changed = true; } });
+        shopLists.forEach((l) => { const kept = l.plan.filter((p) => getRecipe(p.id)); if (kept.length !== l.plan.length) { l.plan = kept; tidyListState(l); changed = true; } });
         if (changed) saveShop();
         updateShopBadge();
+    }
+    // Spunte e "Ho già" di articoli non più in lista (ricetta tolta) non devono ricomparire con la prossima ricetta
+    function tidyListState(list) {
+        const keys = new Set(computeShopping(list).map((i) => i.key));
+        list.checked = list.checked.filter((k) => keys.has(k));
+        Object.keys(list.owned).forEach((k) => { if (!keys.has(k)) delete list.owned[k]; });
     }
     function updateShopButton() {
         const btn = $('btn-add-shop'); if (!btn) return;
@@ -2380,14 +2555,16 @@
             if (prevOwned && prevOwned.key === lastKey && prevOwned.value !== undefined) snapshot.owned[lastKey] = prevOwned.value;
             else delete snapshot.owned[lastKey];
         }
+        const historyId = recordHistory(list); // la spesa finisce nello storico, con la data
         Object.assign(list, emptyListContent());
         haveOpen = false; ownEditKey = null;
         saveShop(); renderShop(); updateShopButton();
-        showToast(`Spesa completata! «${list.name}» è stata azzerata 🎉`, 'success', {
+        showToast(`Spesa completata e salvata nello storico 🎉`, 'success', {
             label: 'Annulla',
             run: () => {
                 if (!shopLists.includes(list)) return;
                 Object.assign(list, snapshot); saveShop(); renderShop(); updateShopButton();
+                if (historyId) { shopHistory = shopHistory.filter((h) => h.id !== historyId); saveHistory(); }
                 showToast('Lista ripristinata');
             }
         });
@@ -2397,7 +2574,7 @@
         const btn = e.target.closest('[data-plan-act]'); if (!btn) return;
         const list = activeList(), id = btn.closest('[data-plan]').dataset.plan, p = list.plan.find((x) => x.id === id); if (!p) return;
         const act = btn.dataset.planAct;
-        if (act === 'remove') list.plan = list.plan.filter((x) => x !== p);
+        if (act === 'remove') { list.plan = list.plan.filter((x) => x !== p); tidyListState(list); }
         else p.servings = Math.max(0.5, +(toNum(p.servings) + (act === 'plus' ? 1 : -1)).toFixed(2)); // 2,5 → 3,5 (niente arrotondamenti)
         saveShop(); renderShop(); updateShopButton();
     });
@@ -2520,6 +2697,7 @@
             list.extras.push({ id: 'x_' + Date.now().toString(36), name, qty, unit });
         }
         if (!saveShop()) { if (!same && !editing) list.extras.pop(); return; }
+        autoAddProduct(name); // così lo ritrovi in «Scegli dai tuoi prodotti»
         setExtraEditing(null);
         // Reparto scelto a mano: lo ricordo per questo prodotto anche le prossime volte
         if (aisle !== 'auto' && isAisle(aisle)) { aisleOverrides[nameKey(name)] = aisle; persist(KEYS.aisles, aisleOverrides); }
@@ -2593,6 +2771,193 @@
         lines.push('', '— Creata con ChefBox');
         shareText(list.name, lines.join('\n'), 'Lista copiata: incollala dove vuoi');
     };
+
+    // --- STORICO SPESE: ogni spesa completata viene salvata con data, articoli e reparti ---
+    const HISTORY_KEY = 'chefbox_shop_history';
+    const HISTORY_MAX = 300;
+    function normalizeHistoryEntry(h) {
+        if (!h || typeof h !== 'object' || !Array.isArray(h.items)) return null;
+        const d = new Date(h.date);
+        if (isNaN(d)) return null;
+        return {
+            id: cleanStr(h.id) || 'h_' + Math.random().toString(36).slice(2, 9),
+            date: d.toISOString(),
+            listName: cleanStr(h.listName).slice(0, 40) || 'Spesa',
+            recipes: (Array.isArray(h.recipes) ? h.recipes : []).filter(isStr).map(cleanStr).slice(0, 30),
+            items: h.items.filter((i) => i && isStr(i.name) && cleanStr(i.name)).map((i) => ({
+                name: cleanStr(i.name), label: cleanStr(i.label), fam: cleanStr(i.fam),
+                qty: typeof i.qty === 'number' && isFinite(i.qty) && i.qty > 0 ? i.qty : 0,
+                aisle: isAisle(i.aisle) ? i.aisle : 'altro'
+            }))
+        };
+    }
+    let shopHistory = loadList(HISTORY_KEY, []).map(normalizeHistoryEntry).filter(Boolean);
+    const saveHistory = () => persist(HISTORY_KEY, shopHistory);
+    // Chiamata a spesa completata: registra ciò che è stato comprato (non ciò che avevi già in casa)
+    function recordHistory(list) {
+        const bought = computeShopping(list).filter((i) => !i.have);
+        if (!bought.length) return null;
+        const entry = normalizeHistoryEntry({
+            id: 'h_' + Date.now().toString(36), date: new Date().toISOString(), listName: list.name,
+            recipes: list.plan.map((p) => getRecipe(p.id)).filter(Boolean).map((r) => r.title),
+            items: bought.map((i) => ({ name: i.name, label: i.label, fam: i.fam, qty: i.measurable ? i.remaining : 0, aisle: i.aisle }))
+        });
+        shopHistory.unshift(entry);
+        if (shopHistory.length > HISTORY_MAX) shopHistory.length = HISTORY_MAX;
+        saveHistory();
+        return entry.id;
+    }
+    const dayFmt = new Intl.DateTimeFormat('it-IT', { day: 'numeric' });
+    const monFmt = new Intl.DateTimeFormat('it-IT', { month: 'short' });
+    const longFmt = new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const timeFmt = new Intl.DateTimeFormat('it-IT', { hour: '2-digit', minute: '2-digit' });
+    let histView = 'date', histOpenId = null, histAisle = 'all', histPeriod = 90;
+
+    function renderHistory() {
+        $('history-count').textContent = shopHistory.length ? plural(shopHistory.length, 'spesa completata', 'spese completate') : 'Nessuna spesa ancora';
+        $('hist-tab-date').classList.toggle('active', histView === 'date'); $('hist-tab-date').setAttribute('aria-selected', String(histView === 'date'));
+        $('hist-tab-aisle').classList.toggle('active', histView === 'aisle'); $('hist-tab-aisle').setAttribute('aria-selected', String(histView === 'aisle'));
+        const body = $('history-body');
+        if (!shopHistory.length) {
+            body.innerHTML = `<div class="page-empty"><i class="ri-history-line"></i>Qui trovi le spese completate.<br>Quando spunti l'ultimo articolo di una lista, la spesa viene salvata con la data.</div>`;
+            return;
+        }
+        body.innerHTML = histView === 'date' ? historyByDateHTML() : historyByAisleHTML();
+    }
+    const groupByAisle = (items) => AISLES.map(([k, icon, label]) => ({ k, icon, label, items: items.filter((i) => i.aisle === k) })).filter((g) => g.items.length);
+    function historyByDateHTML() {
+        return shopHistory.map((h) => {
+            const d = new Date(h.date), open = histOpenId === h.id;
+            const itemText = (i) => (i.label && i.label !== 'q.b.' ? `<b>${esc(i.label)}</b> ` : '') + esc(i.name);
+            return `<div class="hist-card" data-hist="${esc(h.id)}">
+                <button type="button" class="hist-head" data-hist-act="toggle" aria-expanded="${open}">
+                    <span class="hist-date"><b>${dayFmt.format(d)}</b><small>${esc(monFmt.format(d))}</small></span>
+                    <span class="hist-info"><strong>${esc(h.listName)}</strong><span>${esc(longFmt.format(d))} · ${timeFmt.format(d)}</span><span>${plural(h.items.length, 'articolo', 'articoli')}${h.recipes.length ? ' · ' + esc(h.recipes.join(', ')) : ''}</span></span>
+                    <i class="ri-arrow-down-s-line sub-chevron" aria-hidden="true" style="${open ? 'transform:rotate(180deg)' : ''}"></i>
+                </button>
+                ${open ? `<div class="hist-body">${groupByAisle(h.items).map((g) => `<div class="hist-aisle">${g.icon} ${g.label} <small style="color:var(--text-muted);">(${g.items.length})</small></div><ul class="hist-items">${g.items.map((i) => `<li>${itemText(i)}</li>`).join('')}</ul>`).join('')}
+                    <div class="hist-actions">
+                        <button type="button" class="btn-mini" data-hist-act="redo"><i class="ri-repeat-line"></i> Rifai questa spesa</button>
+                        <button type="button" class="btn-mini danger" data-hist-act="delete"><i class="ri-delete-bin-line"></i> Elimina</button>
+                    </div></div>` : ''}
+            </div>`;
+        }).join('');
+    }
+    // Controllo delle spese passate per reparto: cosa compri, quanto spesso e quanto in tutto
+    function historyByAisleHTML() {
+        const since = histPeriod ? Date.now() - histPeriod * 86400000 : 0;
+        const entries = shopHistory.filter((h) => new Date(h.date).getTime() >= since);
+        const allItems = entries.flatMap((h) => h.items.map((i) => ({ ...i, date: h.date })));
+        const periods = [[30, 'Ultimi 30 giorni'], [90, 'Ultimi 3 mesi'], [365, 'Ultimo anno'], [0, 'Sempre']];
+        let html = `<div class="hist-filters" role="group" aria-label="Periodo">${periods.map(([v, l]) => `<button type="button" data-hist-period="${v}" class="${histPeriod === v ? 'active' : ''}">${l}</button>`).join('')}</div>`;
+        if (!entries.length) return html + `<div class="page-empty"><i class="ri-calendar-line"></i>Nessuna spesa in questo periodo.</div>`;
+        const counts = groupByAisle(allItems), max = Math.max(...counts.map((g) => g.items.length));
+        html += `<div class="hist-summary"><p>${plural(entries.length, 'spesa', 'spese')} · ${plural(allItems.length, 'articolo', 'articoli')} comprati</p>${counts.map((g) => `<div class="aisle-bar"><span>${g.icon} ${g.label}</span><span class="bar"><div style="width:${Math.round((g.items.length / max) * 100)}%"></div></span><b>${g.items.length}</b></div>`).join('')}</div>`;
+        html += `<div class="hist-filters" role="group" aria-label="Reparto"><button type="button" data-hist-aisle="all" class="${histAisle === 'all' ? 'active' : ''}">Tutti</button>${counts.map((g) => `<button type="button" data-hist-aisle="${g.k}" class="${histAisle === g.k ? 'active' : ''}">${g.icon} ${g.label}</button>`).join('')}</div>`;
+        // Prodotti del reparto scelto: quante volte, ultima volta, quantità totale (dove misurabile)
+        const map = new Map();
+        allItems.filter((i) => histAisle === 'all' || i.aisle === histAisle).forEach((i) => {
+            const key = nameKey(i.name) + '|' + i.fam;
+            const m = map.get(key) || { name: i.name, fam: i.fam, aisle: i.aisle, times: 0, qty: 0, last: i.date };
+            m.times++; m.qty += i.qty || 0; if (i.date > m.last) m.last = i.date;
+            map.set(key, m);
+        });
+        const rows = [...map.values()].sort((a, b) => b.times - a.times || a.name.localeCompare(b.name, 'it'));
+        html += `<ul class="page-list">${rows.map((r) => {
+            const a = AISLES.find(([k]) => k === r.aisle);
+            const tot = r.qty > 0 && r.fam && !['extra', 'qb'].includes(r.fam) ? ` · ${formatQty(r.fam, r.qty)} in tutto` : '';
+            return `<li class="page-row"><span class="row-avatar" aria-hidden="true">${a[1]}</span><div class="row-main"><span class="row-title">${esc(r.name)}</span><span class="row-sub">${r.times === 1 ? 'comprato 1 volta' : `comprato ${r.times} volte`} · ultima ${esc(dayFmt.format(new Date(r.last)))} ${esc(monFmt.format(new Date(r.last)))}${tot}</span></div></li>`;
+        }).join('')}</ul>`;
+        return html;
+    }
+    // Mette un prodotto nella lista attiva (sommando se c'è già) — usato da "Rifai questa spesa" e da "I tuoi prodotti"
+    function addExtraToList(list, name, qty, unit) {
+        const same = list.extras.find((x) => nameKey(x.name) === nameKey(name) && (!x.qty || !qty || famOf(x.unit || '')[0] === famOf(unit || '')[0]));
+        if (same) {
+            const skey = 'x:' + same.id;
+            if (list.owned[skey] === 'all') delete list.owned[skey];
+            list.checked = list.checked.filter((k) => k !== skey);
+            if (qty && same.qty) {
+                const [, mSame] = famOf(same.unit || ''), total = toNum(same.qty) * mSame + toNum(qty) * famOf(unit || '')[1];
+                same.qty = String(+(total / mSame).toFixed(3));
+            } else if (qty) { same.qty = qty; same.unit = unit; }
+            return;
+        }
+        list.extras.push({ id: 'x_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name, qty: qty || '', unit: qty ? unit : '' });
+    }
+    const BASE_UNIT = { g: 'g', ml: 'ml', pz: 'pz', cucchiai: 'cucchiai', cucchiaini: 'cucchiaini' };
+    function redoHistory(h) {
+        const list = activeList();
+        h.items.forEach((i) => {
+            const unit = BASE_UNIT[i.fam];
+            addExtraToList(list, i.name, unit && i.qty > 0 ? String(+i.qty.toFixed(3)) : '', unit || '');
+        });
+        if (!saveShop()) return;
+        showToast(`${plural(h.items.length, 'articolo aggiunto', 'articoli aggiunti')} a «${list.name}»`);
+        closeTopModal(); renderShop();
+    }
+    $('btn-open-history').onclick = () => { histOpenId = null; renderHistory(); $('history-page').querySelector('.page-content').scrollTop = 0; openModal('history-page'); };
+    $('hist-tab-date').onclick = () => { histView = 'date'; renderHistory(); };
+    $('hist-tab-aisle').onclick = () => { histView = 'aisle'; renderHistory(); };
+    $('history-body').addEventListener('click', (e) => {
+        const per = e.target.closest('[data-hist-period]'); if (per) { histPeriod = Number(per.dataset.histPeriod); renderHistory(); return; }
+        const ai = e.target.closest('[data-hist-aisle]'); if (ai) { histAisle = ai.dataset.histAisle; renderHistory(); return; }
+        const btn = e.target.closest('[data-hist-act]'); if (!btn) return;
+        const id = btn.closest('[data-hist]').dataset.hist, h = shopHistory.find((x) => x.id === id); if (!h) return;
+        const act = btn.dataset.histAct;
+        if (act === 'toggle') { histOpenId = histOpenId === id ? null : id; renderHistory(); }
+        else if (act === 'redo') redoHistory(h);
+        else if (act === 'delete') {
+            if (!confirm('Eliminare questa spesa dallo storico?')) return;
+            shopHistory = shopHistory.filter((x) => x !== h); saveHistory(); renderHistory(); showToast('Spesa eliminata dallo storico');
+        }
+    });
+
+    // --- I TUOI PRODOTTI: scegli dal database prodotti (diviso per reparto) e mettili in lista ---
+    function inActiveList(name) {
+        const nk = nameKey(name);
+        return computeShopping(activeList()).some((i) => i.nk === nk && !i.have && !i.done);
+    }
+    function renderProdPick() {
+        const q = norm($('prodpick-search').value.trim());
+        const shown = productsDB.filter((p) => !q || norm(p).includes(q));
+        const box = $('prodpick-list');
+        if (!productsDB.length) { box.innerHTML = `<div class="page-empty"><i class="ri-archive-drawer-line"></i>Il database prodotti è vuoto.<br>Aggiungili da Impostazioni › Database prodotti, oppure salvando le ricette.</div>`; return; }
+        if (!shown.length) { box.innerHTML = `<div class="page-empty"><i class="ri-search-eye-line"></i>Nessun prodotto trovato.</div>`; return; }
+        box.innerHTML = groupByAisle(shown.map((p) => ({ name: p, aisle: aisleOf(p) }))).map((g) => `<div class="page-letter">${g.icon} ${g.label}</div><ul class="page-list">${g.items.sort((a, b) => a.name.localeCompare(b.name, 'it')).map((i) => {
+            const inList = inActiveList(i.name);
+            return `<li class="page-row pp-row" data-name="${esc(i.name)}">
+                <div class="row-main" data-pp-act="prefill" title="Scegli la quantità"><span class="row-title">${esc(i.name)}</span><span class="row-sub">${inList ? 'già in lista · tocca per aggiungerne ancora' : 'tocca il nome per indicare la quantità'}</span></div>
+                <button type="button" class="row-btn pp-add${inList ? ' in-list' : ''}" data-pp-act="add" aria-label="${inList ? 'Già in lista' : 'Metti in lista'}: ${esc(i.name)}"><i class="${inList ? 'ri-check-line' : 'ri-add-line'}"></i></button>
+            </li>`;
+        }).join('')}</ul>`).join('');
+    }
+    $('btn-pick-products').onclick = () => {
+        $('prodpick-sub').textContent = `Tocca + per metterli in «${activeList().name}»`;
+        openPage('prodpick-page', 'prodpick-search', renderProdPick);
+    };
+    $('prodpick-search').addEventListener('input', renderProdPick);
+    $('prodpick-search').addEventListener('keydown', (e) => { if (e.key === 'Escape' && e.target.value) { e.preventDefault(); e.stopPropagation(); e.target.value = ''; renderProdPick(); } });
+    $('prodpick-list').addEventListener('click', (e) => {
+        const el = e.target.closest('[data-pp-act]'); if (!el) return;
+        const name = el.closest('[data-name]').dataset.name;
+        if (el.dataset.ppAct === 'add') {
+            // + : in lista subito (la quantità si può aggiungere dopo con la matita)
+            const list = activeList();
+            addExtraToList(list, name, '', '');
+            if (!saveShop()) return;
+            renderProdPick(); updateShopBadge();
+            const a = AISLES.find(([k]) => k === aisleOf(name));
+            showToast(`${name} in lista (${a[1]} ${a[2]})`);
+        } else {
+            // Nome: torno alla lista con il prodotto pronto, così scegli quantità e unità
+            closeTopModal();
+            $('shop-extra-name').value = name;
+            extraUnitTouched = false; renderExtraAisleSelect();
+            $('shop-add-row').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => $('shop-extra-qty').focus(), 350);
+        }
+    });
 
     // --- SOSTITUZIONI DEGLI INGREDIENTI ---
     // Formato: [nomi riconosciuti (separati da |), nome mostrato, [[alternativa, proporzione, nota, unità in uscita]]]
@@ -3100,7 +3465,7 @@
         const box = $('import-preview');
         const found = p.title || p.ingredients.length || p.procedure;
         if (!found) { box.innerHTML = `<div class="import-card"><h4><i class="ri-error-warning-line"></i> Non ho trovato una ricetta</h4><p class="form-hint">Controlla il testo: servono almeno ingredienti o procedimento.</p></div>`; return; }
-        const times = [['Totale', p.timeTotal], ['Cottura', p.timeCook], ['Lievitaz.', p.timeLeav]].filter(([, v]) => v).map(([k, v]) => `${k} ${formatMinutes(v)}`).join(' · ');
+        const times = [['Totale', p.timeTotal], ['Preparazione', p.timePrep], ['Cottura', p.timeCook], ['Lievitaz.', p.timeLeav]].filter(([, v]) => v).map(([k, v]) => `${k} ${formatMinutes(v)}`).join(' · ');
         box.innerHTML = `<div class="import-card">
             <h4><i class="ri-checkbox-circle-line" style="color:#10B981;"></i> Ecco cosa ho capito</h4>
             <div class="import-field"><b>Titolo</b><span>${esc(p.title) || '<em>non trovato</em>'}</span></div>
@@ -3128,13 +3493,13 @@
         if (p.title) $('title').value = p.title;
         if (p.servings) $('servings').value = p.servings;
         if (p.category) catSelect.value = p.category;
-        const hasTimes = !!(p.timeTotal || p.timeCook || p.timeLeav);
+        const hasTimes = !!(p.timePrep || p.timeCook || p.timeLeav || p.timeTotal);
         $('toggle-times').checked = hasTimes; $('time-grid-container').classList.toggle('active', hasTimes);
-        $('timeTotal').value = p.timeTotal; $('timeCook').value = p.timeCook; $('timeLeav').value = p.timeLeav;
+        // Solo il totale senza dettagli: lo metto come preparazione, così la somma torna uguale
+        $('timePrep').value = p.timePrep || (p.timeTotal && !p.timeCook && !p.timeLeav ? p.timeTotal : ''); $('timeCook').value = p.timeCook; $('timeLeav').value = p.timeLeav; updateTimeTotal();
         if (p.ingredients.length) {
             activeIngredients = p.ingredients.map(({ name, qty, unit }) => ({ name, qty, unit }));
             renderActiveIngredients();
-            p.ingredients.forEach((i) => autoAddProduct(i.name));
         }
         if (p.procedure) $('procedure').value = p.procedure;
         closeTopModal();
@@ -3413,11 +3778,12 @@
         updateFavButton(r);
 
         let timeBannerHtml = '';
-        if (r.timeTotal || r.timeLeav || r.timeCook) {
+        if (r.timeTotal || r.timePrep || r.timeLeav || r.timeCook) {
             timeBannerHtml = `<div class="time-banner">`;
-            if (r.timeTotal) timeBannerHtml += `<div class="time-item"><span>Totale</span><strong>${formatMinutes(r.timeTotal)}</strong></div>`;
+            if (r.timePrep) timeBannerHtml += `<div class="time-item"><span>Prepar.</span><strong>${formatMinutes(r.timePrep)}</strong></div>`;
             if (r.timeLeav) timeBannerHtml += `<div class="time-item"><span>Lievitaz.</span><strong>${formatMinutes(r.timeLeav)}</strong></div>`;
             if (r.timeCook) timeBannerHtml += `<div class="time-item"><span>Cottura</span><strong>${formatMinutes(r.timeCook)}</strong></div>`;
+            if (r.timeTotal) timeBannerHtml += `<div class="time-item time-item-total"><span>Totale</span><strong>${formatMinutes(r.timeTotal)}</strong></div>`;
             timeBannerHtml += `</div>`;
         }
         const canCook = splitSteps(r.procedure).length > 0;
@@ -3456,8 +3822,8 @@
         renderPanCard(); bindPanCard(); updateShopButton();
         if (canCook) $('btn-start-cook').onclick = startCooking;
         $('btn-add-shop').onclick = addToShopping;
-        $('btn-serv-minus').onclick = () => setServings(currentTargetServings - 0.5);
-        $('btn-serv-plus').onclick = () => setServings(currentTargetServings + 0.5);
+        $('btn-serv-minus').onclick = () => setServings(currentTargetServings > 1 ? currentTargetServings - 1 : 0.5); // una persona per tocco
+        $('btn-serv-plus').onclick = () => setServings(currentTargetServings < 1 ? 1 : currentTargetServings + 1);
         $('detail-servings').addEventListener('input', (e) => { const val = toNum(e.target.value); if (val >= 0.5) { currentTargetServings = val; renderDetailIngredientsHTML(); } });
         $('detail-servings').addEventListener('blur', (e) => { if (!(toNum(e.target.value) >= 0.5)) setServings(currentTargetServings); });
     }
@@ -3471,6 +3837,16 @@
 
     $('btn-edit').onclick = () => {
         const r = getRecipe(currentRecipeId); if (!r) return;
+        fillFromRecipe(r);
+        // Modifiche non salvate di questa ricetta (modulo chiuso per sbaglio): le ripropongo
+        const draft = loadDraft();
+        if (draft && draft.editId === r.id) {
+            fillForm(draft);
+            showToast('Ho ripreso le modifiche non salvate', 'success', { label: 'Scarta', run: () => { clearDraft(); fillFromRecipe(r); } });
+        }
+        openModal('add-sheet'); focusFirstField();
+    };
+    function fillFromRecipe(r) {
         isEditing = true; resetForm();
         $('form-title').textContent = 'Modifica Ricetta';
         renderCategories();
@@ -3478,13 +3854,12 @@
         if (r.category && !categories.includes(r.category)) catSelect.add(new Option(r.category, r.category));
         $('title').value = r.title; catSelect.value = r.category;
         $('servings').value = r.servings || 1;
-        $('timeTotal').value = r.timeTotal || ''; $('timeLeav').value = r.timeLeav || ''; $('timeCook').value = r.timeCook || '';
+        $('timePrep').value = r.timePrep || ''; $('timeLeav').value = r.timeLeav || ''; $('timeCook').value = r.timeCook || '';
         $('procedure').value = r.procedure;
-        const hasTimes = !!(r.timeTotal || r.timeLeav || r.timeCook);
+        const hasTimes = !!(r.timePrep || r.timeLeav || r.timeCook);
         $('toggle-times').checked = hasTimes; $('time-grid-container').classList.toggle('active', hasTimes);
-        activeIngredients = r.ingredients.map((i) => ({ ...i })); renderActiveIngredients();
-        openModal('add-sheet'); focusFirstField();
-    };
+        activeIngredients = r.ingredients.map((i) => ({ ...i })); renderActiveIngredients(); updateTimeTotal();
+    }
 
     $('btn-delete').onclick = () => {
         const r = getRecipe(currentRecipeId); if (!r) return;
@@ -3492,13 +3867,14 @@
         const before = recipes;
         recipes = recipes.filter((x) => x.id !== currentRecipeId);
         if (!saveRecipes()) { recipes = before; return; }
+        const draft = loadDraft(); if (draft && draft.editId === currentRecipeId) clearDraft();
         pruneShopPlan();
         closeTopModal(); renderFeed(); showToast('Ricetta eliminata');
     };
 
     // --- EXPORT/IMPORT ---
     $('btn-export').onclick = async () => {
-        const data = { app: 'chefbox', version: 4, exportedAt: new Date().toISOString(), recipes, categories, products: productsDB, lists: shopLists, aisles: aisleOverrides };
+        const data = { app: 'chefbox', version: 5, exportedAt: new Date().toISOString(), recipes, categories, products: productsDB, lists: shopLists, aisles: aisleOverrides, history: shopHistory };
         const fileName = `chefbox_backup_${new Date().toISOString().slice(0, 10)}.json`;
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         // Su telefono usa il menu Condividi (funziona anche nell'app installata su iPhone)
@@ -3528,6 +3904,8 @@
                 if (!data || !Array.isArray(data.recipes)) throw new Error('formato');
                 const prev = { recipes: [...recipes], categories: [...categories], products: [...productsDB] };
                 const onlyStrings = (list) => (Array.isArray(list) ? list : []).filter((x) => typeof x === 'string').map(cleanStr).filter(Boolean);
+                // App ancora vuota (es. telefono nuovo): le categorie del backup sostituiscono quelle predefinite, con il loro ordine
+                if (!recipes.length && onlyStrings(data.categories).length) categories = [];
                 // Usa la grafia della categoria già esistente ("dolci" → "Dolci"), altrimenti la aggiunge
                 const canonicalCat = (c) => { const found = categories.find((x) => sameText(x, c)); if (found) return found; categories.push(c); return c; };
                 const existingIds = new Set(recipes.map((r) => r.id));
@@ -3553,6 +3931,9 @@
                     l.name = uniqueListName(l.name); shopLists.push(l);
                 });
                 if (data.aisles && typeof data.aisles === 'object') Object.entries(data.aisles).forEach(([k, v]) => { if (isAisle(v) && k !== '__proto__' && !Object.prototype.hasOwnProperty.call(aisleOverrides, k)) aisleOverrides[k] = v; });
+                // Storico spese (backup v5): aggiungo le spese che non ci sono
+                (Array.isArray(data.history) ? data.history : []).map(normalizeHistoryEntry).filter(Boolean).forEach((h) => { if (!shopHistory.some((x) => x.id === h.id)) shopHistory.push(h); });
+                shopHistory.sort((a, b) => b.date.localeCompare(a.date)); saveHistory();
                 saveShop(); persist(KEYS.aisles, aisleOverrides); pruneShopPlan();
                 renderProducts();
                 currentFilter = ALL; renderCategories(); renderFeed(); closeTopModal();
