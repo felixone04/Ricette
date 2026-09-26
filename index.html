@@ -339,7 +339,9 @@
         .aisle-select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
         .shop-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
         .shop-actions .btn-submit { margin: 0; padding: 14px 10px; font-size: 0.95rem; }
-        .inline-add { display: flex; gap: 8px; margin-bottom: 14px; }
+        .inline-add { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+        .inline-add #shop-extra-name { flex: 1 1 200px; }
+        .inline-add #shop-extra-aisle { flex: 1 1 150px; width: auto; padding: 12px 10px; }
         .inline-add .form-control { margin: 0; }
         /* Scelta rapida (a quale lista aggiungere, sostituzioni...) sopra qualsiasi schermata */
         .sheet.sheet-small { height: auto; max-height: 80vh; max-height: 80dvh; z-index: 72; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45); }
@@ -782,8 +784,9 @@
             <div id="shop-progress"></div>
             <div id="shop-plan"></div>
             <div class="inline-add">
-                <input type="text" class="form-control" id="shop-extra-name" placeholder="Aggiungi un articolo (es. detersivo)" maxlength="60" enterkeyhint="done" list="db-ingredients" autocomplete="off" aria-label="Aggiungi un articolo">
-                <button type="button" class="btn-submit btn-small" id="btn-shop-extra" aria-label="Aggiungi articolo">+</button>
+                <input type="text" class="form-control" id="shop-extra-name" placeholder="Aggiungi un prodotto (es. 2 kg di patate)" maxlength="60" enterkeyhint="done" list="db-ingredients" autocomplete="off" aria-label="Aggiungi un articolo">
+                <select class="form-control" id="shop-extra-aisle" aria-label="Reparto del prodotto"></select>
+                <button type="button" class="btn-submit btn-small" id="btn-shop-extra" aria-label="Aggiungi prodotto">+</button>
             </div>
             <div id="shop-list"></div>
             <div class="shop-actions" id="shop-actions">
@@ -1920,14 +1923,18 @@
     }
 
     // --- LISTA DELLA SPESA (divisa per reparto) E DISPENSA ---
-    const AISLES = [['orto', '🥬', 'Ortofrutta'], ['carne', '🥩', 'Carne e Pesce'], ['frigo', '🧀', 'Frigo e Latticini'], ['dispensa', '🥫', 'Dispensa'], ['bevande', '🍷', 'Bevande'], ['altro', '🛍️', 'Altro']];
-    const AISLE_PHRASES = [['lievito di birra', 'frigo'], ['colla di pesce', 'dispensa'], ['pelati', 'dispensa'], ['passata', 'dispensa'], ['polpa di pomodoro', 'dispensa'], ['concentrato', 'dispensa'], ['latte di cocco', 'dispensa'], ['latte condensato', 'dispensa'], ['burro di arachidi', 'dispensa'], ['tonno fresco', 'carne'], ['tonno', 'dispensa'], ['pasta sfoglia', 'frigo'], ['pasta brise', 'frigo'], ['pasta frolla', 'frigo'], ['pasta fresca', 'frigo'], ['gnocchi', 'frigo'], ['aceto', 'dispensa'], ['succo di limone', 'orto'], ['vino', 'bevande'], ['birra', 'bevande']];
+    // Reparti nell'ordine in cui di solito si gira il supermercato
+    const AISLES = [['orto', '🥬', 'Ortofrutta'], ['panetteria', '🥖', 'Panetteria'], ['carne', '🥩', 'Carne e Pesce'], ['frigo', '🧀', 'Frigo e Latticini'], ['dispensa', '🥫', 'Dispensa'], ['surgelati', '🧊', 'Surgelati'], ['bevande', '🍷', 'Bevande'], ['casa', '🧴', 'Casa e igiene'], ['altro', '🛍️', 'Altro']];
+    const AISLE_PHRASES = [['surgelat', 'surgelati'], ['aranciata', 'bevande'], ['limonata', 'bevande'], ['acqua tonica', 'bevande'], ['bastoncini di pesce', 'surgelati'], ['carta igienica', 'casa'], ['carta da forno', 'casa'], ['carta forno', 'casa'], ['carta assorbente', 'casa'], ['carta stagnola', 'casa'], ['pellicola', 'casa'], ['lievito di birra', 'frigo'], ['lievito madre', 'frigo'], ['pasta madre', 'frigo'], ['colla di pesce', 'dispensa'], ['pelati', 'dispensa'], ['passata', 'dispensa'], ['polpa di pomodoro', 'dispensa'], ['concentrato', 'dispensa'], ['latte di cocco', 'dispensa'], ['latte condensato', 'dispensa'], ['burro di arachidi', 'dispensa'], ['tonno fresco', 'carne'], ['tonno', 'dispensa'], ['pasta sfoglia', 'frigo'], ['pasta brise', 'frigo'], ['pasta frolla', 'frigo'], ['pasta fresca', 'frigo'], ['gnocchi', 'frigo'], ['pane grattugiato', 'dispensa'], ['fette biscottate', 'dispensa'], ['pane carasau', 'panetteria'], ['aceto', 'dispensa'], ['succo di limone', 'orto'], ['vino', 'bevande'], ['birra', 'bevande'], ['succo', 'bevande']];
     const AISLE_WORDS = {
         carne: 'pollo tacchino manzo vitello maiale agnello coniglio salsicc macinat carne bistecc fesa cosc arrost pancett guancial prosciutt speck salam mortadell bresaol wurstel pesce salmon merluzz baccal orat branzin spigol gamber scamp cozz vongol calamar polp seppi acciug alic sgombr trot',
         frigo: 'latte burro panna yogurt mozzarell ricott mascarpon parmigian grana pecorin formagg stracchin gorgonzol scamorz provol fontin emmental asiago burrat stracciatell philadelphia besciamell uov uovo tuorl album',
         orto: 'mel pera pere banan aranc limon lime fragol uva pesc albicocc cilieg kiwi ananas melon anguri mirtill lampon frutti pomodor zucchin melanzan peperon carot cipoll scalogn aglio patat insalat lattug rucol spinac bietol cavol broccol verza finocch sedan porr zucca fung asparag carciof pisell fagiolin basilic prezzemol rosmarin salvia menta timo erba zenzer avocad cetriol ravanell radicch songin',
-        bevande: 'acqua succo spumant prosecco liquor rum marsala grappa limoncell brandy cognac amaretto',
-        dispensa: 'farin zuccher sale pepe olio pasta spaghett penn fusill rigaton linguin tagliatell lasagn riso carnarol arbori pane pangrattat lievit bicarbonat cacao cioccolat vanill miele marmellat confettur legum ceci lenticch fagiol mais oliv capper dado brodo cannell noce moscat curry paprika origan zafferan cumin noci mandorl nocciol pinol pistacch uvett biscott savoiard fecol amido maizena caffe te the crackers fette semol polenta couscous orzo farro quinoa avena gelatin panko salsa'
+        panetteria: 'pane panin focacc grissin piadin tigell rosett ciabatt baguett bauletto tramezzin pita tortill cornett brioch',
+        surgelati: 'surgelat ghiacciol =gelato =gelati',
+        bevande: 'acqua succo spumant prosecco liquor rum marsala grappa limoncell brandy cognac amaretto aranciat cola chinott gassos tonic',
+        casa: 'detersiv sapon shampoo balsamo bagnoschium dentifric spazzolin carta scottex tovaglio fazzolett spugn candeggin ammorbident sgrassator pannolin assorbent deodorant rasoi cotton salviett sacchett alluminio stovigli pastigli brillantant anticalcar insetticid lampadin',
+        dispensa: 'farin zuccher sale pepe olio pasta spaghett penn fusill rigaton linguin tagliatell lasagn riso carnarol arbori pangrattat lievit bicarbonat cacao cioccolat vanill miele marmellat confettur legum ceci lenticch fagiol mais oliv capper dado brodo cannell noce moscat curry paprika origan zafferan cumin noci mandorl nocciol pinol pistacch uvett biscott savoiard fecol amido maizena caffe te the crackers fette semol polenta couscous orzo farro quinoa avena gelatin panko salsa cereal'
     };
     const AISLE_KW = Object.fromEntries(Object.entries(AISLE_WORDS).map(([k, v]) => [k, v.split(' ')]));
     const nameKey = (n) => norm(n).split(/\s+/).filter(Boolean).map(stem).join(' ');
@@ -1941,8 +1948,9 @@
         const phrase = AISLE_PHRASES.find(([p]) => n.includes(p)); if (phrase) return phrase[1];
         const words = n.split(/[^a-z0-9]+/).filter(Boolean);
         // Ordine pensato per i conflitti: "pesce" prima di "pesca", "peperoni" prima di "pepe"...
-        for (const aisle of ['carne', 'frigo', 'orto', 'bevande', 'dispensa']) {
-            if (AISLE_KW[aisle].some((kw) => words.some((w) => (kw.length < 3 ? w === kw : w.startsWith(kw))))) return aisle;
+        for (const aisle of ['carne', 'frigo', 'orto', 'panetteria', 'surgelati', 'bevande', 'casa', 'dispensa']) {
+            // "=parola" = solo parola intera ("gelato" sì, "gelatina" no)
+            if (AISLE_KW[aisle].some((kw) => words.some((w) => (kw[0] === '=' ? w === kw.slice(1) : kw.length < 3 ? w === kw : w.startsWith(kw))))) return aisle;
         }
         return 'altro';
     }
@@ -1971,7 +1979,7 @@
             plan: arr(l.plan).filter((p) => p && isStr(p.id) && toNum(p.servings) > 0)
                 .map((p) => ({ id: p.id, servings: toNum(p.servings), factor: toNum(p.factor) > 0 ? toNum(p.factor) : 1 })),
             extras: arr(l.extras).filter((x) => x && isStr(x.name) && cleanStr(x.name))
-                .map((x) => ({ id: cleanStr(x.id) || 'x_' + Math.random().toString(36).slice(2, 8), name: cleanStr(x.name) })),
+                .map((x) => ({ id: cleanStr(x.id) || 'x_' + Math.random().toString(36).slice(2, 8), name: cleanStr(x.name), qty: cleanStr(x.qty), unit: cleanStr(x.unit) })),
             have: arr(l.have).filter(isStr),
             checked: arr(l.checked).filter(isStr)
         };
@@ -2022,7 +2030,11 @@
             const twin = [...map.values()].find((x) => x !== it && x.nk === it.nk);
             if (twin) { it.sources.forEach((s) => twin.sources.add(s)); map.delete(it.key); }
         }
-        list.extras.forEach((x) => map.set('x:' + x.id, { key: 'x:' + x.id, nk: nameKey(x.name), name: x.name, fam: 'extra', qty: 0, unknown: true, extraId: x.id, sources: new Set() }));
+        list.extras.forEach((x) => {
+            // Prodotti aggiunti a mano, con la quantità se indicata ("2 kg di patate")
+            const [fam, m] = famOf(x.unit || ''), n = toNum(x.qty), hasQty = !!x.qty && !isNaN(n);
+            map.set('x:' + x.id, { key: 'x:' + x.id, nk: nameKey(x.name), name: x.name, fam: hasQty ? fam : 'extra', qty: hasQty ? n * m : 0, unknown: !hasQty, extraId: x.id, sources: new Set() });
+        });
         const have = new Set(list.have), checked = new Set(list.checked);
         return [...map.values()].map((it) => {
             it.aisle = aisleOf(it.name);
@@ -2101,7 +2113,7 @@
         const box = $('have-box'); if (box) box.addEventListener('toggle', () => { haveOpen = box.open; });
     }
 
-    $('btn-open-shop').onclick = () => { renamingList = false; renderShop(); $('shop-sheet').querySelector('.sheet-content').scrollTop = 0; openModal('shop-sheet'); };
+    $('btn-open-shop').onclick = () => { renamingList = false; renderExtraAisleSelect(); renderShop(); $('shop-sheet').querySelector('.sheet-content').scrollTop = 0; openModal('shop-sheet'); };
     $('btn-close-shop').onclick = closeTopModal;
 
     // Gestione delle liste: cambia, crea, rinomina, elimina
@@ -2261,14 +2273,32 @@
         aisleOverrides[sel.dataset.nk] = sel.value; // il reparto scelto viene ricordato per le prossime volte
         persist(KEYS.aisles, aisleOverrides); renderShop();
     });
+    // Menu reparto accanto al campo: "Automatico" mostra già il reparto che verrà usato
+    function renderExtraAisleSelect() {
+        const sel = $('shop-extra-aisle'), prev = sel.value || 'auto';
+        const typed = parseIngredientLine($('shop-extra-name').value) || null;
+        const guess = typed && typed.name ? AISLES.find(([k]) => k === aisleOf(typed.name)) : null;
+        sel.innerHTML = `<option value="auto">Automatico${guess ? ` (${guess[1]} ${guess[2]})` : ''}</option>` +
+            AISLES.map(([k, icon, label]) => `<option value="${k}">${icon} ${label}</option>`).join('');
+        sel.value = [...sel.options].some((o) => o.value === prev) ? prev : 'auto';
+    }
     function addShopExtra() {
-        const input = $('shop-extra-name'), name = input.value.trim(); if (!name) return;
-        const list = activeList();
-        list.extras.push({ id: 'x_' + Date.now().toString(36), name });
+        const input = $('shop-extra-name'), raw = input.value.trim(); if (!raw) return;
+        const list = activeList(), aisle = $('shop-extra-aisle').value;
+        // "2 kg di patate" → 2 kg + Patate; senza quantità resta il nome così com'è
+        const p = parseIngredientLine(raw);
+        const item = p && !p.loose && p.name ? { name: p.name, qty: p.qty, unit: p.unit === 'q.b.' ? '' : p.unit } : { name: raw.charAt(0).toUpperCase() + raw.slice(1), qty: '', unit: '' };
+        list.extras.push({ id: 'x_' + Date.now().toString(36), ...item });
         if (!saveShop()) { list.extras.pop(); return; }
-        input.value = ''; renderShop();
+        // Reparto scelto a mano: lo ricordo per questo prodotto anche le prossime volte
+        if (aisle !== 'auto' && isAisle(aisle)) { aisleOverrides[nameKey(item.name)] = aisle; persist(KEYS.aisles, aisleOverrides); }
+        input.value = ''; $('shop-extra-aisle').value = 'auto';
+        renderExtraAisleSelect(); renderShop(); input.focus();
+        const a = AISLES.find(([k]) => k === aisleOf(item.name));
+        showToast(`Aggiunto in ${a[1]} ${a[2]}`);
     }
     $('btn-shop-extra').onclick = addShopExtra;
+    $('shop-extra-name').addEventListener('input', renderExtraAisleSelect);
     $('shop-extra-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addShopExtra(); } });
     $('btn-shop-clear').onclick = () => {
         const list = activeList();
