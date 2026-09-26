@@ -327,6 +327,13 @@
         .shop-item.done { opacity: 0.55; }
         .shop-item.done .shop-item-name { text-decoration: line-through; }
         .have-btn { flex-shrink: 0; height: 36px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-color); color: var(--text-muted); font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; font-family: inherit; }
+        .shop-item .extra-edit { width: 36px; height: 36px; }
+        @media (max-width: 400px) {
+            /* Prodotti aggiunti a mano (4 pulsanti): i pulsanti vanno sotto al nome, allineati a destra */
+            .shop-item:has(.extra-edit) { flex-wrap: wrap; row-gap: 6px; }
+            .shop-item:has(.extra-edit) .shop-item-main { flex: 1 1 calc(100% - 40px); }
+            .shop-item:has(.extra-edit) .have-btn { margin-left: auto; }
+        }
         .have-btn.partial { border-color: #A7F3D0; background: #ECFDF5; color: #047857; }
         .own-note { font-size: 0.78rem; color: #047857; font-weight: 700; display: flex; align-items: center; gap: 4px; overflow-wrap: anywhere; }
         .shop-item.editing { border-color: var(--primary); border-bottom-left-radius: 0; border-bottom-right-radius: 0; margin-bottom: 0; }
@@ -351,9 +358,13 @@
         .aisle-select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
         .shop-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
         .shop-actions .btn-submit { margin: 0; padding: 14px 10px; font-size: 0.95rem; }
-        .inline-add { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-        .inline-add #shop-extra-name { flex: 1 1 200px; }
-        .inline-add #shop-extra-aisle { flex: 1 1 150px; width: auto; padding: 12px 10px; }
+        /* Aggiunta a mano: prodotto su tutta la riga, poi quantità · unità · reparto · + */
+        .inline-add { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.7fr) 48px; gap: 8px; margin-bottom: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px; }
+        .inline-add #shop-extra-name { grid-column: 1 / -1; }
+        .inline-add .form-control { padding: 12px 8px; }
+        .inline-add #shop-extra-qty { text-align: center; font-weight: 700; }
+        .inline-add .btn-small { padding: 0; }
+        .inline-add.editing { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         .inline-add .form-control { margin: 0; }
         /* Scelta rapida (a quale lista aggiungere, sostituzioni...) sopra qualsiasi schermata */
         .sheet.sheet-small { height: auto; max-height: 80vh; max-height: 80dvh; z-index: 72; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45); }
@@ -461,6 +472,8 @@
 
         /* --- Telefoni molto stretti (≤360px) --- */
         @media (max-width: 360px) {
+            .inline-add { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 48px; }
+            .inline-add #shop-extra-aisle { grid-column: 1 / -1; grid-row: 3; }
             .settings-tiles { gap: 8px; }
             .settings-tile { padding: 14px 12px; }
             .page-add-btn span { display: none; }
@@ -795,8 +808,12 @@
             <div class="list-head" id="list-head"></div>
             <div id="shop-progress"></div>
             <div id="shop-plan"></div>
-            <div class="inline-add">
-                <input type="text" class="form-control" id="shop-extra-name" placeholder="Aggiungi un prodotto (es. 2 kg di patate)" maxlength="60" enterkeyhint="done" list="db-ingredients" autocomplete="off" aria-label="Aggiungi un articolo">
+            <div class="inline-add" id="shop-add-row">
+                <input type="text" class="form-control" id="shop-extra-name" placeholder="Aggiungi un prodotto (es. Farina)" maxlength="60" enterkeyhint="done" list="db-ingredients" autocomplete="off" aria-label="Aggiungi un articolo">
+                <input type="text" class="form-control" id="shop-extra-qty" placeholder="Q.tà" aria-label="Quantità" inputmode="decimal" autocomplete="off" enterkeyhint="done">
+                <select class="form-control" id="shop-extra-unit" aria-label="Unità di misura">
+                    <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option><option value="pz">pz</option><option value="cucchiai">cucchiai</option><option value="cucchiaini">cucchiaini</option>
+                </select>
                 <select class="form-control" id="shop-extra-aisle" aria-label="Reparto del prodotto"></select>
                 <button type="button" class="btn-submit btn-small" id="btn-shop-extra" aria-label="Aggiungi prodotto">+</button>
             </div>
@@ -2125,9 +2142,10 @@
                 ${it.have ? '' : `<input type="checkbox" ${it.done ? 'checked' : ''} aria-label="Nel carrello: ${esc(it.name)}">`}
                 <div class="shop-item-main"><span class="shop-item-name">${it.label ? `<strong>${esc(it.label)}</strong> ` : ''}${esc(it.name)}</span>${partial || haveNote}${sources ? `<span class="shop-item-sub">${esc(sources)}</span>` : ''}</div>
                 ${it.done ? '' : it.have
-                    ? `<button type="button" class="have-btn" data-own aria-label="Rimetti da comprare: ${esc(it.name)}"><i class="ri-arrow-go-back-line"></i> Da comprare</button>`
-                    : `<button type="button" class="have-btn${it.ownedQty > 0 ? ' partial' : ''}" data-own aria-label="Quanto ne hai già: ${esc(it.name)}" aria-expanded="${editing}"><i class="ri-home-4-line"></i> Ho già</button>`}
+                    ? `<button type="button" class="have-btn" data-own aria-label="Rimetti da comprare: ${esc(it.name)}"><i class="ri-arrow-go-back-line"></i><span class="have-label"> Da comprare</span></button>`
+                    : `<button type="button" class="have-btn${it.ownedQty > 0 ? ' partial' : ''}" data-own aria-label="Quanto ne hai già: ${esc(it.name)}" aria-expanded="${editing}" title="Ho già"><i class="ri-home-4-line"></i><span class="have-label"> Ho già</span></button>`}
                 ${it.have ? '' : `<label class="aisle-pick" title="Cambia reparto"><i class="ri-store-2-line" aria-hidden="true"></i><select class="aisle-select" data-nk="${esc(it.nk)}" aria-label="Reparto di ${esc(it.name)}">${aisleOptions(it.aisle)}</select></label>`}
+                ${it.extraId && !it.done ? `<button type="button" class="row-btn extra-edit" data-edit-extra="${esc(it.extraId)}" aria-label="Modifica ${esc(it.name)}" title="Modifica quantità e reparto"><i class="ri-pencil-line"></i></button>` : ''}
                 ${it.extraId ? `<button type="button" class="btn-del-cat" data-extra="${esc(it.extraId)}" aria-label="Elimina ${esc(it.name)}"><i class="ri-close-line"></i></button>` : ''}
             </div>${editing ? ownEditorHTML(it) : ''}`;
         };
@@ -2193,7 +2211,7 @@
         afterOwnedChange(list, key);
     }
 
-    $('btn-open-shop').onclick = () => { renamingList = false; renderExtraAisleSelect(); renderShop(); $('shop-sheet').querySelector('.sheet-content').scrollTop = 0; openModal('shop-sheet'); };
+    $('btn-open-shop').onclick = () => { renamingList = false; cancelExtraEditing(); renderExtraAisleSelect(); renderShop(); $('shop-sheet').querySelector('.sheet-content').scrollTop = 0; openModal('shop-sheet'); };
     $('btn-close-shop').onclick = closeTopModal;
 
     // Gestione delle liste: cambia, crea, rinomina, elimina
@@ -2242,7 +2260,7 @@
     $('list-chips').addEventListener('click', (e) => {
         if (e.target.closest('[data-new-list]')) { createList(); return; }
         const chip = e.target.closest('[data-list]'); if (!chip) return;
-        activeListId = chip.dataset.list; renamingList = false; haveOpen = false; ownEditKey = null;
+        activeListId = chip.dataset.list; renamingList = false; haveOpen = false; ownEditKey = null; cancelExtraEditing();
         saveShop(); renderShop();
     });
     $('list-head').addEventListener('click', (e) => {
@@ -2320,8 +2338,11 @@
     });
     $('shop-list').addEventListener('click', (e) => {
         const list = activeList();
+        const ed = e.target.closest('[data-edit-extra]');
+        if (ed) { editShopExtra(ed.dataset.editExtra); return; }
         const del = e.target.closest('[data-extra]');
         if (del) {
+            if (editingExtraId === del.dataset.extra) cancelExtraEditing();
             const key = 'x:' + del.dataset.extra;
             list.extras = list.extras.filter((x) => x.id !== del.dataset.extra);
             delete list.owned[key]; list.checked = list.checked.filter((k) => k !== key);
@@ -2380,23 +2401,86 @@
         sel.value = [...sel.options].some((o) => o.value === prev) ? prev : 'auto';
     }
     function addShopExtra() {
-        const input = $('shop-extra-name'), raw = input.value.trim(); if (!raw) return;
+        const input = $('shop-extra-name'), raw = input.value.trim();
+        if (!raw) { showToast('Scrivi il nome del prodotto', 'error'); input.focus(); return; }
         const list = activeList(), aisle = $('shop-extra-aisle').value;
-        // "2 kg di patate" → 2 kg + Patate; senza quantità resta il nome così com'è
-        const p = parseIngredientLine(raw);
-        const item = p && !p.loose && p.name ? { name: p.name, qty: p.qty, unit: p.unit === 'q.b.' ? '' : p.unit } : { name: raw.charAt(0).toUpperCase() + raw.slice(1), qty: '', unit: '' };
-        list.extras.push({ id: 'x_' + Date.now().toString(36), ...item });
-        if (!saveShop()) { list.extras.pop(); return; }
+        // Quantità: dai campi "Q.tà" + unità; se sono vuoti la cerco nel testo ("2 kg di patate", "farina 300g")
+        let qty = $('shop-extra-qty').value.trim().replace(',', '.'), unit = $('shop-extra-unit').value, name = raw;
+        if (/^\d+\s*\/\s*\d+$/.test(qty) && toNum(qty) > 0) qty = String(+toNum(qty).toFixed(3)); // "1/2" → 0.5
+        if (qty !== '' && !(/^\d+(\.\d+)?$/.test(qty) && Number(qty) > 0)) { showToast('Quantità non valida (es. 300, 0,5 o 1/2)', 'error'); $('shop-extra-qty').focus(); return; }
+        if (qty === '') {
+            const p = parseIngredientLine(raw);
+            if (p && !p.loose && p.name && p.qty) { name = p.name; qty = p.qty; unit = p.unit === 'q.b.' ? '' : p.unit; }
+            else unit = '';
+        }
+        name = name.charAt(0).toUpperCase() + name.slice(1);
+        const editing = editingExtraId ? list.extras.find((x) => x.id === editingExtraId) : null;
+        // Stesso prodotto già aggiunto a mano (stessa famiglia di unità): sommo le quantità invece di duplicarlo
+        const same = editing ? null : list.extras.find((x) => nameKey(x.name) === nameKey(name) && (!x.qty || !qty || famOf(x.unit || '')[0] === famOf(unit || '')[0]));
+        let msg;
+        if (editing) {
+            const prevFam = famOf(editing.unit || '')[0];
+            Object.assign(editing, { name, qty, unit: qty ? unit : '' });
+            if (famOf(editing.unit || '')[0] !== prevFam || !qty) delete list.owned['x:' + editing.id]; // "Ho già" in un'altra unità non vale più
+            msg = `${name} aggiornato`;
+        } else if (same) {
+            if (qty && same.qty) {
+                const [fam, mSame] = famOf(same.unit || ''), total = toNum(same.qty) * mSame + toNum(qty) * famOf(unit || '')[1];
+                same.qty = String(+(total / mSame).toFixed(3));
+                msg = `${same.name}: ora ${formatQty(fam, total)}`;
+            } else if (qty) { same.qty = qty; same.unit = unit; msg = `${same.name}: ${formatQty(famOf(unit)[0], toNum(qty) * famOf(unit)[1])}`; }
+            else msg = `${same.name} è già in lista`;
+        } else {
+            list.extras.push({ id: 'x_' + Date.now().toString(36), name, qty, unit });
+        }
+        if (!saveShop()) { if (!same && !editing) list.extras.pop(); return; }
+        setExtraEditing(null);
         // Reparto scelto a mano: lo ricordo per questo prodotto anche le prossime volte
-        if (aisle !== 'auto' && isAisle(aisle)) { aisleOverrides[nameKey(item.name)] = aisle; persist(KEYS.aisles, aisleOverrides); }
-        input.value = ''; $('shop-extra-aisle').value = 'auto';
+        if (aisle !== 'auto' && isAisle(aisle)) { aisleOverrides[nameKey(name)] = aisle; persist(KEYS.aisles, aisleOverrides); }
+        input.value = ''; $('shop-extra-qty').value = ''; $('shop-extra-unit').value = 'g'; $('shop-extra-aisle').value = 'auto';
+        $('shop-add-row').classList.remove('editing');
         renderExtraAisleSelect(); renderShop(); input.focus();
-        const a = AISLES.find(([k]) => k === aisleOf(item.name));
-        showToast(`Aggiunto in ${a[1]} ${a[2]}`);
+        const a = AISLES.find(([k]) => k === aisleOf(name));
+        showToast(msg || `Aggiunto in ${a[1]} ${a[2]}`);
+    }
+    // Matita su un prodotto aggiunto a mano: lo carico nei campi per correggere quantità, unità o reparto.
+    // Il prodotto resta in lista finché non tocchi ✓ (Esc o cambio lista annullano la modifica).
+    let editingExtraId = null;
+    function setExtraEditing(id) {
+        editingExtraId = id;
+        $('shop-add-row').classList.toggle('editing', !!id);
+        $('btn-shop-extra').innerHTML = id ? '<i class="ri-check-line"></i>' : '+';
+        $('btn-shop-extra').setAttribute('aria-label', id ? 'Salva le modifiche' : 'Aggiungi prodotto');
+    }
+    function cancelExtraEditing() {
+        if (!editingExtraId) return;
+        setExtraEditing(null);
+        $('shop-extra-name').value = ''; $('shop-extra-qty').value = ''; $('shop-extra-aisle').value = 'auto';
+        renderExtraAisleSelect();
+    }
+    function editShopExtra(id) {
+        const list = activeList(), x = list.extras.find((e) => e.id === id); if (!x) return;
+        setExtraEditing(id);
+        $('shop-extra-name').value = x.name;
+        $('shop-extra-qty').value = x.qty ? String(x.qty).replace('.', ',') : '';
+        if (x.unit && [...$('shop-extra-unit').options].some((o) => o.value === x.unit)) $('shop-extra-unit').value = x.unit;
+        renderExtraAisleSelect();
+        const nk = nameKey(x.name);
+        $('shop-extra-aisle').value = Object.prototype.hasOwnProperty.call(aisleOverrides, nk) ? aisleOverrides[nk] : 'auto';
+        $('shop-add-row').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        $('shop-extra-qty').focus();
+        showToast('Correggi e tocca ✓ per salvare');
     }
     $('btn-shop-extra').onclick = addShopExtra;
+    $('shop-extra-qty').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addShopExtra(); } });
     $('shop-extra-name').addEventListener('input', renderExtraAisleSelect);
-    $('shop-extra-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addShopExtra(); } });
+    // Invio sul nome: se nel testo c'è già la quantità aggiunge, altrimenti passa al campo Q.tà
+    $('shop-extra-name').addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        if (/[0-9]/.test(e.target.value) || editingExtraId) addShopExtra(); else $('shop-extra-qty').focus();
+    });
+    $('shop-add-row').addEventListener('keydown', (e) => { if (e.key === 'Escape' && editingExtraId) { e.preventDefault(); e.stopPropagation(); cancelExtraEditing(); } });
     $('btn-shop-clear').onclick = () => {
         const list = activeList();
         if (!confirm(`Svuotare la lista «${list.name}»?`)) return;
