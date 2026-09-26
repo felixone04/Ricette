@@ -342,7 +342,7 @@
         .inline-add { display: flex; gap: 8px; margin-bottom: 14px; }
         .inline-add .form-control { margin: 0; }
         /* Scelta rapida (a quale lista aggiungere, sostituzioni...) sopra qualsiasi schermata */
-        .sheet.sheet-small { height: auto; max-height: 80vh; max-height: 80dvh; z-index: 70; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45); }
+        .sheet.sheet-small { height: auto; max-height: 80vh; max-height: 80dvh; z-index: 72; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45); }
         .pick-option { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; cursor: pointer; font-weight: 700; font-size: 1rem; text-align: left; font-family: inherit; }
         .pick-option i { font-size: 1.3rem; color: var(--primary); }
         .pick-option small { margin-left: auto; color: var(--text-muted); font-weight: 600; }
@@ -1840,15 +1840,17 @@
         itVoice = voices.find((v) => /natural|premium|enhanced|neural|google/i.test(v.name)) || voices[0] || null;
     }
     // Trasforma abbreviazioni e simboli in parole: "30'" → "30 minuti", "180°" → "180 gradi"...
+    // Unità lette a voce: [singolare, plurale] ("1 litro", "2 litri")
+    const SPOKEN_UNITS = { kg: ['chilo', 'chili'], g: ['grammo', 'grammi'], ml: ['millilitro', 'millilitri'], l: ['litro', 'litri'], min: ['minuto', 'minuti'], h: ['ora', 'ore'], "'": ['minuto', 'minuti'], '’': ['minuto', 'minuti'], '°': ['grado', 'gradi'] };
     function spokenForm(text) {
         return String(text)
-            .replace(/(\d+)\s*['’](?![a-zà-ù])/gi, '$1 minuti')
-            .replace(/(\d+)\s*°(\s*C\b)?/g, '$1 gradi')
-            .replace(/(\d+)\s*[-–]\s*(\d+)/g, 'da $1 a $2')
+            .replace(/(\d+)\s*°\s*C\b/g, '$1°')
+            .replace(/(\d+)\s*[-–]\s*(\d+)/g, '$1 o $2') // "10-12 minuti" → "10 o 12 minuti"
             .replace(/\bq\.?\s?b\.?(?=\s|$|[,;])/gi, 'quanto basta')
-            .replace(/(\d)\s*kg\b/gi, '$1 chili').replace(/(\d)\s*g\b/g, '$1 grammi')
-            .replace(/(\d)\s*ml\b/gi, '$1 millilitri').replace(/(\d)\s*l\b/g, '$1 litri')
-            .replace(/(\d)\s*min\b/gi, '$1 minuti').replace(/(\d)\s*h\b/gi, '$1 ore')
+            .replace(/(\d+(?:[.,]\d+)?)\s*(kg|ml|min|g|l|h|['’°])(?![a-zà-ù])/gi, (m, n, u) => {
+                const forms = SPOKEN_UNITS[u.toLowerCase()];
+                return forms ? `${n} ${n === '1' ? forms[0] : forms[1]}` : m;
+            })
             .replace(/[×x](\d)/g, 'per $1');
     }
     function stopSpeaking() {
@@ -1971,6 +1973,16 @@
         return true;
     }
     let renamingList = false, haveOpen = false;
+    // Primo nome libero: "Lista 2", "Lista 3"... oppure "Spesa (2)" per un nome già usato
+    function uniqueListName(base) {
+        if (!shopLists.some((l) => sameText(l.name, base))) return base;
+        let n = 2; while (shopLists.some((l) => sameText(l.name, `${base} (${n})`))) n++;
+        return `${base} (${n})`;
+    }
+    function nextListName() {
+        let n = shopLists.length + 1; while (shopLists.some((l) => sameText(l.name, `Lista ${n}`))) n++;
+        return `Lista ${n}`;
+    }
 
     function computeShopping(list = activeList()) {
         const map = new Map();
@@ -2075,7 +2087,7 @@
 
     // Gestione delle liste: cambia, crea, rinomina, elimina
     function createList() {
-        const l = makeList(`Lista ${shopLists.length + 1}`);
+        const l = makeList(nextListName());
         shopLists.push(l); activeListId = l.id;
         if (!saveShop()) { shopLists.pop(); activeListId = shopLists[0].id; return; }
         renderShop(); startRenameList();
@@ -2141,7 +2153,7 @@
     $('pick-options').addEventListener('click', (e) => {
         const b = e.target.closest('[data-pick]'); if (!b) return;
         let id = b.dataset.pick;
-        if (id === '__new') { const l = makeList(`Lista ${shopLists.length + 1}`); shopLists.push(l); id = l.id; }
+        if (id === '__new') { const l = makeList(nextListName()); shopLists.push(l); id = l.id; }
         closeTopModal();
         addRecipeToList(id);
     });
@@ -2172,7 +2184,8 @@
     // Spesa completata: la lista si azzera (con possibilità di annullare per qualche secondo)
     function completeList(list, lastKey) {
         const snapshot = JSON.parse(JSON.stringify(list));
-        snapshot.checked = snapshot.checked.filter((k) => k !== lastKey); // con "Annulla" l'ultimo articolo torna da prendere
+        snapshot.checked = snapshot.checked.filter((k) => k !== lastKey);
+        snapshot.have = snapshot.have.filter((k) => k !== lastKey); // con "Annulla" l'ultimo articolo torna da prendere
         Object.assign(list, { plan: [], extras: [], have: [], checked: [] });
         haveOpen = false;
         saveShop(); renderShop(); updateShopButton();
@@ -2209,7 +2222,10 @@
         if (e.target.closest('[data-have]')) {
             if (list.have.includes(key)) list.have = list.have.filter((k) => k !== key);
             else { list.have.push(key); list.checked = list.checked.filter((k) => k !== key); }
-            saveShop(); renderShop(); return;
+            saveShop();
+            const st = listStats(list);
+            if (list.checked.length && st.toBuy.length && st.left === 0) { completeList(list, key); return; }
+            renderShop(); return;
         }
         // Spunta "nel carrello" (tocco sulla casella o su tutta la riga)
         const box = item.querySelector('input[type="checkbox"]'); if (!box) return;
@@ -2295,6 +2311,7 @@
         // Farine, amidi e impanature
         ['farina|farina 00|farina 0', 'Farina 00', [['Farina 0', 1, ''], ['Farina di tipo 1 o 2', 1, 'Più rustica: aggiungi un goccio di liquido'], ['Farina di farro', 1, 'Dolci e pane più saporiti'], ['Mix di farine senza glutine', 1, 'Aggiungi 1 cucchiaino di psyllium o xantano ogni 250 g'], ['Farina di riso', 1, 'Per addensare, impanare e nelle pastelle']]],
         ['farina manitoba|farina forte', 'Farina Manitoba', [['Farina 0 forte (W 300+)', 1, ''], ['Farina 00 + glutine', 1, '10 g di glutine ogni 100 g di farina'], ['Metà 00 e metà semola rimacinata', 1, 'Per pane e pizza']]],
+        ['farina di riso', 'Farina di riso', [['Amido di mais', 1, 'Per addensare creme e salse'], ['Farina di mais fioretto', 1, 'Impanature e pastelle senza glutine'], ['Farina 00', 1, 'Se non serve senza glutine']]],
         ['farina integrale', 'Farina integrale', [['Farina 00 + crusca', 1, '90% farina e 10% crusca'], ['Farina di tipo 2', 1, ''], ['Farina di farro integrale', 1, '']]],
         ['farina di mandorle', 'Farina di mandorle', [['Mandorle frullate', 1, 'Frulla a scatti con un cucchiaio di zucchero perché non diventino una crema'], ['Farina di nocciole', 1, ''], ['Farina di cocco', 0.3, 'Assorbe molto: aumenta i liquidi']]],
         ['farina di nocciole', 'Farina di nocciole', [['Nocciole tostate frullate', 1, ''], ['Farina di mandorle', 1, '']]],
@@ -2324,6 +2341,8 @@
 
         // Cioccolato e cacao
         ['cioccolato fondente|cioccolato', 'Cioccolato fondente', [['Cacao amaro + burro', 1, 'Per 30 g: 18 g di cacao e 12 g di burro o olio (+ zucchero a piacere)'], ['Cioccolato al latte', 1, 'Più dolce: riduci lo zucchero'], ['Gocce di cioccolato', 1, '']]],
+        ['cioccolato bianco', 'Cioccolato bianco', [['Cioccolato al latte', 1, 'Sapore più deciso'], ['Burro di cacao + zucchero + latte in polvere', null, 'Per 100 g: 35 g di burro di cacao, 40 g di zucchero a velo e 25 g di latte in polvere'], ['Gocce di cioccolato bianco', 1, '']]],
+        ['cioccolato al latte', 'Cioccolato al latte', [['Cioccolato fondente + zucchero', 1, 'Aggiungi 1 cucchiaino di zucchero ogni 50 g'], ['Cioccolato bianco + cacao', 1, '']]],
         ['cacao|cacao amaro|cacao in polvere', 'Cacao amaro', [['Cioccolato fondente', 1.5, 'Riduci un po\' burro e zucchero della ricetta'], ['Carruba in polvere', 1, 'Più dolce, senza caffeina']]],
         ['gocce di cioccolato', 'Gocce di cioccolato', [['Cioccolato fondente tritato', 1, ''], ['Uvetta o mirtilli secchi', 1, ''], ['Frutta secca tritata', 1, '']]],
         ['nutella|crema di nocciole|crema spalmabile', 'Crema di nocciole', [['Cioccolato fondente + nocciole tritate', 1, 'Fondi il cioccolato con un goccio di latte e aggiungi le nocciole'], ['Crema di nocciole bio / fondente', 1, '']]],
@@ -2344,7 +2363,7 @@
         ['maionese', 'Maionese', [['Yogurt greco + senape', 1, 'Più leggera'], ['Avocado frullato', 1, ''], ['Maionese vegana (aquafaba e olio)', 1, '']]],
         ['ketchup', 'Ketchup', [['Passata + zucchero + aceto', 1, 'Cuoci 10 minuti: 100 g di passata, 1 cucchiaio di zucchero e 1 di aceto'], ['Concentrato di pomodoro diluito', 1, '']]],
         ['dado|dado da brodo|dado vegetale|dado di carne', 'Dado', [['Brodo vegetale', null, '1 dado = 500 ml di brodo'], ['Brodo granulare', null, '1 cucchiaino al posto di mezzo dado'], ['Sale + erbe aromatiche', null, 'Con un filo d\'olio e una punta di concentrato']]],
-        ['brodo|brodo vegetale|brodo di carne|brodo di pollo', 'Brodo', [['Acqua + dado', 1, '1 dado ogni 500 ml d\'acqua'], ['Acqua di cottura delle verdure', 1, ''], ['Brodo granulare', 1, '1 cucchiaino ogni 250 ml'], ['Acqua + miso', 1, '1 cucchiaio di miso ogni 500 ml']]],
+        ['brodo|brodo vegetale|brodo di carne|brodo di pollo', 'Brodo', [['Acqua + dado', 1, '1 dado ogni 500 ml d\'acqua'], ['Acqua di cottura delle verdure', 1, ''], ['Brodo granulare', null, '1 cucchiaino ogni 250 ml'], ['Acqua + miso', 1, '1 cucchiaio di miso ogni 500 ml']]],
         ['sale|sale fino', 'Sale', [['Salsa di soia', null, '1 cucchiaio al posto di 1 cucchiaino di sale'], ['Sale alle erbe o gomasio', 1, ''], ['Sale grosso', 1, 'Meglio nell\'acqua di cottura']]],
         ['sale grosso', 'Sale grosso', [['Sale fino', 0.8, '']]],
         ['pepe|pepe nero', 'Pepe nero', [['Pepe bianco', 1, 'Più delicato, non si vede nelle salse chiare'], ['Pepe rosa', 1, 'Aromatico e poco piccante'], ['Peperoncino', 0.25, '']]],
@@ -2359,7 +2378,7 @@
         ['pomodori secchi', 'Pomodori secchi', [['Pomodorini confit', 3, 'Al forno a 120° per 2 ore con olio e zucchero'], ['Concentrato di pomodoro', 0.5, 'Nei sughi']]],
 
         // Verdure
-        ['cipolla|cipolle|cipolla bianca|cipolla dorata|cipolla rossa', 'Cipolla', [['Scalogno', 2, 'Più delicato', 'pz'], ['Porro', 1, 'Mezzo porro per cipolla', 'pz'], ['Cipollotto', 2, '', 'pz'], ['Cipolla in polvere', 1, 'Nei ragù e nelle marinate', 'cucchiaini']]],
+        ['cipolla|cipolle|cipolla bianca|cipolla dorata|cipolla rossa', 'Cipolla', [['Scalogno', 2, 'Più delicato', 'pz'], ['Porro', 0.5, 'Mezzo porro per cipolla', 'pz'], ['Cipollotto', 2, '', 'pz'], ['Cipolla in polvere', 1, 'Nei ragù e nelle marinate', 'cucchiaini']]],
         ['scalogno|scalogni', 'Scalogno', [['Cipolla', 0.5, 'Mezza cipolla per scalogno', 'pz'], ['Cipollotto', 1, '', 'pz'], ['Porro (parte bianca)', null, 'Un pezzetto di 5 cm']]],
         ['cipollotto|cipollotti|cipolla di tropea', 'Cipollotto', [['Cipolla rossa', 0.5, '', 'pz'], ['Erba cipollina', 1, 'A crudo, un ciuffetto', 'cucchiai'], ['Porro', 0.5, '', 'pz']]],
         ['porro|porri', 'Porro', [['Cipolla', 1, '', 'pz'], ['Cipollotti', 2, '', 'pz']]],
@@ -2400,8 +2419,8 @@
         ['erba cipollina', 'Erba cipollina', [['Cipollotto (parte verde)', 1, ''], ['Aglio orsino', 1, '']]],
         ['coriandolo', 'Coriandolo', [['Prezzemolo + scorza di lime', 1, ''], ['Basilico thai', 1, '']]],
         ['alloro', 'Alloro', [['Timo', null, 'Un rametto'], ['Origano', null, 'Un pizzico']]],
-        ['zenzero|zenzero fresco', 'Zenzero fresco', [['Zenzero in polvere', 0.25, '1/4 di cucchiaino ogni cm di radice'], ['Galanga', 1, ''], ['Cannella + pepe', null, 'Nei dolci, un pizzico']]],
-        ['zenzero in polvere', 'Zenzero in polvere', [['Zenzero fresco grattugiato', 4, ''], ['Cannella', 1, 'Nei dolci']]],
+        ['zenzero|zenzero fresco', 'Zenzero fresco', [['Zenzero in polvere', 0.1, '1/4 di cucchiaino ogni cucchiaio di zenzero grattugiato'], ['Galanga', 1, ''], ['Cannella + pepe', null, 'Nei dolci, un pizzico']]],
+        ['zenzero in polvere', 'Zenzero in polvere', [['Zenzero fresco grattugiato', 10, 'Circa 1 cucchiaio ogni 1/4 di cucchiaino di polvere'], ['Cannella', 1, 'Nei dolci']]],
         ['noce moscata', 'Noce moscata', [['Macis', 1, ''], ['Cannella', 1, 'Nei dolci'], ['Pepe bianco', 0.5, 'Nella besciamella']]],
         ['cannella', 'Cannella', [['Noce moscata', 0.5, ''], ['Pimento (allspice)', 1, ''], ['Cardamomo', 0.5, '']]],
         ['zafferano', 'Zafferano', [['Curcuma', null, 'Solo per il colore: un pizzico, il sapore è diverso'], ['Paprika dolce', null, 'Per il colore']]],
@@ -2475,7 +2494,7 @@
         ['tonno fresco', 'Tonno fresco', [['Pesce spada', 1, ''], ['Salmone', 1, '']]],
         ['salmone|salmone fresco', 'Salmone', [['Trota salmonata', 1, ''], ['Tonno fresco', 1, ''], ['Salmone affumicato', 1, 'A crudo, nei primi']]],
         ['salmone affumicato', 'Salmone affumicato', [['Trota affumicata', 1, ''], ['Pesce spada affumicato', 1, '']]],
-        ['acciughe|alici|filetti di acciuga', 'Acciughe', [['Pasta d\'acciughe', 0.5, 'Circa 1 cucchiaino ogni 2 filetti'], ['Colatura di alici', null, 'Poche gocce'], ['Capperi', 0.5, 'Per la sapidità']]],
+        ['acciughe|alici|filetti di acciuga', 'Acciughe', [['Pasta d\'acciughe', 0.5, 'Circa 1 cucchiaino ogni 2 filetti', 'cucchiaini'], ['Colatura di alici', null, 'Poche gocce'], ['Capperi', 1, 'Circa 1 cucchiaino ogni filetto, per la sapidità', 'cucchiaini']]],
         ['gamberi|gamberetti|mazzancolle', 'Gamberi', [['Mazzancolle', 1, ''], ['Scampi', 1, ''], ['Calamari', 1, '']]],
         ['merluzzo|baccala|nasello|platessa', 'Pesce bianco', [['Nasello o merluzzo', 1, ''], ['Platessa', 1, ''], ['Orata o branzino', 1, '']]],
         ['orata|branzino|spigola', 'Orata / Branzino', [['Branzino o orata', 1, ''], ['Sarago', 1, ''], ['Filetti di merluzzo', 1, '']]],
@@ -2503,10 +2522,12 @@
         ['acqua frizzante|acqua gassata', 'Acqua frizzante', [['Birra', 1, 'Nelle pastelle'], ['Acqua + un pizzico di bicarbonato', 1, '']]],
         ['caffe|caffe espresso|espresso|caffe solubile', 'Caffè', [['Caffè solubile', null, '2 cucchiaini sciolti in 100 ml d\'acqua'], ['Orzo solubile', 1, 'Senza caffeina'], ['Cacao sciolto in acqua', 1, 'Nei dolci']]]
     ];
-    const SUBS_INDEX = SUBS_DB.map(([keys, name, subs]) => ({ keys: keys.split('|').map(nameKey), name, subs }));
+    // L'apostrofo diventa uno spazio: "Spicchi d'aglio" = "spicchi d aglio"
+    const subKey = (s) => nameKey(String(s).replace(/['’]/g, ' '));
+    const SUBS_INDEX = SUBS_DB.map(([keys, name, subs]) => ({ keys: keys.split('|').map(subKey), name, subs }));
     // Trova le sostituzioni per un ingrediente: vince la corrispondenza più specifica (es. "farina di mandorle" prima di "farina")
     function findSubs(ingName) {
-        const k = ' ' + nameKey(ingName) + ' ';
+        const k = ' ' + subKey(ingName) + ' ';
         let best = null, bestLen = 0;
         SUBS_INDEX.forEach((entry) => entry.keys.forEach((key) => {
             if (key && k.includes(' ' + key + ' ') && key.length > bestLen) { best = entry; bestLen = key.length; }
@@ -2514,22 +2535,24 @@
         return best;
     }
     const UNIT_LABEL = { g: 'g', ml: 'ml', pz: 'pz', cucchiai: 'cucchiai', cucchiaini: 'cucchiaini' };
-    function describeRatio(ratio, unitOut) {
+    // perFam: unità dell'ingrediente originale a cui si riferisce la proporzione (predefinita: pezzi)
+    function describeRatio(ratio, unitOut, perFam = 'pz') {
         if (ratio === null) return '';
-        if (unitOut) return `${numFmt.format(ratio)} ${UNIT_LABEL[unitOut] || unitOut} per pezzo`;
+        if (unitOut) return `${numFmt.format(ratio)} ${UNIT_LABEL[unitOut] || unitOut} per ${perFam === 'pz' ? 'pezzo' : perFam}`;
         if (ratio === 1) return 'stessa dose';
         return ratio < 1 ? `${numFmt.format(Math.round(ratio * 100))}% della dose` : `${numFmt.format(ratio)} volte la dose`;
     }
     // Quantità dell'alternativa, calcolata dalla dose dell'ingrediente (già scalata per persone/teglia)
     function subAmount(ing, sub, scale) {
-        const [, ratio, , unitOut] = sub;
+        const [, ratio, , unitOut, perFam = 'pz'] = sub;
         const n = toNum(ing.qty);
         if (ratio === null) return '';
-        if (ing.qty === '' || isNaN(n) || ing.unit === 'q.b.') return describeRatio(ratio, unitOut);
+        if (ing.qty === '' || isNaN(n) || ing.unit === 'q.b.') return describeRatio(ratio, unitOut, perFam);
         const [fam, mult] = famOf(ing.unit);
         if (unitOut) {
-            if (fam !== 'pz') return describeRatio(ratio, unitOut); // proporzione "per pezzo": serve la quantità in pezzi
-            return formatQty(famOf(unitOut)[0], n * scale * ratio);
+            // Proporzione riferita a un'unità precisa (per pezzo, per ml...): serve la stessa famiglia di unità
+            if (fam !== perFam) return describeRatio(ratio, unitOut, perFam);
+            return formatQty(famOf(unitOut)[0], n * scale * mult * ratio);
         }
         return formatQty(fam, n * scale * mult * ratio);
     }
@@ -2560,7 +2583,7 @@
                     <span class="row-main"><span class="row-title">${esc(e.name)}</span><span class="row-sub">${plural(e.subs.length, 'alternativa', 'alternative')}</span></span>
                     <i class="ri-arrow-down-s-line sub-chevron" aria-hidden="true"></i>
                 </button>
-                ${open ? `<div class="sub-details">${e.subs.map((s) => `<div class="sub-card"><div class="sub-amount">${esc(describeRatio(s[1], s[3]) || '—')}</div><div class="sub-text"><strong>${esc(s[0])}</strong>${s[2] ? `<span>${esc(s[2])}</span>` : ''}</div></div>`).join('')}</div>` : ''}
+                ${open ? `<div class="sub-details">${e.subs.map((s) => `<div class="sub-card"><div class="sub-amount">${esc(describeRatio(s[1], s[3], s[4]) || '—')}</div><div class="sub-text"><strong>${esc(s[0])}</strong>${s[2] ? `<span>${esc(s[2])}</span>` : ''}</div></div>`).join('')}</div>` : ''}
             </li>`;
         }).join('') : `<li class="page-empty"><i class="ri-search-eye-line"></i>Nessun ingrediente trovato.</li>`;
     }
@@ -2603,9 +2626,21 @@
     }
     const capFirst = (x) => x.charAt(0).toUpperCase() + x.slice(1);
     const cleanIngName = (x) => capFirst(x.replace(/^(di|d['’])\s*/i, '').replace(/\s*[:–-]\s*$/, '').replace(/\s+/g, ' ').trim());
+    // "1. Taglia le zucchine" / "Passo 2: ..." sono passaggi, non ingredienti ("1. 200 g di farina" invece sì)
+    const isStepLine = (l) => /^\s*(?:(?:passo|step|fase)\s*)?\d+\s*[.)]\s+[^\d½¼¾⅓⅔\s]/i.test(l) || /^\s*(?:passo|step|fase)\s*\d+/i.test(l);
     function parseIngredientLine(line) {
-        const s = line.replace(/^[\s\-–—•*·▪►✓✔☐○●◦>]+/, '').replace(/\s+/g, ' ').trim().replace(/[;,.]$/, '');
+        if (isStepLine(line)) return null;
+        let s = line.replace(/^[\s\-–—•*·▪►✓✔☐○●◦>]+/, '').replace(/\s+/g, ' ').trim().replace(/[;,.]$/, '')
+            .replace(/^\d+\s*[.)]\s+(?=[\d½¼¾⅓⅔])/, ''); // elenco numerato di ingredienti: "1. 200 g di farina"
         if (!s || s.length > 120) return null;
+        // Nota finale tra parentesi senza numeri ("Acqua 300 ml (tiepida)"): la tengo nel nome
+        let note = '';
+        const noteM = s.match(/\s*\(([^()\d]+)\)$/);
+        if (noteM) { note = ` (${noteM[1].trim()})`; s = s.slice(0, noteM.index).trim(); }
+        const withNote = (r) => (r && note && !r.loose ? { ...r, name: r.name + note } : r);
+        return withNote(parseIngredientCore(s)) || { name: cleanIngName(s + note), qty: '', unit: '', loose: true };
+    }
+    function parseIngredientCore(s) {
         let m = s.match(/^(.+?)[\s,:–-]+(q\.?\s?b\.?|quanto basta|a piacere|qb)$/i);
         if (m) return { name: cleanIngName(m[1]), qty: '', unit: 'q.b.' };
         m = s.match(QTY_FIRST_RE);                          // "300 g di farina", "3 uova", "2 spicchi d'aglio"
@@ -2622,9 +2657,13 @@
         m = s.match(QTY_LAST_RE);                           // "Farina 00 300 g", "Uova: 3", "Burro (100 g)"
         if (m) {
             const qty = parseQtyText(m[2]), tok = (m[3] || '').replace('.', '').toLowerCase(), u = UNIT_MAP.find(([re]) => re.test(tok));
-            if (!isNaN(qty) && qty > 0 && (u || !tok)) return { name: cleanIngName(m[1]), qty: fmtQ(qty * (u ? u[2] : 1)), unit: u ? u[1] : 'pz' };
+            if (!isNaN(qty) && qty > 0) {
+                if (u || !tok) return { name: cleanIngName(m[1]), qty: fmtQ(qty * (u ? u[2] : 1)), unit: u ? u[1] : 'pz' };
+                if (/^pizzic/.test(tok)) return { name: cleanIngName(m[1]), qty: '', unit: 'q.b.' };   // "Sale fino 1 pizzico"
+                if (COUNT_WORDS.test(tok)) return { name: cleanIngName(m[1]), qty: fmtQ(qty), unit: 'pz' }; // "Aglio 2 spicchi"
+            }
         }
-        return { name: cleanIngName(s), qty: '', unit: '', loose: true };
+        return null;
     }
     function durationToMin(text) {
         const re = new RegExp(TIMER_RE.source, 'gi'); let m, secs = 0;
@@ -2681,7 +2720,7 @@
         // Titolo: la prima riga "normale" prima degli ingredienti ("Carbonara per 4" → titolo + 4 persone)
         const headEnd = ingIdx >= 0 ? ingIdx : (procIdx >= 0 ? procIdx : lines.length);
         const META_START = /^(dosi|dose|porzioni|persone|preparazione|cottura|tempo|difficolt|lievitazione|riposo|totale|costo|calorie|servings|ricetta di|di |by )/i;
-        const looksLikeIngredient = (l) => /^[\-–—•*·▪►✓✔☐○●◦>]/.test(l) || (QTY_FIRST_RE.test(l) && !parseIngredientLine(l).loose);
+        const looksLikeIngredient = (l) => !isStepLine(l) && (/^[-–—•*·▪►✓✔☐○●◦>]/.test(l) || (QTY_FIRST_RE.test(l) && !(parseIngredientLine(l) || { loose: true }).loose));
         let titleLine = null;
         for (const l of nonEmpty(0, headEnd)) {
             if (isIngHead(l) || isProcHead(l) || looksLikeIngredient(l)) break; // gli ingredienti sono iniziati
@@ -2702,7 +2741,7 @@
             if (procIdx > ingIdx) procLines = nonEmpty(procIdx + 1, lines.length);
             else {
                 // Nessun titolo "Procedimento": gli ingredienti finiscono alla prima frase lunga
-                const cut = ingLines.findIndex((l) => l.length > 70 || (/[.!?]$/.test(l) && l.split(' ').length > 6));
+                const cut = ingLines.findIndex((l) => isStepLine(l) || l.length > 70 || (/[.!?]$/.test(l) && l.split(' ').length > 6));
                 if (cut >= 0) { procLines = ingLines.slice(cut); ingLines = ingLines.slice(0, cut); }
             }
         } else {
@@ -2710,14 +2749,16 @@
             const body = nonEmpty(0, procIdx >= 0 ? procIdx : lines.length).filter((l) => l !== titleLine && !readMeta(l));
             body.forEach((l) => {
                 const p = parseIngredientLine(l);
-                if (p && !p.loose && l.length <= 70 && !(/[.!?]$/.test(l) && l.split(' ').length > 6)) ingLines.push(l);
+                const bulletOnly = p && p.loose && /^[-–—•*·▪►]/.test(l) && l.length <= 40; // "- sale" in una lista puntata
+                if (bulletOnly) ingLines.push(l);
+                else if (p && !p.loose && l.length <= 70 && !(/[.!?]$/.test(l) && l.split(' ').length > 6)) ingLines.push(l);
                 else if (procIdx < 0) procLines.push(l);
             });
             if (procIdx >= 0) procLines = nonEmpty(procIdx + 1, lines.length);
         }
         ingLines.filter((l) => !isSubHead(l) && !readMeta(l)).forEach((l) => {
             const p = parseIngredientLine(l);
-            if (p && p.name && p.name.length > 1) res.ingredients.push(p);
+            if (p && p.name && p.name.length > 1) res.ingredients.push(p.loose ? { ...p, unit: 'q.b.' } : p);
         });
         procLines = procLines.filter((l) => !readMeta(l) || l.length > 60)
             .map((l) => l.replace(/^\s*(?:passo|step|fase)?\s*\d+\s*[.):\-]\s+/i, '').replace(/^[\-–•*]\s+/, ''));
@@ -2776,7 +2817,7 @@
         showToast(p.category ? 'Modulo compilato: controlla e salva' : 'Modulo compilato: scegli la categoria e salva');
     }
     $('btn-open-import').onclick = () => {
-        $('import-preview').innerHTML = ''; lastImport = null;
+        $('import-preview').innerHTML = ''; lastImport = null; $('scan-progress').hidden = true;
         openPage('import-page', 'import-text', () => { });
     };
     $('btn-import-analyze').onclick = analyzeImport;
@@ -3030,7 +3071,10 @@
                 }
                 // Liste della spesa e reparti personalizzati (backup v4): aggiungo solo ciò che manca
                 (Array.isArray(data.lists) ? data.lists : []).map(normalizeShopList).filter(Boolean).forEach((l) => {
-                    if (!shopLists.some((x) => x.id === l.id)) shopLists.push(l);
+                    if (shopLists.some((x) => x.id === l.id)) return;
+                    const same = shopLists.find((x) => sameText(x.name, l.name));
+                    if (same && !same.plan.length && !same.extras.length) { Object.assign(same, { plan: l.plan, extras: l.extras, have: l.have, checked: l.checked }); return; } // riempie la lista vuota omonima
+                    l.name = uniqueListName(l.name); shopLists.push(l);
                 });
                 if (data.aisles && typeof data.aisles === 'object') Object.entries(data.aisles).forEach(([k, v]) => { if (isAisle(v) && k !== '__proto__' && !Object.prototype.hasOwnProperty.call(aisleOverrides, k)) aisleOverrides[k] = v; });
                 saveShop(); persist(KEYS.aisles, aisleOverrides); pruneShopPlan();
