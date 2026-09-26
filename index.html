@@ -312,7 +312,7 @@
         .shop-empty i { font-size: 3rem; color: #FDBA74; display: block; margin-bottom: 8px; }
         .shop-tip { font-size: 0.85rem; color: var(--text-muted); background: var(--primary-light); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.4; }
         .plan-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; }
-        .plan-item .plan-title { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+        .plan-item .plan-title { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: break-word; }
         .plan-stepper { display: flex; align-items: center; gap: 4px; font-weight: 800; color: var(--primary-dark); white-space: nowrap; font-size: 0.9rem; }
         .plan-stepper button { width: 32px; height: 32px; border-radius: 8px; border: 2px solid var(--primary); background: var(--surface); color: var(--primary); font-weight: 800; font-size: 1.1rem; cursor: pointer; }
         .aisle { margin-bottom: 14px; }
@@ -365,6 +365,17 @@
         .inline-add #shop-extra-qty { text-align: center; font-weight: 700; }
         .inline-add .btn-small { padding: 0; }
         .inline-add.editing { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        /* Telefoni: il reparto va su una riga tutta sua, così si legge anche "Automatico (🧀 Frigo e Latticini)" */
+        @media (max-width: 480px) {
+            .inline-add { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 48px; }
+            .inline-add #shop-extra-aisle { grid-column: 1 / -1; grid-row: 3; }
+        }
+        /* Modalità cucina sui telefoni: solo icone nella barra, così titolo e "Passo 1 di 6" hanno spazio */
+        @media (max-width: 420px) {
+            .cook-ing-label { display: none; }
+            .cook-ing-btn { width: 56px; justify-content: center; padding: 0; }
+        }
+        #cook-count { white-space: nowrap; }
         .inline-add .form-control { margin: 0; }
         /* Scelta rapida (a quale lista aggiungere, sostituzioni...) sopra qualsiasi schermata */
         .sheet.sheet-small { height: auto; max-height: 80vh; max-height: 80dvh; z-index: 72; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45); }
@@ -432,7 +443,15 @@
         .cook-progress { height: 8px; margin: 0 16px; background: var(--border); border-radius: 4px; overflow: hidden; flex-shrink: 0; }
         .cook-progress > div { height: 100%; background: var(--primary); width: 0; transition: width 0.3s; }
         .cook-stage { flex: 1; min-height: 0; overflow-y: auto; display: flex; padding: 24px clamp(20px, 6vw, 64px) calc(24px + var(--dock-h)); touch-action: pan-y; }
-        .cook-step { margin: auto; max-width: 900px; width: 100%; font-size: clamp(1.7rem, 3.2vw + 1rem, 3.3rem); font-weight: 800; line-height: 1.3; overflow-wrap: anywhere; white-space: pre-wrap; }
+        .cook-body { margin: auto; max-width: 900px; width: 100%; }
+        /* "Ti serve": solo gli ingredienti citati nel passaggio, con la dose giusta */
+        .cook-step-ings { margin-top: clamp(18px, 3vh, 32px); padding-top: 14px; border-top: 2px dashed var(--border); }
+        .cook-step-ings[hidden] { display: none; }
+        .csi-title { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 800; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
+        .csi-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+        .csi-list li { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 8px 16px; font-size: clamp(1.05rem, 1.2vw + 0.8rem, 1.45rem); font-weight: 700; box-shadow: var(--shadow-sm); overflow-wrap: anywhere; }
+        .csi-list li strong { color: var(--primary-dark); font-weight: 800; }
+        .cook-step { width: 100%; font-size: clamp(1.7rem, 3.2vw + 1rem, 3.3rem); font-weight: 800; line-height: 1.3; overflow-wrap: anywhere; white-space: pre-wrap; }
         .cook-step.long { font-size: clamp(1.4rem, 2.4vw + 0.8rem, 2.5rem); }
         .cook-step.xlong { font-size: clamp(1.15rem, 1.6vw + 0.8rem, 1.9rem); font-weight: 700; }
         .cook-step .timer-chip { font-size: 0.8em; padding: 2px 16px; border-width: 3px; vertical-align: middle; }
@@ -472,8 +491,6 @@
 
         /* --- Telefoni molto stretti (≤360px) --- */
         @media (max-width: 360px) {
-            .inline-add { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 48px; }
-            .inline-add #shop-extra-aisle { grid-column: 1 / -1; grid-row: 3; }
             .settings-tiles { gap: 8px; }
             .settings-tile { padding: 14px 12px; }
             .page-add-btn span { display: none; }
@@ -843,7 +860,7 @@
             <button type="button" class="cook-ing-btn" id="btn-cook-ing" aria-label="Mostra ingredienti"><i class="ri-shopping-basket-line"></i><span class="cook-ing-label">Ingredienti</span></button>
         </div>
         <div class="cook-progress"><div id="cook-progress-bar"></div></div>
-        <div class="cook-stage" id="cook-stage"><div class="cook-step" id="cook-step"></div></div>
+        <div class="cook-stage" id="cook-stage"><div class="cook-body"><div class="cook-step" id="cook-step"></div><div class="cook-step-ings" id="cook-step-ings" hidden></div></div></div>
         <div class="cook-nav">
             <button type="button" class="cook-btn cook-prev" id="btn-cook-prev"><i class="ri-arrow-left-line"></i><span>Indietro</span></button>
             <button type="button" class="cook-btn cook-next" id="btn-cook-next"><span id="cook-next-label">Avanti</span><i class="ri-arrow-right-line" id="cook-next-icon"></i></button>
@@ -1812,9 +1829,37 @@
         }
         return steps;
     }
+    // --- INGREDIENTI DEL PASSAGGIO: quelli citati nel testo, con la dose scalata (persone × teglia) ---
+    const GENERIC_ING_WORDS = new Set(['fresco', 'fresca', 'freschi', 'fresche', 'secco', 'secca', 'secchi', 'secche', 'grattugiato', 'grattugiata', 'extravergine', 'evo', 'tipo', 'intero', 'intera', 'scremato', 'parzialmente', 'bianco', 'bianca', 'nero', 'nera', 'rosso', 'rossa', 'dolce', 'piccante', 'macinato', 'macinata', 'tritato', 'tritata', 'polvere', 'grande', 'grandi', 'piccolo', 'piccola', 'medio', 'media', 'medie', 'biologico', 'bio', 'qualita', 'filetti', 'filetto', 'pezzi', 'cubetti', 'fette', 'foglie', 'spicchi', 'spicchio', 'bustina', 'vasetto', 'scatola', 'confezione']);
+    const ingredientStems = (name) => words(name).filter((w) => w.length >= 3 && !STOP_WORDS.has(w) && !GENERIC_ING_WORDS.has(w) && !/^\d+$/.test(w)).map(stem);
+    function stepIngredients(stepText, ings) {
+        const count = new Map();
+        words(stepText).map(stem).forEach((s) => count.set(s, (count.get(s) || 0) + 1));
+        const found = ings.map((ing, idx) => {
+            const stems = ingredientStems(ing.name), hit = stems.filter((s) => count.has(s));
+            return { ing, idx, hit };
+        }).filter((x) => x.hit.length);
+        // "Farina 00" e "Farina di mandorle": se il testo dice solo "farina di mandorle" tengo quella più specifica,
+        // ma se "farina" compare anche da sola ("la farina e la farina di mandorle") le tengo entrambe
+        return found.filter((a) => {
+            const dominators = found.filter((b) => b !== a && b.hit.length > a.hit.length && a.hit.every((s) => b.hit.includes(s)));
+            return !dominators.length || a.hit.some((s) => count.get(s) > dominators.length);
+        }).sort((a, b) => a.idx - b.idx).map((x) => x.ing);
+    }
+    function renderStepIngredients(step) {
+        const box = $('cook-step-ings'), ings = stepIngredients(step, currentDetailIngredients), ratio = detailRatio();
+        cook.stepIngs = ings;
+        box.hidden = !ings.length;
+        if (!ings.length) { box.innerHTML = ''; return; }
+        box.innerHTML = `<span class="csi-title"><i class="ri-shopping-basket-line" aria-hidden="true"></i> Ti serve</span><ul class="csi-list">${ings.map((i) => {
+            const f = formatIngredient(i, ratio);
+            return f.amount === 'q.b.' ? `<li>${esc(f.name)} <strong>q.b.</strong></li>` : `<li>${f.amount ? `<strong>${esc(f.amount)}</strong> ` : ''}${esc(f.name)}</li>`;
+        }).join('')}</ul>`;
+    }
     function renderCookStep(dir) {
         const step = cook.steps[cook.index], el = $('cook-step');
         el.innerHTML = procedureToHTML(step);
+        renderStepIngredients(step);
         el.className = 'cook-step' + (step.length > 400 ? ' xlong' : step.length > 200 ? ' long' : '');
         if (dir) { void el.offsetWidth; el.classList.add(dir > 0 ? 'in-next' : 'in-prev'); }
         const last = cook.index === cook.steps.length - 1;
@@ -1902,6 +1947,8 @@
                 const forms = SPOKEN_UNITS[u.toLowerCase()];
                 return forms ? `${n} ${n === '1' ? forms[0] : forms[1]}` : m;
             })
+            .replace(/(\d)\s*pz\b/gi, '$1')           // "3 pz uova" → "3 uova"
+            .replace(/\b1 cucchiaini\b/g, '1 cucchiaino').replace(/\b1 cucchiai\b/g, '1 cucchiaio')
             .replace(/[×x](\d)/g, 'per $1');
     }
     function stopSpeaking() {
@@ -1926,8 +1973,15 @@
     }
     function speakCookStep() {
         if (!modalStack.includes('cook-view') || !cook.steps.length) return;
-        const last = cook.index === cook.steps.length - 1;
-        speakText(`Passo ${cook.index + 1}${last ? ', ultimo' : ''}. ${cook.steps[cook.index]}`);
+        const last = cook.index === cook.steps.length - 1, ratio = detailRatio();
+        // Dopo il passaggio legge anche le dosi che servono ("Ti serve: 300 grammi di farina...")
+        const ings = (cook.stepIngs || []).map((i) => {
+            const f = formatIngredient(i, ratio);
+            if (f.amount === 'q.b.') return `${f.name} quanto basta`;
+            const measured = i.unit && i.unit !== 'pz' && i.unit !== 'q.b.'; // "300 grammi di zucchero", "6 uova"
+            return `${f.amount ? f.amount + (measured ? ' di ' : ' ') : ''}${f.name.toLowerCase()}`;
+        });
+        speakText(`Passo ${cook.index + 1}${last ? ', ultimo' : ''}. ${cook.steps[cook.index]}${ings.length ? ` Ti serve: ${ings.join(', ')}.` : ''}`);
     }
     function updateTtsButton() {
         const btn = $('btn-cook-tts');
@@ -1954,16 +2008,16 @@
     // --- LISTA DELLA SPESA (divisa per reparto) E DISPENSA ---
     // Reparti nell'ordine in cui di solito si gira il supermercato
     const AISLES = [['orto', '🥬', 'Ortofrutta'], ['panetteria', '🥖', 'Panetteria'], ['carne', '🥩', 'Carne e Pesce'], ['frigo', '🧀', 'Frigo e Latticini'], ['dispensa', '🥫', 'Dispensa'], ['surgelati', '🧊', 'Surgelati'], ['bevande', '🍷', 'Bevande'], ['casa', '🧴', 'Casa e igiene'], ['altro', '🛍️', 'Altro']];
-    const AISLE_PHRASES = [['surgelat', 'surgelati'], ['aranciata', 'bevande'], ['limonata', 'bevande'], ['acqua tonica', 'bevande'], ['bastoncini di pesce', 'surgelati'], ['carta igienica', 'casa'], ['carta da forno', 'casa'], ['carta forno', 'casa'], ['carta assorbente', 'casa'], ['carta stagnola', 'casa'], ['pellicola', 'casa'], ['lievito di birra', 'frigo'], ['lievito madre', 'frigo'], ['pasta madre', 'frigo'], ['colla di pesce', 'dispensa'], ['pelati', 'dispensa'], ['passata', 'dispensa'], ['polpa di pomodoro', 'dispensa'], ['concentrato', 'dispensa'], ['latte di cocco', 'dispensa'], ['latte condensato', 'dispensa'], ['burro di arachidi', 'dispensa'], ['tonno fresco', 'carne'], ['tonno', 'dispensa'], ['pasta sfoglia', 'frigo'], ['pasta brise', 'frigo'], ['pasta frolla', 'frigo'], ['pasta fresca', 'frigo'], ['gnocchi', 'frigo'], ['pane grattugiato', 'dispensa'], ['fette biscottate', 'dispensa'], ['pane carasau', 'panetteria'], ['aceto', 'dispensa'], ['succo di limone', 'orto'], ['vino', 'bevande'], ['birra', 'bevande'], ['succo', 'bevande']];
+    const AISLE_PHRASES = [['frutti di mare', 'carne'], ['acqua ossigenata', 'casa'], ['te freddo', 'bevande'], ['the freddo', 'bevande'], ['limoncello', 'bevande'], ['di plastica', 'casa'], ['cime di rapa', 'orto'], ['sugo pronto', 'dispensa'], ['surgelat', 'surgelati'], ['aranciata', 'bevande'], ['limonata', 'bevande'], ['acqua tonica', 'bevande'], ['bastoncini di pesce', 'surgelati'], ['carta igienica', 'casa'], ['carta da forno', 'casa'], ['carta forno', 'casa'], ['carta assorbente', 'casa'], ['carta stagnola', 'casa'], ['pellicola', 'casa'], ['lievito di birra', 'frigo'], ['lievito madre', 'frigo'], ['pasta madre', 'frigo'], ['colla di pesce', 'dispensa'], ['pelati', 'dispensa'], ['passata', 'dispensa'], ['polpa di pomodoro', 'dispensa'], ['concentrato', 'dispensa'], ['latte di cocco', 'dispensa'], ['latte condensato', 'dispensa'], ['burro di arachidi', 'dispensa'], ['tonno fresco', 'carne'], ['tonno', 'dispensa'], ['pasta sfoglia', 'frigo'], ['pasta brise', 'frigo'], ['pasta frolla', 'frigo'], ['pasta fresca', 'frigo'], ['gnocchi', 'frigo'], ['pane grattugiato', 'dispensa'], ['fette biscottate', 'dispensa'], ['pane carasau', 'panetteria'], ['aceto', 'dispensa'], ['succo di limone', 'orto'], ['vino', 'bevande'], ['birra', 'bevande'], ['succo', 'bevande']];
     const AISLE_WORDS = {
-        carne: 'pollo tacchino manzo vitello maiale agnello coniglio salsicc macinat carne bistecc fesa cosc arrost pancett guancial prosciutt speck salam mortadell bresaol wurstel pesce salmon merluzz baccal orat branzin spigol gamber scamp cozz vongol calamar polp seppi acciug alic sgombr trot',
-        frigo: 'latte burro panna yogurt mozzarell ricott mascarpon parmigian grana pecorin formagg stracchin gorgonzol scamorz provol fontin emmental asiago burrat stracciatell philadelphia besciamell uov uovo tuorl album',
-        orto: 'mel pera pere banan aranc limon lime fragol uva pesc albicocc cilieg kiwi ananas melon anguri mirtill lampon frutti pomodor zucchin melanzan peperon carot cipoll scalogn aglio patat insalat lattug rucol spinac bietol cavol broccol verza finocch sedan porr zucca fung asparag carciof pisell fagiolin basilic prezzemol rosmarin salvia menta timo erba zenzer avocad cetriol ravanell radicch songin',
-        panetteria: 'pane panin focacc grissin piadin tigell rosett ciabatt baguett bauletto tramezzin pita tortill cornett brioch',
-        surgelati: 'surgelat ghiacciol =gelato =gelati',
-        bevande: 'acqua succo spumant prosecco liquor rum marsala grappa limoncell brandy cognac amaretto aranciat cola chinott gassos tonic',
-        casa: 'detersiv sapon shampoo balsamo bagnoschium dentifric spazzolin carta scottex tovaglio fazzolett spugn candeggin ammorbident sgrassator pannolin assorbent deodorant rasoi cotton salviett sacchett alluminio stovigli pastigli brillantant anticalcar insetticid lampadin',
-        dispensa: 'farin zuccher sale pepe olio pasta spaghett penn fusill rigaton linguin tagliatell lasagn riso carnarol arbori pangrattat lievit bicarbonat cacao cioccolat vanill miele marmellat confettur legum ceci lenticch fagiol mais oliv capper dado brodo cannell noce moscat curry paprika origan zafferan cumin noci mandorl nocciol pinol pistacch uvett biscott savoiard fecol amido maizena caffe te the crackers fette semol polenta couscous orzo farro quinoa avena gelatin panko salsa cereal'
+        carne: 'pollo tacchino manzo vitello maiale agnello coniglio salsicc macinat carne bistecc fesa cosc arrost pancett guancial prosciutt speck salam mortadell bresaol wurstel pesce salmon merluzz baccal orat branzin spigol gamber scamp cozz vongol calamar polp seppi acciug alic sgombr trot hamburger arista lonza costin costat fegat coppa lardo cotechin zampon scaloppin cotolett spezzatin polpett bocconcin petto',
+        frigo: 'latte burro panna yogurt mozzarell ricott mascarpon parmigian grana pecorin formagg stracchin gorgonzol scamorz provol fontin emmental asiago burrat stracciatell philadelphia besciamell uov uovo tuorl album taleggio robiol crescenz margarin tortellin raviol cappellett kefir skyr mozzarelline',
+        orto: 'mel pera pere banan aranc limon lime fragol uva pesc albicocc cilieg kiwi ananas melon anguri mirtill lampon frutti pomodor zucchin melanzan peperon carot cipoll scalogn aglio patat insalat lattug rucol spinac bietol cavol broccol verza finocch sedan porr zucca fung asparag carciof pisell fagiolin basilic prezzemol rosmarin salvia menta timo erba zenzer avocad cetriol ravanell radicch songin clementin mandarin fich castagn cocomer cime rapa valerian lattughin ortagg verdur frutta pompelm prugn susin melagran mango papaya cavolfior',
+        panetteria: 'pane panin focacc grissin piadin tigell rosett ciabatt baguett bauletto tramezzin pita tortill cornett brioch pancarre taralli frisell crostin fette pagnott filone',
+        surgelati: 'surgelat ghiacciol =gelato =gelati ghiaccio minestrone',
+        bevande: 'acqua succo spumant prosecco liquor rum marsala grappa limoncell brandy cognac amaretto aranciat cola chinott gassos tonic bibit aranciat cedrat sprite fanta energy',
+        casa: 'detersiv sapon shampoo balsamo bagnoschium dentifric spazzolin carta scottex tovaglio fazzolett spugn candeggin ammorbident sgrassator pannolin assorbent deodorant rasoi cotton salviett sacchett alluminio stovigli pastigli brillantant anticalcar insetticid lampadin piatti bicchieri posate tovaglie sacch spazzatur pellicol stagnol candel fiammifer accendin',
+        dispensa: 'farin zuccher sale pepe olio pasta spaghett penn fusill rigaton linguin tagliatell lasagn riso carnarol arbori pangrattat lievit bicarbonat cacao cioccolat vanill miele marmellat confettur legum ceci lenticch fagiol mais oliv capper dado brodo cannell noce moscat curry paprika origan zafferan cumin noci mandorl nocciol pinol pistacch uvett biscott savoiard fecol amido maizena caffe te the crackers fette semol polenta couscous orzo farro quinoa avena gelatin panko salsa cereal nutella maionese ketchup senape sugo pesto amarett camomill tisan infus sottacet sottoli legumi fagiolin'
     };
     const AISLE_KW = Object.fromEntries(Object.entries(AISLE_WORDS).map(([k, v]) => [k, v.split(' ')]));
     const nameKey = (n) => norm(n).split(/\s+/).filter(Boolean).map(stem).join(' ');
@@ -1976,10 +2030,13 @@
         const n = norm(name);
         const phrase = AISLE_PHRASES.find(([p]) => n.includes(p)); if (phrase) return phrase[1];
         const words = n.split(/[^a-z0-9]+/).filter(Boolean);
-        // Ordine pensato per i conflitti: "pesce" prima di "pesca", "peperoni" prima di "pepe"...
-        for (const aisle of ['carne', 'frigo', 'orto', 'panetteria', 'surgelati', 'bevande', 'casa', 'dispensa']) {
-            // "=parola" = solo parola intera ("gelato" sì, "gelatina" no)
-            if (AISLE_KW[aisle].some((kw) => words.some((w) => (kw[0] === '=' ? w === kw.slice(1) : kw.length < 3 ? w === kw : w.startsWith(kw))))) return aisle;
+        // Decide la prima parola riconosciuta: in italiano il prodotto viene prima ("Cioccolato al latte" → Dispensa,
+        // "Gelato al limone" → Surgelati). Per la stessa parola vale l'ordine dei reparti ("pesce" prima di "pesca"...)
+        const hits = (w, kw) => (kw[0] === '=' ? w === kw.slice(1) : kw.length < 3 ? w === kw : w.startsWith(kw));
+        for (const w of words) {
+            for (const aisle of ['carne', 'frigo', 'orto', 'panetteria', 'surgelati', 'bevande', 'casa', 'dispensa']) {
+                if (AISLE_KW[aisle].some((kw) => hits(w, kw))) return aisle;
+            }
         }
         return 'altro';
     }
@@ -2176,7 +2233,7 @@
         const pick = units.length > 1 && it.qty >= units[1][1] ? units[1] : units[0];
         const current = it.ownedQty > 0 ? +(it.ownedQty / pick[1]).toFixed(3) : '';
         return `<div class="own-editor" data-key="${esc(it.key)}">
-            <label class="own-title" for="own-input">Quanto <strong>${esc(it.name)}</strong> hai già? <small>Servono ${esc(it.needLabel)}</small></label>
+            <label class="own-title" for="own-input"><strong>${esc(it.name)}</strong>: quanto ne hai già? <small>Servono ${esc(it.needLabel)}</small></label>
             <div class="own-row">
                 <input type="text" inputmode="decimal" class="form-control" id="own-input" value="${esc(String(current).replace('.', ','))}" placeholder="es. ${pick[0] === 'g' ? '200' : '1'}" autocomplete="off" enterkeyhint="done">
                 ${units.length > 1 ? `<select class="form-control" id="own-unit" aria-label="Unità">${units.map(([u, m]) => `<option value="${m}"${u === pick[0] ? ' selected' : ''}>${u}</option>`).join('')}</select>` : `<span class="own-unit">${esc(units[0][0])}</span><input type="hidden" id="own-unit" value="1">`}
@@ -2190,6 +2247,9 @@
         </div>`;
     }
     // Dopo un cambio: se non resta niente da comprare e qualcosa è nel carrello, la spesa è finita
+    // Quantità "Ho già" prima dell'ultima modifica: serve ad "Annulla" per rimetterla com'era
+    let prevOwned = null;
+    const rememberOwned = (list, key) => { prevOwned = { key, value: Object.prototype.hasOwnProperty.call(list.owned, key) ? list.owned[key] : undefined }; };
     function afterOwnedChange(list, key) {
         saveShop();
         const st = listStats(list);
@@ -2198,6 +2258,7 @@
     }
     function saveOwned(list, key) {
         const it = computeShopping(list).find((i) => i.key === key); if (!it) return;
+        rememberOwned(list, key);
         const raw = $('own-input').value.trim();
         const n = raw === '' ? 0 : toNum(raw), mult = toNum($('own-unit').value) || 1;
         if (isNaN(n) || n < 0) { showToast('Scrivi una quantità, es. 200 o 0,5', 'error'); $('own-input').focus(); return; }
@@ -2245,8 +2306,8 @@
         inp.addEventListener('blur', () => finish(true));
     }
     function deleteList() {
-        const list = activeList();
-        if (shopLists.length === 1) {
+        const list = activeList(), onlyOne = shopLists.length === 1;
+        if (onlyOne) {
             if (!confirm(`«${list.name}» è la tua unica lista: vuoi svuotarla?`)) return;
             Object.assign(list, emptyListContent());
         } else {
@@ -2255,7 +2316,7 @@
             activeListId = shopLists[0].id;
         }
         saveShop(); renderShop(); updateShopButton();
-        showToast('Lista eliminata');
+        showToast(onlyOne ? 'Lista svuotata' : 'Lista eliminata');
     }
     $('list-chips').addEventListener('click', (e) => {
         if (e.target.closest('[data-new-list]')) { createList(); return; }
@@ -2314,7 +2375,11 @@
     function completeList(list, lastKey, viaOwned = false) {
         const snapshot = JSON.parse(JSON.stringify(list));
         snapshot.checked = snapshot.checked.filter((k) => k !== lastKey);
-        if (viaOwned && snapshot.owned) delete snapshot.owned[lastKey]; // finita con "Ho già": "Annulla" toglie quella quantità
+        // Finita con "Ho già": "Annulla" rimette la quantità che c'era prima di quell'ultima modifica
+        if (viaOwned && snapshot.owned) {
+            if (prevOwned && prevOwned.key === lastKey && prevOwned.value !== undefined) snapshot.owned[lastKey] = prevOwned.value;
+            else delete snapshot.owned[lastKey];
+        }
         Object.assign(list, emptyListContent());
         haveOpen = false; ownEditKey = null;
         saveShop(); renderShop(); updateShopButton();
@@ -2333,7 +2398,7 @@
         const list = activeList(), id = btn.closest('[data-plan]').dataset.plan, p = list.plan.find((x) => x.id === id); if (!p) return;
         const act = btn.dataset.planAct;
         if (act === 'remove') list.plan = list.plan.filter((x) => x !== p);
-        else p.servings = Math.max(1, Math.round(toNum(p.servings) + (act === 'plus' ? 1 : -1)));
+        else p.servings = Math.max(0.5, +(toNum(p.servings) + (act === 'plus' ? 1 : -1)).toFixed(2)); // 2,5 → 3,5 (niente arrotondamenti)
         saveShop(); renderShop(); updateShopButton();
     });
     $('shop-list').addEventListener('click', (e) => {
@@ -2353,6 +2418,7 @@
         const act = e.target.closest('[data-own-act]');
         if (act) {
             const key = act.closest('.own-editor').dataset.key, what = act.dataset.ownAct;
+            rememberOwned(list, key);
             if (what === 'save') { saveOwned(list, key); return; }
             if (what === 'all') { list.owned[key] = 'all'; list.checked = list.checked.filter((k) => k !== key); }
             if (what === 'none') delete list.owned[key];
@@ -2365,6 +2431,7 @@
         // "Ho già" (quantità o, per gli articoli senza quantità, "ce l'ho") / "Da comprare"
         if (e.target.closest('[data-own]')) {
             const it = computeShopping(list).find((i) => i.key === key); if (!it) return;
+            rememberOwned(list, key);
             if (it.have) { delete list.owned[key]; ownEditKey = null; afterOwnedChange(list, key); return; }
             if (!it.measurable) { list.owned[key] = 'all'; list.checked = list.checked.filter((k) => k !== key); afterOwnedChange(list, key); return; }
             ownEditKey = ownEditKey === key ? null : key; ownFocus = !!ownEditKey;
@@ -2399,7 +2466,22 @@
         sel.innerHTML = `<option value="auto">Automatico${guess ? ` (${guess[1]} ${guess[2]})` : ''}</option>` +
             AISLES.map(([k, icon, label]) => `<option value="${k}">${icon} ${label}</option>`).join('');
         sel.value = [...sel.options].some((o) => o.value === prev) ? prev : 'auto';
+        guessExtraUnit();
     }
+    // Unità proposta: quella usata nelle tue ricette per quel prodotto, "pz" per ciò che si conta, altrimenti grammi
+    let extraUnitTouched = false;
+    const COUNTABLE_RE = /^(uov|limon|lime|mele|mela|aranc|banan|avocad|cipoll|zucchin|peperon|melanzan|kiwi|pera|pere|panin|pagnott|baguett|mozzarell|burrat|scatolett|lattin|bottigli|confezion|pacc|vasett|rotol|bustin|spugn)/;
+    function guessExtraUnit() {
+        if (extraUnitTouched || editingExtraId) return;
+        const name = $('shop-extra-name').value.trim(); if (!name) return;
+        const nk = nameKey(name), sel = $('shop-extra-unit');
+        let unit = 'g';
+        const used = recipes.flatMap((r) => r.ingredients).find((i) => nameKey(i.name) === nk && i.unit && i.unit !== 'q.b.');
+        if (used && [...sel.options].some((o) => o.value === used.unit)) unit = used.unit;
+        else if (COUNTABLE_RE.test(norm(name))) unit = 'pz';
+        sel.value = unit;
+    }
+    $('shop-extra-unit').addEventListener('change', () => { extraUnitTouched = true; });
     function addShopExtra() {
         const input = $('shop-extra-name'), raw = input.value.trim();
         if (!raw) { showToast('Scrivi il nome del prodotto', 'error'); input.focus(); return; }
@@ -2408,11 +2490,11 @@
         let qty = $('shop-extra-qty').value.trim().replace(',', '.'), unit = $('shop-extra-unit').value, name = raw;
         if (/^\d+\s*\/\s*\d+$/.test(qty) && toNum(qty) > 0) qty = String(+toNum(qty).toFixed(3)); // "1/2" → 0.5
         if (qty !== '' && !(/^\d+(\.\d+)?$/.test(qty) && Number(qty) > 0)) { showToast('Quantità non valida (es. 300, 0,5 o 1/2)', 'error'); $('shop-extra-qty').focus(); return; }
+        const p = parseIngredientLine(raw);
         if (qty === '') {
-            const p = parseIngredientLine(raw);
             if (p && !p.loose && p.name && p.qty) { name = p.name; qty = p.qty; unit = p.unit === 'q.b.' ? '' : p.unit; }
             else unit = '';
-        }
+        } else if (p && !p.loose && p.name && p.qty) name = p.name; // Q.tà compilata: tolgo dal nome la quantità scritta ("3 kg di arance")
         name = name.charAt(0).toUpperCase() + name.slice(1);
         const editing = editingExtraId ? list.extras.find((x) => x.id === editingExtraId) : null;
         // Stesso prodotto già aggiunto a mano (stessa famiglia di unità): sommo le quantità invece di duplicarlo
@@ -2424,6 +2506,10 @@
             if (famOf(editing.unit || '')[0] !== prevFam || !qty) delete list.owned['x:' + editing.id]; // "Ho già" in un'altra unità non vale più
             msg = `${name} aggiornato`;
         } else if (same) {
+            // Ne aggiungo ancora: se era "già in casa" o nel carrello, torna da comprare per la parte in più
+            const skey = 'x:' + same.id, [sfam, smul] = famOf(same.unit || '');
+            if (list.owned[skey] === 'all') { if (same.qty) list.owned[skey] = toNum(same.qty) * smul; else delete list.owned[skey]; }
+            list.checked = list.checked.filter((k) => k !== skey);
             if (qty && same.qty) {
                 const [fam, mSame] = famOf(same.unit || ''), total = toNum(same.qty) * mSame + toNum(qty) * famOf(unit || '')[1];
                 same.qty = String(+(total / mSame).toFixed(3));
@@ -2437,7 +2523,10 @@
         setExtraEditing(null);
         // Reparto scelto a mano: lo ricordo per questo prodotto anche le prossime volte
         if (aisle !== 'auto' && isAisle(aisle)) { aisleOverrides[nameKey(name)] = aisle; persist(KEYS.aisles, aisleOverrides); }
-        input.value = ''; $('shop-extra-qty').value = ''; $('shop-extra-unit').value = 'g'; $('shop-extra-aisle').value = 'auto';
+        else if (aisle === 'auto' && editing && Object.prototype.hasOwnProperty.call(aisleOverrides, nameKey(name))) {
+            delete aisleOverrides[nameKey(name)]; persist(KEYS.aisles, aisleOverrides); // in modifica "Automatico" annulla il reparto scelto a mano
+        }
+        input.value = ''; $('shop-extra-qty').value = ''; $('shop-extra-unit').value = 'g'; $('shop-extra-aisle').value = 'auto'; extraUnitTouched = false;
         $('shop-add-row').classList.remove('editing');
         renderExtraAisleSelect(); renderShop(); input.focus();
         const a = AISLES.find(([k]) => k === aisleOf(name));
@@ -2455,7 +2544,7 @@
     function cancelExtraEditing() {
         if (!editingExtraId) return;
         setExtraEditing(null);
-        $('shop-extra-name').value = ''; $('shop-extra-qty').value = ''; $('shop-extra-aisle').value = 'auto';
+        $('shop-extra-name').value = ''; $('shop-extra-qty').value = ''; $('shop-extra-unit').value = 'g'; $('shop-extra-aisle').value = 'auto'; extraUnitTouched = false;
         renderExtraAisleSelect();
     }
     function editShopExtra(id) {
@@ -2478,7 +2567,8 @@
     $('shop-extra-name').addEventListener('keydown', (e) => {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        if (/[0-9]/.test(e.target.value) || editingExtraId) addShopExtra(); else $('shop-extra-qty').focus();
+        const p = parseIngredientLine(e.target.value); // "Farina 00" → vai alla Q.tà; "2 kg di patate" → aggiungi
+        if ((p && !p.loose && p.qty) || editingExtraId) addShopExtra(); else $('shop-extra-qty').focus();
     });
     $('shop-add-row').addEventListener('keydown', (e) => { if (e.key === 'Escape' && editingExtraId) { e.preventDefault(); e.stopPropagation(); cancelExtraEditing(); } });
     $('btn-shop-clear').onclick = () => {
@@ -2839,7 +2929,8 @@
     const FRAC = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3 };
     const QTY_RE = `(\\d+(?:[.,]\\d+)?(?:\\s*\\/\\s*\\d+)?(?:\\s*[-–]\\s*\\d+(?:[.,]\\d+)?)?|[½¼¾⅓⅔]|(?:${Object.keys(WORD_NUM).join('|')})(?![a-zà-ù]))`;
     const QTY_FIRST_RE = new RegExp(`^${QTY_RE}\\s*([a-zà-ù]+\\.?)?\\s*(.*)$`, 'i');
-    const QTY_LAST_RE = new RegExp(`^(.+?)[\\s,:–-]*\\(?\\s*${QTY_RE}\\s*([a-zà-ù]+\\.?)?\\s*\\)?$`, 'i');
+    // Quantità in fondo: serve uno spazio (o una parentesi) prima del numero, così "Prosciutto cotto" non diventa "8 Prosciutto c"
+    const QTY_LAST_RE = new RegExp(`^(.+?)(?:[\\s,:–-]+\\(?\\s*|\\s*\\(\\s*)${QTY_RE}\\s*([a-zà-ù]+\\.?)?\\s*\\)?$`, 'i');
     const UNIT_MAP = [
         [/^(kg|chili|chilo|chilogramm[io])$/, 'kg', 1], [/^(g|gr|grammi|grammo)$/, 'g', 1], [/^(hg|etti|etto)$/, 'g', 100],
         [/^(l|lt|litri|litro)$/, 'l', 1], [/^(ml|millilitri|millilitro)$/, 'ml', 1], [/^cl$/, 'ml', 10], [/^dl$/, 'ml', 100],
@@ -2887,6 +2978,7 @@
         m = s.match(QTY_LAST_RE);                           // "Farina 00 300 g", "Uova: 3", "Burro (100 g)"
         if (m) {
             const qty = parseQtyText(m[2]), tok = (m[3] || '').replace('.', '').toLowerCase(), u = UNIT_MAP.find(([re]) => re.test(tok));
+            if (!tok && /\b(tipo|n\.?|n°|numero|nr\.?)$/i.test(m[1].trim())) return null; // "Farina tipo 1": il numero fa parte del nome
             if (!isNaN(qty) && qty > 0) {
                 if (u || !tok) return { name: cleanIngName(m[1]), qty: fmtQ(qty * (u ? u[2] : 1)), unit: u ? u[1] : 'pz' };
                 if (/^pizzic/.test(tok)) return { name: cleanIngName(m[1]), qty: '', unit: 'q.b.' };   // "Sale fino 1 pizzico"
@@ -2940,10 +3032,12 @@
             let found = false, m;
             if ((m = l.match(/(\d+)\s*(?:[-–]\s*\d+\s*)?(persone|porzioni|pers\b|pezzi\b)/i)) || (m = l.match(/(?:dosi|dose|porzioni|persone|servings)\s*(?:per)?\s*:?\s*(\d+)/i))) { if (!res.servings) res.servings = m[1]; found = true; }
             const time = (re, key) => { const t = l.match(re); if (t) { const v = durationToMin(t[1]); if (v) { if (!res[key]) res[key] = v; found = true; } } };
-            time(/(?:tempo (?:di )?cottura|cottura)\s*:?\s*(.+)/i, 'timeCook');
-            time(/(?:tempo (?:di )?preparazione|preparazione)\s*:?\s*(.+)/i, 'timePrep');
-            time(/(?:lievitazione|riposo|tempo di riposo)\s*:?\s*(.+)/i, 'timeLeav');
-            time(/(?:tempo totale|totale)\s*:?\s*(.+)/i, 'timeTotal');
+            // Il valore finisce al separatore o alla voce successiva: "Preparazione 20 min · Cottura 30 minuti"
+            const upTo = '(.+?)(?=\\s*(?:[·|,;]|\\b(?:tempo|cottura|preparazione|lievitazione|riposo|totale|porzioni|dosi|persone|difficolt\\w*)\\b|$))';
+            time(new RegExp('(?:tempo (?:di )?cottura|cottura)\\s*:?\\s*' + upTo, 'i'), 'timeCook');
+            time(new RegExp('(?:tempo (?:di )?preparazione|preparazione)\\s*:?\\s*' + upTo, 'i'), 'timePrep');
+            time(new RegExp('(?:tempo di riposo|lievitazione|riposo)\\s*:?\\s*' + upTo, 'i'), 'timeLeav');
+            time(new RegExp('(?:tempo totale|totale)\\s*:?\\s*' + upTo, 'i'), 'timeTotal');
             return found;
         };
         const nonEmpty = (from, to) => lines.slice(from, to).filter(Boolean);
