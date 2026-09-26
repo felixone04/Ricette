@@ -327,6 +327,18 @@
         .shop-item.done { opacity: 0.55; }
         .shop-item.done .shop-item-name { text-decoration: line-through; }
         .have-btn { flex-shrink: 0; height: 36px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-color); color: var(--text-muted); font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; font-family: inherit; }
+        .have-btn.partial { border-color: #A7F3D0; background: #ECFDF5; color: #047857; }
+        .own-note { font-size: 0.78rem; color: #047857; font-weight: 700; display: flex; align-items: center; gap: 4px; overflow-wrap: anywhere; }
+        .shop-item.editing { border-color: var(--primary); border-bottom-left-radius: 0; border-bottom-right-radius: 0; margin-bottom: 0; }
+        .own-editor { background: #FFF7ED; border: 1px solid var(--primary); border-top: none; border-radius: 0 0 12px 12px; padding: 12px; margin-bottom: 8px; }
+        .own-title { display: block; font-size: 0.9rem; margin-bottom: 8px; overflow-wrap: anywhere; }
+        .own-title small { display: block; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
+        .own-row { display: flex; gap: 8px; align-items: stretch; }
+        .own-row input { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 1.1rem; font-weight: 800; text-align: center; }
+        .own-row select { width: auto; flex: 0 0 76px; margin: 0; padding: 10px 6px; }
+        .own-unit { display: flex; align-items: center; padding: 0 10px; font-weight: 800; color: var(--text-muted); }
+        .own-ok { width: auto; margin: 0; padding: 0 18px; font-size: 1rem; flex-shrink: 0; }
+        .own-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
         .have-box { border: 1px dashed #A7F3D0; background: #F0FDF4; border-radius: 14px; padding: 10px; margin-bottom: 14px; }
         .have-box summary { cursor: pointer; font-weight: 800; color: #047857; list-style: none; display: flex; align-items: center; gap: 6px; }
         .have-box summary::-webkit-details-marker { display: none; }
@@ -1969,7 +1981,9 @@
     // Liste della spesa: ognuna ha le sue ricette, gli articoli extra, ciò che "ce l'ho" e ciò che è già nel carrello
     const isStr = (x) => typeof x === 'string';
     const newListId = () => 'l_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-    const makeList = (name) => ({ id: newListId(), name, plan: [], extras: [], have: [], checked: [] });
+    // owned: quanto hai già in casa per ogni articolo → numero (in g, ml, pz...) oppure 'all' (ce l'hai tutto)
+    const makeList = (name) => ({ id: newListId(), name, plan: [], extras: [], owned: {}, checked: [] });
+    const emptyListContent = () => ({ plan: [], extras: [], owned: {}, checked: [] });
     function normalizeShopList(l) {
         if (!l || typeof l !== 'object') return null;
         const arr = (v) => (Array.isArray(v) ? v : []);
@@ -1980,7 +1994,12 @@
                 .map((p) => ({ id: p.id, servings: toNum(p.servings), factor: toNum(p.factor) > 0 ? toNum(p.factor) : 1 })),
             extras: arr(l.extras).filter((x) => x && isStr(x.name) && cleanStr(x.name))
                 .map((x) => ({ id: cleanStr(x.id) || 'x_' + Math.random().toString(36).slice(2, 8), name: cleanStr(x.name), qty: cleanStr(x.qty), unit: cleanStr(x.unit) })),
-            have: arr(l.have).filter(isStr),
+            owned: (() => {
+                const o = {}, src = l.owned && typeof l.owned === 'object' && !Array.isArray(l.owned) ? l.owned : {};
+                Object.entries(src).forEach(([k, v]) => { if (k !== '__proto__' && (v === 'all' || (typeof v === 'number' && isFinite(v) && v > 0))) o[k] = v; });
+                arr(l.have).filter(isStr).forEach((k) => { if (k !== '__proto__') o[k] = 'all'; }); // vecchio «Ce l'ho»
+                return o;
+            })(),
             checked: arr(l.checked).filter(isStr)
         };
     }
@@ -2035,12 +2054,20 @@
             const [fam, m] = famOf(x.unit || ''), n = toNum(x.qty), hasQty = !!x.qty && !isNaN(n);
             map.set('x:' + x.id, { key: 'x:' + x.id, nk: nameKey(x.name), name: x.name, fam: hasQty ? fam : 'extra', qty: hasQty ? n * m : 0, unknown: !hasQty, extraId: x.id, sources: new Set() });
         });
-        const have = new Set(list.have), checked = new Set(list.checked);
+        const owned = list.owned || {}, checked = new Set(list.checked);
         return [...map.values()].map((it) => {
             it.aisle = aisleOf(it.name);
-            it.have = have.has(it.key);
+            const o = Object.prototype.hasOwnProperty.call(owned, it.key) ? owned[it.key] : null;
+            // Quantità misurabile (g, ml, pz...): si può dire "ne ho già 200 g" e comprare solo la differenza
+            it.measurable = !it.unknown && it.qty > 0 && it.fam !== 'extra' && it.fam !== 'qb';
+            it.ownedAll = o === 'all';
+            it.ownedQty = typeof o === 'number' && it.measurable ? o : 0;
+            it.remaining = it.ownedAll ? 0 : Math.max(0, it.qty - it.ownedQty);
+            it.have = it.ownedAll || (it.ownedQty > 0 && it.remaining <= 1e-9);   // già tutto in casa
             it.done = !it.have && checked.has(it.key);
-            it.label = it.fam === 'qb' ? 'q.b.' : it.fam === 'extra' || (it.unknown && it.qty === 0) ? '' : formatQty(it.fam, it.qty);
+            it.label = it.fam === 'qb' ? 'q.b.' : !it.measurable ? '' : formatQty(it.fam, it.have ? it.qty : it.remaining);
+            it.needLabel = it.measurable ? formatQty(it.fam, it.qty) : '';
+            it.ownedLabel = it.ownedQty > 0 ? formatQty(it.fam, it.ownedQty) : '';
             return it;
         });
     }
@@ -2090,17 +2117,23 @@
         const aisleOptions = (sel) => AISLES.map(([k, icon, label]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${icon} ${label}</option>`).join('');
         const row = (it) => {
             const sources = [...it.sources].join(', ');
-            return `<div class="shop-item${it.done ? ' done' : ''}" data-key="${esc(it.key)}">
+            // Se ne hai già una parte: "servono 300 g · ne hai 200 g" e in grande solo quello da comprare
+            const partial = !it.have && it.ownedQty > 0 ? `<span class="own-note"><i class="ri-home-4-line"></i> servono ${esc(it.needLabel)} · ne hai ${esc(it.ownedLabel)}</span>` : '';
+            const haveNote = it.have && it.ownedLabel && !it.ownedAll ? `<span class="own-note"><i class="ri-home-4-line"></i> ne hai ${esc(it.ownedLabel)}</span>` : '';
+            const editing = ownEditKey === it.key && !it.have && !it.done;
+            return `<div class="shop-item${it.done ? ' done' : ''}${editing ? ' editing' : ''}" data-key="${esc(it.key)}">
                 ${it.have ? '' : `<input type="checkbox" ${it.done ? 'checked' : ''} aria-label="Nel carrello: ${esc(it.name)}">`}
-                <div class="shop-item-main"><span class="shop-item-name">${it.label ? `<strong>${esc(it.label)}</strong> ` : ''}${esc(it.name)}</span>${sources ? `<span class="shop-item-sub">${esc(sources)}</span>` : ''}</div>
-                ${it.done ? '' : `<button type="button" class="have-btn" data-have aria-label="${it.have ? 'Da comprare' : 'Ce l\'ho già'}: ${esc(it.name)}">${it.have ? '<i class="ri-arrow-go-back-line"></i> Da comprare' : '<i class="ri-home-4-line"></i> Ce l\'ho'}</button>`}
+                <div class="shop-item-main"><span class="shop-item-name">${it.label ? `<strong>${esc(it.label)}</strong> ` : ''}${esc(it.name)}</span>${partial || haveNote}${sources ? `<span class="shop-item-sub">${esc(sources)}</span>` : ''}</div>
+                ${it.done ? '' : it.have
+                    ? `<button type="button" class="have-btn" data-own aria-label="Rimetti da comprare: ${esc(it.name)}"><i class="ri-arrow-go-back-line"></i> Da comprare</button>`
+                    : `<button type="button" class="have-btn${it.ownedQty > 0 ? ' partial' : ''}" data-own aria-label="Quanto ne hai già: ${esc(it.name)}" aria-expanded="${editing}"><i class="ri-home-4-line"></i> Ho già</button>`}
                 ${it.have ? '' : `<label class="aisle-pick" title="Cambia reparto"><i class="ri-store-2-line" aria-hidden="true"></i><select class="aisle-select" data-nk="${esc(it.nk)}" aria-label="Reparto di ${esc(it.name)}">${aisleOptions(it.aisle)}</select></label>`}
                 ${it.extraId ? `<button type="button" class="btn-del-cat" data-extra="${esc(it.extraId)}" aria-label="Elimina ${esc(it.name)}"><i class="ri-close-line"></i></button>` : ''}
-            </div>`;
+            </div>${editing ? ownEditorHTML(it) : ''}`;
         };
         let html = '';
         const haveItems = items.filter((i) => i.have);
-        if (!haveItems.length && !done) html += `<p class="shop-tip"><i class="ri-lightbulb-line"></i> Tocca <strong>Ce l'ho</strong> su ciò che hai già in casa: resta solo quello da comprare. Poi spunta gli articoli man mano che li metti nel carrello: a fine spesa la lista si azzera da sola.</p>`;
+        if (!haveItems.length && !done && !items.some((i) => i.ownedQty > 0)) html += `<p class="shop-tip"><i class="ri-lightbulb-line"></i> Tocca <strong>Ho già</strong> per dire quanto ne hai in casa: se servono 300 g e ne hai 200 g, in lista restano solo 100 g da comprare. Poi spunta gli articoli man mano che li metti nel carrello: a fine spesa la lista si azzera da sola.</p>`;
         html += AISLES.map(([k, icon, label]) => {
             const group = toBuy.filter((i) => i.aisle === k).sort((a, b) => (a.done - b.done) || a.name.localeCompare(b.name, 'it'));
             if (!group.length) return '';
@@ -2108,9 +2141,56 @@
             return `<div class="aisle"><div class="aisle-title">${icon} ${label} <small>${groupLeft ? groupLeft + ' da prendere' : 'fatto ✓'}</small></div>${group.map(row).join('')}</div>`;
         }).join('');
         if (!toBuy.length) html += `<div class="shop-empty" style="padding-top:8px;"><i class="ri-home-smile-line"></i>Hai già tutto in casa!</div>`;
-        if (haveItems.length) html += `<details class="have-box" id="have-box"${haveOpen ? ' open' : ''}><summary><i class="ri-home-4-line"></i> Ce l'ho già (${haveItems.length})</summary>${haveItems.sort((a, b) => a.name.localeCompare(b.name, 'it')).map(row).join('')}</details>`;
+        if (haveItems.length) html += `<details class="have-box" id="have-box"${haveOpen ? ' open' : ''}><summary><i class="ri-home-4-line"></i> Già in casa (${haveItems.length})</summary>${haveItems.sort((a, b) => a.name.localeCompare(b.name, 'it')).map(row).join('')}</details>`;
         listEl.innerHTML = html;
         const box = $('have-box'); if (box) box.addEventListener('toggle', () => { haveOpen = box.open; });
+        const ownInput = $('own-input');
+        if (ownInput && ownFocus) { ownFocus = false; ownInput.focus(); ownInput.select(); }
+    }
+
+    // --- "Ho già": quanto ne hai in casa, per comprare solo la differenza ---
+    let ownEditKey = null, ownFocus = false;
+    const FAM_UNITS = { g: [['g', 1], ['kg', 1000]], ml: [['ml', 1], ['l', 1000]], pz: [['pz', 1]], cucchiai: [['cucchiai', 1]], cucchiaini: [['cucchiaini', 1]] };
+    const famUnits = (fam) => FAM_UNITS[fam] || [[fam.startsWith('u:') ? fam.slice(2) : fam, 1]];
+    function ownEditorHTML(it) {
+        const units = famUnits(it.fam);
+        // Unità proposta: quella più comoda per la quantità che serve (1,2 kg → kg; 300 g → g)
+        const pick = units.length > 1 && it.qty >= units[1][1] ? units[1] : units[0];
+        const current = it.ownedQty > 0 ? +(it.ownedQty / pick[1]).toFixed(3) : '';
+        return `<div class="own-editor" data-key="${esc(it.key)}">
+            <label class="own-title" for="own-input">Quanto <strong>${esc(it.name)}</strong> hai già? <small>Servono ${esc(it.needLabel)}</small></label>
+            <div class="own-row">
+                <input type="text" inputmode="decimal" class="form-control" id="own-input" value="${esc(String(current).replace('.', ','))}" placeholder="es. ${pick[0] === 'g' ? '200' : '1'}" autocomplete="off" enterkeyhint="done">
+                ${units.length > 1 ? `<select class="form-control" id="own-unit" aria-label="Unità">${units.map(([u, m]) => `<option value="${m}"${u === pick[0] ? ' selected' : ''}>${u}</option>`).join('')}</select>` : `<span class="own-unit">${esc(units[0][0])}</span><input type="hidden" id="own-unit" value="1">`}
+                <button type="button" class="btn-submit own-ok" data-own-act="save">OK</button>
+            </div>
+            <div class="own-quick">
+                <button type="button" class="btn-mini" data-own-act="all"><i class="ri-checkbox-circle-line"></i> Ce l'ho tutto</button>
+                ${it.ownedQty > 0 ? `<button type="button" class="btn-mini danger" data-own-act="none"><i class="ri-close-line"></i> Non ne ho</button>` : ''}
+                <button type="button" class="btn-mini" data-own-act="cancel">Annulla</button>
+            </div>
+        </div>`;
+    }
+    // Dopo un cambio: se non resta niente da comprare e qualcosa è nel carrello, la spesa è finita
+    function afterOwnedChange(list, key) {
+        saveShop();
+        const st = listStats(list);
+        if (list.checked.length && st.toBuy.length && st.left === 0) { completeList(list, key, true); return; }
+        renderShop();
+    }
+    function saveOwned(list, key) {
+        const it = computeShopping(list).find((i) => i.key === key); if (!it) return;
+        const raw = $('own-input').value.trim();
+        const n = raw === '' ? 0 : toNum(raw), mult = toNum($('own-unit').value) || 1;
+        if (isNaN(n) || n < 0) { showToast('Scrivi una quantità, es. 200 o 0,5', 'error'); $('own-input').focus(); return; }
+        const amount = n * mult;
+        if (amount <= 0) delete list.owned[key];
+        else { list.owned[key] = +amount.toFixed(3); list.checked = list.checked.filter((k) => k !== key); }
+        ownEditKey = null;
+        const after = computeShopping(list).find((i) => i.key === key);
+        if (after && after.have) showToast(`${it.name}: ce l'hai già tutto 👍`);
+        else if (after && after.ownedQty > 0) showToast(`${it.name}: da comprare ${after.label}`);
+        afterOwnedChange(list, key);
     }
 
     $('btn-open-shop').onclick = () => { renamingList = false; renderExtraAisleSelect(); renderShop(); $('shop-sheet').querySelector('.sheet-content').scrollTop = 0; openModal('shop-sheet'); };
@@ -2150,7 +2230,7 @@
         const list = activeList();
         if (shopLists.length === 1) {
             if (!confirm(`«${list.name}» è la tua unica lista: vuoi svuotarla?`)) return;
-            Object.assign(list, { plan: [], extras: [], have: [], checked: [] });
+            Object.assign(list, emptyListContent());
         } else {
             if (!confirm(`Eliminare la lista «${list.name}»?`)) return;
             shopLists = shopLists.filter((l) => l !== list);
@@ -2162,7 +2242,7 @@
     $('list-chips').addEventListener('click', (e) => {
         if (e.target.closest('[data-new-list]')) { createList(); return; }
         const chip = e.target.closest('[data-list]'); if (!chip) return;
-        activeListId = chip.dataset.list; renamingList = false; haveOpen = false;
+        activeListId = chip.dataset.list; renamingList = false; haveOpen = false; ownEditKey = null;
         saveShop(); renderShop();
     });
     $('list-head').addEventListener('click', (e) => {
@@ -2213,12 +2293,12 @@
     }
 
     // Spesa completata: la lista si azzera (con possibilità di annullare per qualche secondo)
-    function completeList(list, lastKey) {
+    function completeList(list, lastKey, viaOwned = false) {
         const snapshot = JSON.parse(JSON.stringify(list));
         snapshot.checked = snapshot.checked.filter((k) => k !== lastKey);
-        snapshot.have = snapshot.have.filter((k) => k !== lastKey); // con "Annulla" l'ultimo articolo torna da prendere
-        Object.assign(list, { plan: [], extras: [], have: [], checked: [] });
-        haveOpen = false;
+        if (viaOwned && snapshot.owned) delete snapshot.owned[lastKey]; // finita con "Ho già": "Annulla" toglie quella quantità
+        Object.assign(list, emptyListContent());
+        haveOpen = false; ownEditKey = null;
         saveShop(); renderShop(); updateShopButton();
         showToast(`Spesa completata! «${list.name}» è stata azzerata 🎉`, 'success', {
             label: 'Annulla',
@@ -2244,18 +2324,29 @@
         if (del) {
             const key = 'x:' + del.dataset.extra;
             list.extras = list.extras.filter((x) => x.id !== del.dataset.extra);
-            list.have = list.have.filter((k) => k !== key); list.checked = list.checked.filter((k) => k !== key);
+            delete list.owned[key]; list.checked = list.checked.filter((k) => k !== key);
+            if (ownEditKey === key) ownEditKey = null;
             saveShop(); renderShop(); return;
         }
+        // Pulsanti della finestrella "Quanto ne hai già?"
+        const act = e.target.closest('[data-own-act]');
+        if (act) {
+            const key = act.closest('.own-editor').dataset.key, what = act.dataset.ownAct;
+            if (what === 'save') { saveOwned(list, key); return; }
+            if (what === 'all') { list.owned[key] = 'all'; list.checked = list.checked.filter((k) => k !== key); }
+            if (what === 'none') delete list.owned[key];
+            ownEditKey = null;
+            afterOwnedChange(list, key); return;
+        }
+        if (e.target.closest('.own-editor')) return;
         const item = e.target.closest('.shop-item'); if (!item || e.target.closest('.aisle-pick')) return;
         const key = item.dataset.key;
-        // "Ce l'ho" / "Da comprare"
-        if (e.target.closest('[data-have]')) {
-            if (list.have.includes(key)) list.have = list.have.filter((k) => k !== key);
-            else { list.have.push(key); list.checked = list.checked.filter((k) => k !== key); }
-            saveShop();
-            const st = listStats(list);
-            if (list.checked.length && st.toBuy.length && st.left === 0) { completeList(list, key); return; }
+        // "Ho già" (quantità o, per gli articoli senza quantità, "ce l'ho") / "Da comprare"
+        if (e.target.closest('[data-own]')) {
+            const it = computeShopping(list).find((i) => i.key === key); if (!it) return;
+            if (it.have) { delete list.owned[key]; ownEditKey = null; afterOwnedChange(list, key); return; }
+            if (!it.measurable) { list.owned[key] = 'all'; list.checked = list.checked.filter((k) => k !== key); afterOwnedChange(list, key); return; }
+            ownEditKey = ownEditKey === key ? null : key; ownFocus = !!ownEditKey;
             renderShop(); return;
         }
         // Spunta "nel carrello" (tocco sulla casella o su tutta la riga)
@@ -2267,6 +2358,12 @@
         const { toBuy, left } = listStats(list);
         if (box.checked && toBuy.length && left === 0) { completeList(list, key); return; }
         renderShop();
+    });
+    // Nella finestrella "Quanto ne hai già?": Invio conferma, Esc chiude (senza chiudere la lista)
+    $('shop-list').addEventListener('keydown', (e) => {
+        if (e.target.id !== 'own-input') return;
+        if (e.key === 'Enter') { e.preventDefault(); saveOwned(activeList(), e.target.closest('.own-editor').dataset.key); }
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); ownEditKey = null; renderShop(); }
     });
     $('shop-list').addEventListener('change', (e) => {
         const sel = e.target.closest('.aisle-select'); if (!sel) return;
@@ -2303,7 +2400,7 @@
     $('btn-shop-clear').onclick = () => {
         const list = activeList();
         if (!confirm(`Svuotare la lista «${list.name}»?`)) return;
-        Object.assign(list, { plan: [], extras: [], have: [], checked: [] });
+        Object.assign(list, emptyListContent());
         saveShop(); renderShop(); updateShopButton();
         showToast('Lista svuotata');
     };
@@ -3274,7 +3371,7 @@
                 (Array.isArray(data.lists) ? data.lists : []).map(normalizeShopList).filter(Boolean).forEach((l) => {
                     if (shopLists.some((x) => x.id === l.id)) return;
                     const same = shopLists.find((x) => sameText(x.name, l.name));
-                    if (same && !same.plan.length && !same.extras.length) { Object.assign(same, { plan: l.plan, extras: l.extras, have: l.have, checked: l.checked }); return; } // riempie la lista vuota omonima
+                    if (same && !same.plan.length && !same.extras.length) { Object.assign(same, { plan: l.plan, extras: l.extras, owned: l.owned, checked: l.checked }); return; } // riempie la lista vuota omonima
                     l.name = uniqueListName(l.name); shopLists.push(l);
                 });
                 if (data.aisles && typeof data.aisles === 'object') Object.entries(data.aisles).forEach(([k, v]) => { if (isAisle(v) && k !== '__proto__' && !Object.prototype.hasOwnProperty.call(aisleOverrides, k)) aisleOverrides[k] = v; });
