@@ -1195,7 +1195,7 @@
     // Totale = preparazione + lievitazione + cottura, aggiornato mentre scrivi
     function updateTimeTotal() {
         const sum = ['timePrep', 'timeLeav', 'timeCook'].reduce((s, id) => { const n = toNum($(id).value); return s + (n > 0 ? n : 0); }, 0);
-        $('timeTotal').value = sum ? `${formatMinutes(Math.round(sum))} (${Math.round(sum)} min)` : '';
+        $('timeTotal').value = sum ? formatMinutes(Math.round(sum)) : ''; // es. "2h 15m" (breve, sta nel campo)
     }
     document.querySelectorAll('.time-part').forEach((el) => el.addEventListener('input', updateTimeTotal));
 
@@ -1423,7 +1423,7 @@
             if (ratio !== 1) {
                 if ((unit === 'g' || unit === 'ml') && v >= 10) v = Math.round(v);
                 else if (unit === 'g' || unit === 'ml') v = Math.round(v * 10) / 10;
-                else if (unit === 'pz' && v >= 1) v = Math.round(v * 2) / 2;
+                else if (unit === 'pz') v = Math.max(0.5, Math.round(v * 2) / 2); // mezzi pezzi: 0,38 → 0,5
             }
             qty = numFmt.format(v);
         }
@@ -1482,23 +1482,51 @@
         };
     }
     const draftHasContent = (d) => !!d && !!(String(d.title || '').trim() || (d.ingredients || []).length || String(d.procedure || '').trim() || String(d.pendingName || '').trim());
-    function loadDraft() {
-        try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY)); return d && typeof d === 'object' && Array.isArray(d.ingredients) ? d : null; }
-        catch { return null; }
+    // Bozze separate: una per la ricetta nuova e una per ogni ricetta in modifica (non si cancellano a vicenda)
+    const validDraft = (d) => (d && typeof d === 'object' && Array.isArray(d.ingredients) ? d : null);
+    function readDrafts() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(DRAFT_KEY));
+            if (!raw || typeof raw !== 'object') return { new: null, edits: {} };
+            if (Array.isArray(raw.ingredients)) return raw.editId ? { new: null, edits: { [raw.editId]: raw } } : { new: raw, edits: {} }; // formato precedente
+            const edits = {};
+            Object.entries(raw.edits && typeof raw.edits === 'object' ? raw.edits : {}).forEach(([k, v]) => { if (k !== '__proto__' && validDraft(v)) edits[k] = v; });
+            return { new: validDraft(raw.new), edits };
+        } catch { return { new: null, edits: {} }; }
     }
-    function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch { } }
+    function writeDrafts(all) {
+        try {
+            if (!all.new && !Object.keys(all.edits).length) localStorage.removeItem(DRAFT_KEY);
+            else localStorage.setItem(DRAFT_KEY, JSON.stringify(all));
+        } catch { }
+    }
+    // editId: id della ricetta in modifica, oppure null per la ricetta nuova
+    const loadDraft = (editId = null) => { const all = readDrafts(); return editId ? all.edits[editId] || null : all.new; };
+    function clearDraft(editId = null) {
+        const all = readDrafts();
+        if (editId) delete all.edits[editId]; else all.new = null;
+        writeDrafts(all);
+    }
     function saveDraft() {
-        const d = { ...readForm(), editId: isEditing ? currentRecipeId : null, at: Date.now() };
-        if (!draftHasContent(d)) { if (!d.editId) clearDraft(); return; }
-        if (d.editId) {
-            // In modifica la bozza serve solo se hai cambiato qualcosa rispetto alla ricetta salvata
-            const r = getRecipe(d.editId);
+        const editId = isEditing ? currentRecipeId : null;
+        const d = { ...readForm(), editId, at: Date.now() };
+        if (!draftHasContent(d)) { clearDraft(editId); return; }
+        if (editId) {
+            // In modifica la bozza serve solo se hai cambiato qualcosa rispetto alla ricetta salvata (tempi compresi)
+            const r = getRecipe(editId), t = r ? recipeTimes(d) : null;
             const same = r && r.title === d.title.trim() && r.procedure === d.procedure.trim() && r.category === d.category
-                && String(r.servings) === String(toNum(d.servings)) && JSON.stringify(r.ingredients) === JSON.stringify(d.ingredients) && !d.pendingName.trim();
-            if (!r || same) { clearDraft(); return; }
+                && String(r.servings) === String(toNum(d.servings)) && JSON.stringify(r.ingredients) === JSON.stringify(d.ingredients) && !d.pendingName.trim()
+                && (d.times ? t.timePrep === r.timePrep && t.timeLeav === r.timeLeav && t.timeCook === r.timeCook : !r.timeTotal);
+            if (!r || same) { clearDraft(editId); return; }
         }
-        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch { }
+        const all = readDrafts();
+        if (editId) all.edits[editId] = d; else all.new = d;
+        writeDrafts(all);
     }
+    // Se il telefono chiude l'app mentre stai scrivendo, la bozza viene salvata lo stesso
+    const saveDraftIfOpen = () => { if (modalStack.includes('add-sheet')) saveDraft(); };
+    window.addEventListener('pagehide', saveDraftIfOpen);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveDraftIfOpen(); });
     function fillForm(d) {
         $('title').value = cleanStr(d.title).slice(0, 120);
         if (d.category && !categories.includes(d.category) && isEditing) catSelect.add(new Option(d.category, d.category));
@@ -1576,7 +1604,7 @@
         }
         // Solo ora, a ricetta salvata, i nuovi ingredienti entrano nel database prodotti (senza note tra parentesi)
         recData.ingredients.forEach((i) => autoAddProduct(i.name.replace(/\s*\([^)]*\)\s*$/, '').trim()));
-        formSaved = true; clearDraft();
+        formSaved = true; clearDraft(isEditing ? currentRecipeId : null); // solo la bozza di questa ricetta
         closeTopModal(); activeFormToken = null; renderFeed();
     };
 
@@ -1695,8 +1723,8 @@
         `(^|[^a-zà-ÿ\\d'’])` +                                                    // 1: carattere precedente
         `(?:(mezz['’]?\\s?ora|mezza\\s+ora|(?:un\\s+)?quarto\\s+d['’]\\s?ora|tre\\s+quarti\\s+d['’]\\s?ora)` + // 2: mezz'ora, un quarto d'ora...
         `|${N}(?:\\s*(?:-|–|o|a)\\s*${N})?(?:['’](?=\\s?ora))?\\s*` +             // 3: numero, 4: secondo numero (intervallo); "un'ora"
-        `(?:(ore|ora|h)((?:\\s+e\\s+(?:mezz[ao]|un\\s+quarto|\\d{1,2}\\s*(?:minuti|minuto|min)?))|\\s*\\d{1,2}(?![\\d°.,]))?` + // 5: ore, 6: "e mezza", "1h30"
-        `|(minuti|minuto|min|['’](?!['’]))` +                                      // 7: minuti ("30'")
+        `(?:(ore|ora|h)((?:\\s+e\\s+(?:mezz[ao]|un\\s+quarto|\\d{1,2}\\s*(?:minuti|minuto|min)?))|\\s*\\d{1,2}(?![\\d°]|[.,]\\d))?` + // 5: ore, 6: "e mezza", "1h30" (anche "1h30.")
+        `|(minuti|minuto|min|m|['’](?!['’]))` +                                    // 7: minuti ("30'", "20m")
         `|(secondi|secondo|sec|['’]{2}|")))` +                                     // 8: secondi ("30''")
         `(?![a-zà-ÿ\\d])`, 'gi');
     const wordNum = (s) => { const k = s.toLowerCase(); return k in NUM_WORDS ? NUM_WORDS[k] : toNum(k); };
@@ -1711,7 +1739,7 @@
             }
             return s;
         }
-        if (m[7]) return n * 60;
+        if (m[7]) return /\s+m$/i.test(m[0]) ? 0 : n * 60; // "20m" sì, "2 m" (metri) no
         // Secondi solo con cifre: "in un secondo momento" non è un timer
         return /^\d/.test(m[3]) ? n : 0;
     }
@@ -1892,9 +1920,9 @@
         lines.push(meta.join(' · '));
         const times = [];
         if (r.timePrep) times.push(`Preparazione ${formatMinutes(r.timePrep)}`);
-        if (r.timeTotal) times.push(`Totale ${formatMinutes(r.timeTotal)}`);
         if (r.timeLeav) times.push(`Lievitazione ${formatMinutes(r.timeLeav)}`);
         if (r.timeCook) times.push(`Cottura ${formatMinutes(r.timeCook)}`);
+        if (r.timeTotal) times.push(`Totale ${formatMinutes(r.timeTotal)}`);
         if (times.length) lines.push(`⏱ ${times.join(' · ')}`);
         if (r.ingredients.length) {
             lines.push('', '🛒 INGREDIENTI');
@@ -2851,8 +2879,10 @@
         const periods = [[30, 'Ultimi 30 giorni'], [90, 'Ultimi 3 mesi'], [365, 'Ultimo anno'], [0, 'Sempre']];
         let html = `<div class="hist-filters" role="group" aria-label="Periodo">${periods.map(([v, l]) => `<button type="button" data-hist-period="${v}" class="${histPeriod === v ? 'active' : ''}">${l}</button>`).join('')}</div>`;
         if (!entries.length) return html + `<div class="page-empty"><i class="ri-calendar-line"></i>Nessuna spesa in questo periodo.</div>`;
-        const counts = groupByAisle(allItems), max = Math.max(...counts.map((g) => g.items.length));
-        html += `<div class="hist-summary"><p>${plural(entries.length, 'spesa', 'spese')} · ${plural(allItems.length, 'articolo', 'articoli')} comprati</p>${counts.map((g) => `<div class="aisle-bar"><span>${g.icon} ${g.label}</span><span class="bar"><div style="width:${Math.round((g.items.length / max) * 100)}%"></div></span><b>${g.items.length}</b></div>`).join('')}</div>`;
+        const counts = groupByAisle(allItems);
+        if (histAisle !== 'all' && !counts.some((g) => g.k === histAisle)) histAisle = 'all'; // reparto assente nel periodo: torno a "Tutti"
+        const max = Math.max(...counts.map((g) => g.items.length));
+        html += `<div class="hist-summary"><p>${plural(entries.length, 'spesa', 'spese')} · ${allItems.length === 1 ? '1 articolo comprato' : allItems.length + ' articoli comprati'}</p>${counts.map((g) => `<div class="aisle-bar"><span>${g.icon} ${g.label}</span><span class="bar"><div style="width:${Math.round((g.items.length / max) * 100)}%"></div></span><b>${g.items.length}</b></div>`).join('')}</div>`;
         html += `<div class="hist-filters" role="group" aria-label="Reparto"><button type="button" data-hist-aisle="all" class="${histAisle === 'all' ? 'active' : ''}">Tutti</button>${counts.map((g) => `<button type="button" data-hist-aisle="${g.k}" class="${histAisle === g.k ? 'active' : ''}">${g.icon} ${g.label}</button>`).join('')}</div>`;
         // Prodotti del reparto scelto: quante volte, ultima volta, quantità totale (dove misurabile)
         const map = new Map();
@@ -2933,6 +2963,7 @@
         }).join('')}</ul>`).join('');
     }
     $('btn-pick-products').onclick = () => {
+        cancelExtraEditing(); // una modifica in corso con la matita non deve essere sovrascritta
         $('prodpick-sub').textContent = `Tocca + per metterli in «${activeList().name}»`;
         openPage('prodpick-page', 'prodpick-search', renderProdPick);
     };
@@ -2944,9 +2975,10 @@
         if (el.dataset.ppAct === 'add') {
             // + : in lista subito (la quantità si può aggiungere dopo con la matita)
             const list = activeList();
+            if (inActiveList(name)) { showToast(`${name} è già in lista: tocca il nome per aggiungerne una quantità`); return; }
             addExtraToList(list, name, '', '');
             if (!saveShop()) return;
-            renderProdPick(); updateShopBadge();
+            renderProdPick(); renderShop(); updateShopBadge();
             const a = AISLES.find(([k]) => k === aisleOf(name));
             showToast(`${name} in lista (${a[1]} ${a[2]})`);
         } else {
@@ -3357,8 +3389,10 @@
         while ((m = re.exec(text))) { secs += Math.round(timerSeconds(m)); if (m[0].length === 0) re.lastIndex++; }
         return secs ? String(Math.round(secs / 60)) : '';
     }
-    const isIngHead = (l) => l.length < 70 && /^(ingredienti|ingredients|occorrente|cosa (ti )?serve|lista degli ingredienti)\b/i.test(l);
-    const isProcHead = (l) => l.length < 60 && /^(procedimento|preparazione|come si prepara|come preparare|metodo|istruzioni|esecuzione|passaggi|realizzazione|method|directions|instructions)\b/i.test(l) && !durationToMin(l);
+    // Toglie emoji e simboli all'inizio ("🛒 INGREDIENTI", "👩‍🍳 PREPARAZIONE", "🍳 TORTA")
+    const stripDeco = (l) => l.replace(/^[^a-zà-ÿ0-9(]+/i, '');
+    const isIngHead = (l) => { l = stripDeco(l); return l.length < 70 && /^(ingredienti|ingredients|occorrente|cosa (ti )?serve|lista degli ingredienti)\b/i.test(l); };
+    const isProcHead = (l) => (l = stripDeco(l)).length < 60 && /^(procedimento|preparazione|come si prepara|come preparare|metodo|istruzioni|esecuzione|passaggi|realizzazione|method|directions|instructions)\b/i.test(l) && !durationToMin(l);
     const isSubHead = (l) => /^per (l['’]|il |la |lo |i |gli |le |un |una )?[a-zà-ù' ]{2,32}:?$/i.test(l);
     const CAT_HINTS = [
         ['Dolci', /\b(torta|torte|biscott|crostat|tiramis|dolce|dolci|muffin|ciambell|plumcake|budino|mousse|semifreddo|gelato|cheesecake|brownie|panna cotta|frittelle|cannoli|strudel|pasticcin|crepes|pancake|cupcake|sbriciolona|castagnaccio)/],
@@ -3389,7 +3423,8 @@
         return out;
     }
     function parseRecipeText(text) {
-        const lines = String(text || '').replace(/\r/g, '').split('\n').map((l) => l.replace(/\s+/g, ' ').trim());
+        const lines = String(text || '').replace(/\r/g, '').split('\n').map((l) => l.replace(/\s+/g, ' ').trim())
+            .map((l) => (/^\W*(condivisa|creata) con chefbox/i.test(l) ? '' : l)); // la firma dei testi condivisi da ChefBox non è un ingrediente
         const res = { title: '', servings: '', timeTotal: '', timeCook: '', timeLeav: '', timePrep: '', ingredients: [], procedure: '', category: '' };
         const ingIdx = lines.findIndex(isIngHead), procIdx = lines.findIndex(isProcHead);
         const readMeta = (l) => {
@@ -3416,7 +3451,7 @@
             if (META_START.test(l) || res.title) { readMeta(l); continue; }
             if (l.length > 80) break;
             readMeta(l); // "Torta di mele per 8 persone"
-            const t = l.replace(/[\s,·–-]+(?:per|x|dosi per)\s*\d+\s*(?:persone|porzioni|pers\.?)?\s*$/i, '').replace(/[.:]$/, '').trim();
+            const t = stripDeco(l).replace(/[\s,·–-]+(?:per|x|dosi per)\s*\d+\s*(?:persone|porzioni|pers\.?)?\s*$/i, '').replace(/[.:]$/, '').trim();
             const letters = t.replace(/[^a-zà-ù]/gi, '');
             res.title = letters && t === t.toUpperCase() ? capFirst(t.toLowerCase()) : capFirst(t); // "FOCACCIA" → "Focaccia"
             const m = l.match(/(?:per|x)\s*(\d+)\s*(?:persone|porzioni|pers\.?)?\s*$/i);
@@ -3496,7 +3531,9 @@
         const hasTimes = !!(p.timePrep || p.timeCook || p.timeLeav || p.timeTotal);
         $('toggle-times').checked = hasTimes; $('time-grid-container').classList.toggle('active', hasTimes);
         // Solo il totale senza dettagli: lo metto come preparazione, così la somma torna uguale
-        $('timePrep').value = p.timePrep || (p.timeTotal && !p.timeCook && !p.timeLeav ? p.timeTotal : ''); $('timeCook').value = p.timeCook; $('timeLeav').value = p.timeLeav; updateTimeTotal();
+        // Senza preparazione ma con il totale: la differenza (totale − cottura − lievitazione) diventa preparazione
+        const t = recipeTimes({ timePrep: p.timePrep, timeCook: p.timeCook, timeLeav: p.timeLeav, timeTotal: p.timeTotal });
+        $('timePrep').value = t.timePrep; $('timeCook').value = t.timeCook; $('timeLeav').value = t.timeLeav; updateTimeTotal();
         if (p.ingredients.length) {
             activeIngredients = p.ingredients.map(({ name, qty, unit }) => ({ name, qty, unit }));
             renderActiveIngredients();
@@ -3839,10 +3876,10 @@
         const r = getRecipe(currentRecipeId); if (!r) return;
         fillFromRecipe(r);
         // Modifiche non salvate di questa ricetta (modulo chiuso per sbaglio): le ripropongo
-        const draft = loadDraft();
+        const draft = loadDraft(r.id);
         if (draft && draft.editId === r.id) {
             fillForm(draft);
-            showToast('Ho ripreso le modifiche non salvate', 'success', { label: 'Scarta', run: () => { clearDraft(); fillFromRecipe(r); } });
+            showToast('Ho ripreso le modifiche non salvate', 'success', { label: 'Scarta', run: () => { clearDraft(r.id); fillFromRecipe(r); } });
         }
         openModal('add-sheet'); focusFirstField();
     };
@@ -3867,7 +3904,7 @@
         const before = recipes;
         recipes = recipes.filter((x) => x.id !== currentRecipeId);
         if (!saveRecipes()) { recipes = before; return; }
-        const draft = loadDraft(); if (draft && draft.editId === currentRecipeId) clearDraft();
+        clearDraft(currentRecipeId); // via anche le modifiche non salvate di questa ricetta
         pruneShopPlan();
         closeTopModal(); renderFeed(); showToast('Ricetta eliminata');
     };
