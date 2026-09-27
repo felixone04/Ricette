@@ -255,6 +255,11 @@
 
         /* --- Timer in sovrimpressione --- */
         .timer-dock { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(12px + var(--safe-bottom)); width: min(480px, calc(100% - 24px)); z-index: 70; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        /* Telefono in orizzontale: i timer stanno affiancati, così resta più spazio per la ricetta */
+        @media (max-height: 480px) and (orientation: landscape) {
+            .timer-dock { flex-direction: row; width: min(760px, calc(100% - 24px)); }
+            .timer-dock .timer-card { flex: 1 1 0; min-width: 0; padding: 6px 6px 6px 12px; }
+        }
         .timer-card { pointer-events: auto; display: flex; align-items: center; gap: 10px; background: var(--text-main); color: #fff; padding: 10px 10px 10px 16px; border-radius: 18px; box-shadow: 0 12px 32px rgba(0,0,0,0.3); animation: slide-up 0.25s ease; }
         .timer-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .timer-recipe { font-size: 0.7rem; opacity: 0.7; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -398,6 +403,7 @@
         /* --- Incolla / scansiona ricetta --- */
         .import-cta { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; margin-bottom: 20px; background: linear-gradient(135deg, #FFF1E6, #FFFFFF); border: 1px dashed var(--primary); border-radius: 16px; cursor: pointer; text-align: left; font-family: inherit; color: inherit; }
         .import-cta > i { margin-left: auto; font-size: 1.4rem; color: var(--primary); }
+        .sheet:focus, .detail-view:focus, .page-view:focus, .cook-view:focus, .cook-ing-panel:focus { outline: none; }
         .link-import { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
         .link-import .form-label { display: flex; align-items: center; gap: 6px; margin-top: 0; }
         .link-import-row { display: flex; gap: 8px; }
@@ -521,7 +527,8 @@
         .cook-close { width: 56px; height: 56px; border-radius: 50%; border: none; background: var(--surface); font-size: 1.8rem; box-shadow: var(--shadow-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .cook-heading { flex: 1; min-width: 0; display: flex; flex-direction: column; text-align: center; }
         #cook-recipe { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #cook-count { font-size: 1.25rem; font-weight: 800; }
+        #cook-count { font-size: 1.25rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        @media (max-width: 360px) { #cook-count { font-size: 1rem; } .cook-top { gap: 8px; padding: 10px 12px; } }
         .cook-ing-btn { height: 56px; border-radius: 28px; padding: 0 18px; border: none; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; display: flex; gap: 6px; align-items: center; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
         .cook-progress { height: 8px; margin: 0 16px; background: var(--border); border-radius: 4px; overflow: hidden; flex-shrink: 0; }
         .cook-progress > div { height: 100%; background: var(--primary); width: 0; transition: width 0.3s; }
@@ -1185,12 +1192,12 @@
     const getRecipe = (id) => recipes.find((r) => r.id === id);
 
     // --- GESTIONE SCHERMATE (integrata con il tasto "indietro" del telefono/browser) ---
-    let modalStack = [];
+    let modalStack = [], focusReturn = []; // focusReturn: dove rimettere il focus alla chiusura di ogni finestra
     // Ogni caricamento della pagina ha un suo codice: le voci di cronologia di sessioni precedenti vengono ignorate
     const LOAD_ID = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     let formToken = 0, activeFormToken = null, updateReady = false;
     function applyModals(stack, form = activeFormToken) {
-        const hadForm = modalStack.includes('add-sheet');
+        const hadForm = modalStack.includes('add-sheet'), prevStack = modalStack;
         modalStack = stack.filter((id) => $(id)
             && (id !== 'detail-view' || getRecipe(currentRecipeId))   // non riaprire ricette eliminate
             && (id !== 'add-sheet' || form === activeFormToken)       // non riaprire un form già salvato (tasto "avanti")
@@ -1213,6 +1220,19 @@
             cook.fullscreen = false;
             if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => { });
         }
+        // Accessibilità: il focus entra nella finestra appena aperta e torna al pulsante di partenza quando si chiude
+        if (modalStack.length > prevStack.length) {
+            focusReturn.length = prevStack.length; focusReturn.push(document.activeElement);
+            const el = $(modalStack[modalStack.length - 1]);
+            if (el && !el.contains(document.activeElement)) {
+                if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+                requestAnimationFrame(() => { if (!el.contains(document.activeElement)) el.focus({ preventScroll: true }); });
+            }
+        } else if (modalStack.length < prevStack.length) {
+            const back = focusReturn[modalStack.length]; focusReturn.length = modalStack.length;
+            const touchField = back && /^(INPUT|TEXTAREA|SELECT)$/.test(back.tagName) && window.matchMedia('(pointer: coarse)').matches; // niente tastiera che si riapre da sola
+            if (back && back.isConnected && back !== document.body && !touchField && typeof back.focus === 'function') back.focus({ preventScroll: true });
+        }
         // Aggiornamento dell'app in attesa: ricarica solo quando non c'è niente di aperto
         if (updateReady && modalStack.length === 0) window.location.reload();
     }
@@ -1233,8 +1253,15 @@
     }
     // Ricette collegate: si aprono nella stessa schermata, con una voce di cronologia (il tasto indietro riporta alla precedente)
     let detailFrom = null;
+    const detailScales = new Map(); // persone e teglia scelte in ogni ricetta del percorso, ritrovate tornando indietro
+    function restoreDetailScale(id) {
+        const s = detailScales.get(id); if (!s) return;
+        panOpen = s.panOpen; currentTargetServings = s.servings; $('detail-servings').value = s.servings;
+        renderPanCard(); renderDetailIngredientsHTML();
+    }
     function goToRecipe(id) {
         if (!getRecipe(id) || id === currentRecipeId || modalStack[modalStack.length - 1] !== 'detail-view') return;
+        detailScales.set(currentRecipeId, { servings: currentTargetServings, panOpen });
         detailFrom = currentRecipeId;
         currentRecipeId = id; refreshDetailView(id);
         $('detail-content').scrollTop = 0;
@@ -1253,9 +1280,9 @@
             // Indietro/avanti tra ricette collegate: mostro quella di questa voce
             if (s.recipe !== currentRecipeId) {
                 currentRecipeId = s.recipe;
-                if (getRecipe(s.recipe)) { refreshDetailView(s.recipe); $('detail-content').scrollTop = 0; }
+                if (getRecipe(s.recipe)) { refreshDetailView(s.recipe); restoreDetailScale(s.recipe); $('detail-content').scrollTop = 0; }
             }
-        } else if (!wanted.includes('detail-view')) detailFrom = null;
+        } else if (!wanted.includes('detail-view')) { detailFrom = null; detailScales.clear(); }
         applyModals(wanted, s ? s.form : null);
         // Voce non più valida (form già salvato, ricetta eliminata): niente tocchi "a vuoto", torno indietro
         if (modalStack.length < wanted.length) history.back();
@@ -1463,6 +1490,10 @@
             saveCats(); saveRecipes(); renderCategories(); return;
         }
         if (currentFilter === old) currentFilter = val;
+        // Anche le bozze non salvate passano al nuovo nome
+        const drafts = readDrafts();
+        [drafts.new, ...Object.values(drafts.edits)].forEach((d) => { if (d && d.category === old) d.category = val; });
+        writeDrafts(drafts);
         renderCategories(); renderFeed(); flashRow($('cat-list-ui'), val);
         showToast('Categoria rinominata');
     }
@@ -1511,17 +1542,20 @@
             let v = n * ratio;
             // Dosi scalate leggibili: 256,56 g → 257 g; 3,19 uova → 3; i piccoli numeri restano precisi
             if (ratio !== 1) {
+                // 0,17 l → 170 ml, 0,3 kg → 300 g
+                if ((unit === 'kg' || unit === 'l') && v < 1) { v *= 1000; unit = unit === 'kg' ? 'g' : 'ml'; }
                 if ((unit === 'g' || unit === 'ml') && v >= 10) v = Math.round(v);
                 else if (unit === 'g' || unit === 'ml') v = Math.round(v * 10) / 10;
-                else if (unit === 'pz') v = Math.max(0.5, Math.round(v * 2) / 2); // mezzi pezzi: 0,38 → 0,5
+                else if (unit === 'pz' || unit === '') v = Math.max(0.5, Math.round(v * 2) / 2); // mezzi pezzi: 0,38 → 0,5
+                else if (unit === 'cucchiai' || unit === 'cucchiaini') v = Math.max(0.25, Math.round(v * 4) / 4); // quarti di cucchiaio
             }
             qty = numFmt.format(v);
         }
         if (unit === 'q.b.') return { amount: qty ? `${qty} q.b.` : 'q.b.', name: ing.name };
-        if (qty === '1' && unit === 'cucchiai') unit = 'cucchiaio'; // "1 cucchiaio", non "1 cucchiai"
-        if (qty === '1' && unit === 'cucchiaini') unit = 'cucchiaino';
+        if (qty === '1') unit = unitSingular(unit); // "1 cucchiaio", non "1 cucchiai"
         return { amount: qty ? `${qty} ${unit}`.trim() : '', name: ing.name };
     }
+    function unitSingular(u) { return u === 'cucchiai' ? 'cucchiaio' : u === 'cucchiaini' ? 'cucchiaino' : u; }
     function renderActiveIngredients() {
         const ul = $('current-ing-list'); ul.innerHTML = '';
         activeIngredients.forEach((ing, index) => {
@@ -1573,11 +1607,11 @@
     };
     function addIngredient() {
         const name = $('ing-name').value.trim();
-        let qtyRaw = $('ing-qty').value.trim().replace(',', '.');
         const unit = $('ing-unit').value;
+        let qtyRaw = dropThousands($('ing-qty').value.trim(), unit).replace(',', '.');
         if (!name) { showToast('Inserisci il nome del prodotto!', 'error'); $('ing-name').focus(); return false; }
         if (/^\d+\s*\/\s*\d+$/.test(qtyRaw) && toNum(qtyRaw) > 0) qtyRaw = String(+toNum(qtyRaw).toFixed(3)); // "1/2" → 0.5
-        if (qtyRaw !== '' && !/^\d+(\.\d+)?$/.test(qtyRaw)) { showToast('Quantità non valida (es. 250, 0,5 o 1/2)', 'error'); $('ing-qty').focus(); return false; }
+        if (qtyRaw !== '' && !(/^\d+(\.\d+)?$/.test(qtyRaw) && Number(qtyRaw) > 0)) { showToast('Quantità non valida (es. 250, 0,5 o 1/2)', 'error'); $('ing-qty').focus(); return false; }
         activeIngredients.push({ name, qty: qtyRaw, unit });
         $('ing-name').value = ''; $('ing-qty').value = ''; $('ing-name').focus();
         renderActiveIngredients();
@@ -1657,7 +1691,9 @@
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveDraftIfOpen(); });
     function fillForm(d) {
         $('title').value = cleanStr(d.title).slice(0, 120);
-        if (d.category && !categories.includes(d.category) && isEditing) catSelect.add(new Option(d.category, d.category));
+        // Categoria della bozza sparita (rinominata/eliminata): resta quella attuale della ricetta
+        const own = isEditing && getRecipe(currentRecipeId) ? getRecipe(currentRecipeId).category : null;
+        if (d.category && d.category === own && !categories.includes(d.category) && ![...catSelect.options].some((o) => o.value === own)) catSelect.add(new Option(own, own));
         if ([...catSelect.options].some((o) => o.value === d.category)) catSelect.value = d.category;
         if (toNum(d.servings) > 0) $('servings').value = d.servings;
         if (typeof d.source === 'string') $('source').value = d.source.slice(0, 500);
@@ -1744,7 +1780,7 @@
     const norm = (s) => String(s || '').toLocaleLowerCase('it').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     // "zucchine" → "zucchin" trova anche "zucchina"; "pomodori" trova "pomodoro"
     const stem = (w) => (w.length >= 4 ? w.replace(/[aeiou]$/, '') : w);
-    const parseQuery = (q) => norm(q).split(/[\s,;+]+/).filter((t) => t && !STOP_WORDS.has(t)).map((raw) => ({ raw, stem: stem(raw) }));
+    const parseQuery = (q) => norm(q).split(/[^a-z0-9]+/).filter((t) => t && !STOP_WORDS.has(t)).map((raw) => ({ raw, stem: stem(raw) }));
     // Una parola corrisponde se ha la stessa radice ("uova" = "uovo") o se inizia con quanto scritto ("zucch" → "zucchine").
     // Così "sale" non trova più "insalata" o "salmone".
     const words = (s) => norm(s).split(/[^a-z0-9]+/).filter(Boolean);
@@ -2194,7 +2230,8 @@
         el.className = 'cook-step' + (step.length > 400 ? ' xlong' : step.length > 200 ? ' long' : '');
         if (dir) { void el.offsetWidth; el.classList.add(dir > 0 ? 'in-next' : 'in-prev'); }
         const last = cook.index === cook.steps.length - 1;
-        $('cook-count').textContent = `Passo ${cook.index + 1} di ${cook.steps.length}`;
+        // Sui telefoni stretti (320 px) "Passo" non ci sta accanto ai pulsanti
+        $('cook-count').textContent = `${window.innerWidth <= 360 ? '' : 'Passo '}${cook.index + 1} di ${cook.steps.length}`;
         $('cook-progress-bar').style.width = ((cook.index + 1) / cook.steps.length) * 100 + '%';
         $('btn-cook-prev').disabled = cook.index === 0;
         $('btn-cook-next').classList.toggle('finish', last);
@@ -2380,7 +2417,8 @@
         if (fam === 'ml') return q >= 1000 ? `${numFmt.format(+(q / 1000).toFixed(2))} l` : `${numFmt.format(q < 10 ? +q.toFixed(1) : Math.round(q))} ml`;
         if (fam === 'pz') return `${Math.ceil(q - 1e-9)} pz`; // non si compra mezzo uovo
         if (fam === 'qb') return 'q.b.';
-        return `${numFmt.format(+q.toFixed(2))} ${fam.startsWith('u:') ? fam.slice(2) : fam}`;
+        const n = +q.toFixed(2), u = fam.startsWith('u:') ? fam.slice(2) : fam;
+        return `${numFmt.format(n)} ${n === 1 ? unitSingular(u) : u}`;
     }
 
     // Liste della spesa: ognuna ha le sue ricette, gli articoli extra, ciò che "ce l'ho" e ciò che è già nel carrello
@@ -2761,7 +2799,10 @@
         const list = activeList(), id = btn.closest('[data-plan]').dataset.plan, p = list.plan.find((x) => x.id === id); if (!p) return;
         const act = btn.dataset.planAct;
         if (act === 'remove') { list.plan = list.plan.filter((x) => x !== p); tidyListState(list); }
-        else p.servings = Math.max(0.5, +(toNum(p.servings) + (act === 'plus' ? 1 : -1)).toFixed(2)); // 2,5 → 3,5 (niente arrotondamenti)
+        else { // come nel dettaglio: una persona per tocco, 0,5 ↔ 1
+            const s = toNum(p.servings);
+            p.servings = act === 'plus' ? (s < 1 ? 1 : +(s + 1).toFixed(2)) : (s > 1 ? Math.max(1, +(s - 1).toFixed(2)) : 0.5);
+        }
         saveShop(); renderShop(); updateShopButton();
     });
     $('shop-list').addEventListener('click', (e) => {
@@ -2803,9 +2844,10 @@
         // Spunta "nel carrello" (tocco sulla casella o su tutta la riga)
         const box = item.querySelector('input[type="checkbox"]'); if (!box) return;
         if (e.target !== box) box.checked = !box.checked;
+        const prevChecked = [...list.checked];
         if (box.checked) { if (!list.checked.includes(key)) list.checked.push(key); }
         else list.checked = list.checked.filter((k) => k !== key);
-        saveShop();
+        if (!saveShop()) { list.checked = prevChecked; renderShop(); return; } // memoria piena: la spunta non resta finta
         const { toBuy, left } = listStats(list);
         if (box.checked && toBuy.length && left === 0) { completeList(list, key); return; }
         renderShop();
@@ -2850,7 +2892,7 @@
         if (!raw) { showToast('Scrivi il nome del prodotto', 'error'); input.focus(); return; }
         const list = activeList(), aisle = $('shop-extra-aisle').value;
         // Quantità: dai campi "Q.tà" + unità; se sono vuoti la cerco nel testo ("2 kg di patate", "farina 300g")
-        let qty = $('shop-extra-qty').value.trim().replace(',', '.'), unit = $('shop-extra-unit').value, name = raw;
+        let unit = $('shop-extra-unit').value, name = raw, qty = dropThousands($('shop-extra-qty').value.trim(), unit).replace(',', '.');
         if (/^\d+\s*\/\s*\d+$/.test(qty) && toNum(qty) > 0) qty = String(+toNum(qty).toFixed(3)); // "1/2" → 0.5
         if (qty !== '' && !(/^\d+(\.\d+)?$/.test(qty) && Number(qty) > 0)) { showToast('Quantità non valida (es. 300, 0,5 o 1/2)', 'error'); $('shop-extra-qty').focus(); return; }
         const p = parseIngredientLine(raw);
@@ -2953,7 +2995,7 @@
         const lines = [`🛒 ${b(list.name.toUpperCase())}`, `${date} · ${plural(items.length, 'articolo', 'articoli')}`];
         if (titles.length) lines.push(`Per: ${titles.join(', ')}`);
         AISLES.forEach(([k, icon, label]) => {
-            const group = items.filter((i) => i.aisle === k); if (!group.length) return;
+            const group = items.filter((i) => i.aisle === k).sort((x, y) => x.name.localeCompare(y.name, 'it')); if (!group.length) return; // stesso ordine della lista a schermo
             lines.push('', `${icon} ${b(label.toUpperCase())}`);
             group.forEach((i) => lines.push(`☐ ${i.label === 'q.b.' ? i.name : (i.label ? i.label + ' ' : '') + i.name}`));
         });
@@ -2992,7 +3034,8 @@
             listName: cleanStr(h.listName).slice(0, 40) || 'Spesa',
             recipes: (Array.isArray(h.recipes) ? h.recipes : []).filter(isStr).map(cleanStr).slice(0, 30),
             items: h.items.filter((i) => i && isStr(i.name) && cleanStr(i.name)).map((i) => ({
-                name: cleanStr(i.name), label: cleanStr(i.label), fam: cleanStr(i.fam),
+                // la famiglia di unità è un'etichetta breve: niente caratteri HTML da backup manomessi
+                name: cleanStr(i.name), label: cleanStr(i.label), fam: cleanStr(i.fam).replace(/[<>"'&`]/g, '').slice(0, 24),
                 qty: typeof i.qty === 'number' && isFinite(i.qty) && i.qty > 0 ? i.qty : 0,
                 aisle: isAisle(i.aisle) ? i.aisle : 'altro'
             }))
@@ -3007,7 +3050,8 @@
         const entry = normalizeHistoryEntry({
             id: 'h_' + Date.now().toString(36), date: new Date().toISOString(), listName: list.name,
             recipes: list.plan.map((p) => getRecipe(p.id)).filter(Boolean).map((r) => r.title),
-            items: bought.map((i) => ({ name: i.name, label: i.label, fam: i.fam, qty: i.measurable ? i.remaining : 0, aisle: i.aisle }))
+            // a pezzi si compra sempre un numero intero (1,5 uova → 2)
+            items: bought.map((i) => ({ name: i.name, label: i.label, fam: i.fam, qty: i.measurable ? (i.fam === 'pz' ? Math.ceil(i.remaining - 1e-9) : i.remaining) : 0, aisle: i.aisle }))
         });
         shopHistory.unshift(entry);
         if (shopHistory.length > HISTORY_MAX) shopHistory.length = HISTORY_MAX;
@@ -3074,7 +3118,7 @@
         const rows = [...map.values()].sort((a, b) => b.times - a.times || a.name.localeCompare(b.name, 'it'));
         html += `<ul class="page-list">${rows.map((r) => {
             const a = AISLES.find(([k]) => k === r.aisle);
-            const tot = r.qty > 0 && r.fam && !['extra', 'qb'].includes(r.fam) ? ` · ${formatQty(r.fam, r.qty)} in tutto` : '';
+            const tot = r.qty > 0 && r.fam && !['extra', 'qb'].includes(r.fam) ? ` · ${esc(formatQty(r.fam, r.qty))} in tutto` : '';
             return `<li class="page-row"><span class="row-avatar" aria-hidden="true">${a[1]}</span><div class="row-main"><span class="row-title">${esc(r.name)}</span><span class="row-sub">${r.times === 1 ? 'comprato 1 volta' : `comprato ${r.times} volte`} · ultima ${esc(dayFmt.format(new Date(r.last)))} ${esc(monFmt.format(new Date(r.last)))}${tot}</span></div></li>`;
         }).join('')}</ul>`;
         return html;
@@ -3434,7 +3478,7 @@
     // perFam: unità dell'ingrediente originale a cui si riferisce la proporzione (predefinita: pezzi)
     function describeRatio(ratio, unitOut, perFam = 'pz') {
         if (ratio === null) return '';
-        if (unitOut) return `${numFmt.format(ratio)} ${UNIT_LABEL[unitOut] || unitOut} per ${perFam === 'pz' ? 'pezzo' : perFam}`;
+        if (unitOut) { const u = UNIT_LABEL[unitOut] || unitOut; return `${numFmt.format(ratio)} ${ratio === 1 ? unitSingular(u) : u} per ${perFam === 'pz' ? 'pezzo' : perFam}`; }
         if (ratio === 1) return 'stessa dose';
         return ratio < 1 ? `${numFmt.format(Math.round(ratio * 100))}% della dose` : `${numFmt.format(ratio)} volte la dose`;
     }
@@ -3515,8 +3559,10 @@
     ];
     const COUNT_WORDS = /^(spicch[io]|foglie|foglia|fette|fetta|bustine|bustina|bicchier[ie]|tazz[ae]|tazzine|tazzina|ramett[io]|mazzett[io]|cubett[io]|vasett[io]|scatol[ae]|confezion[ei]|barattol[io]|manciat[ae]|filett[io]|gamb[io]|ciuff[io]|noce|noci|rotol[io]|panett[io]|lattin[ae]|dadi|dado|fogli|foglio)$/;
     const fmtQ = (n) => String(+n.toFixed(3));
-    function parseQtyText(s) {
-        s = s.trim().toLowerCase();
+    // "1.000 g" = mille grammi (punto delle migliaia); con kg e litri invece "1.500 kg" = 1,5 kg
+    const dropThousands = (s, unit) => (/^\d{1,3}(\.\d{3})+$/.test(String(s).trim()) && !/^(kg|l|lt|litri|litro|chil\w*)$/i.test(unit || '') ? String(s).trim().replace(/\./g, '') : s);
+    function parseQtyText(s, unit = '') {
+        s = dropThousands(s.trim().toLowerCase(), unit);
         if (s in FRAC) return FRAC[s];
         if (s in WORD_NUM) return WORD_NUM[s];
         const f = s.replace(/\s+/g, '').match(/^(\d+)\/(\d+)$/);
@@ -3546,7 +3592,7 @@
         if (m) return { name: cleanIngName(m[1]), qty: '', unit: 'q.b.' };
         m = s.match(QTY_FIRST_RE);                          // "300 g di farina", "3 uova", "2 spicchi d'aglio"
         if (m) {
-            const qty = parseQtyText(m[1]), tok = (m[2] || '').replace('.', '').toLowerCase(), rest = m[3] || '';
+            const qty = parseQtyText(m[1], m[2]), tok = (m[2] || '').replace('.', '').toLowerCase(), rest = m[3] || '';
             if (!isNaN(qty) && qty > 0) {
                 const u = UNIT_MAP.find(([re]) => re.test(tok));
                 if (u && rest) return { name: cleanIngName(rest), qty: fmtQ(qty * u[2]), unit: u[1] };
@@ -3558,7 +3604,7 @@
         }
         m = s.match(QTY_LAST_RE);                           // "Farina 00 300 g", "Uova: 3", "Burro (100 g)"
         if (m) {
-            const qty = parseQtyText(m[2]), tok = (m[3] || '').replace('.', '').toLowerCase(), u = UNIT_MAP.find(([re]) => re.test(tok));
+            const qty = parseQtyText(m[2], m[3]), tok = (m[3] || '').replace('.', '').toLowerCase(), u = UNIT_MAP.find(([re]) => re.test(tok));
             if (!tok && /\b(tipo|n\.?|n°|numero|nr\.?)$/i.test(m[1].trim())) return null; // "Farina tipo 1": il numero fa parte del nome
             if (!isNaN(qty) && qty > 0) {
                 if (u || !tok) return { name: cleanIngName(m[1]), qty: fmtQ(qty * (u ? u[2] : 1)), unit: u ? u[1] : 'pz' };
@@ -3605,8 +3651,22 @@
                 else if (hasQty && /[a-zà-ù]{2,}/i.test(w) && !RUN_UNIT.test(w)) named = true;
             });
             if (cur.length) segs.push(cur.join(' '));
-            return segs;
+            return segs.flatMap(splitTrailingQb);
         }).map((x) => x.trim()).filter(Boolean);
+    }
+    // "50 g pecorino romano pepe nero qb" → "50 g pecorino romano" + "pepe nero qb" (condimenti "a piacere" comuni o prodotti noti)
+    const QB_NAMES = ['sale', 'sale fino', 'sale grosso', 'pepe', 'pepe nero', 'olio', 'olio evo', 'olio extravergine', "olio extravergine d'oliva", 'prezzemolo', 'basilico', 'origano', 'noce moscata', 'cannella', 'zucchero a velo', 'cacao amaro', 'cacao', 'peperoncino', 'rosmarino', 'timo', 'erba cipollina', 'parmigiano', 'parmigiano grattugiato', 'pangrattato', 'farina', 'acqua', 'aglio', 'menta', 'vaniglia', 'scorza di limone'];
+    function splitTrailingQb(seg) {
+        const m = seg.match(/^(.*\S)\s+(q\.?\s?b\.?|qb|quanto basta|a piacere)$/i);
+        if (!m || !/^[\d½¼¾⅓⅔]/.test(m[1])) return [seg];
+        const w = m[1].split(' ');
+        for (let k = Math.min(4, w.length - 2); k >= 1; k--) {
+            const tail = w.slice(-k).join(' '), head = w.slice(0, -k);
+            if (/^(e|o|ed|di|con|da|a)$/i.test(head[head.length - 1])) continue;               // "1 pizzico di sale e pepe q.b." resta com'è
+            if (!/[a-zà-ù]{3,}/i.test(head.join(' ').replace(/\b(grammi|gr|kg|ml|cucchia\w*)\b/gi, ''))) continue; // davanti deve restare un nome
+            if (QB_NAMES.includes(norm(tail)) || productsDB.some((p) => nameKey(p) === nameKey(tail))) return [head.join(' '), `${tail} ${m[2]}`];
+        }
+        return [seg];
     }
     function durationToMin(text) {
         const re = new RegExp(TIMER_RE.source, 'gi'); let m, secs = 0;
@@ -3652,7 +3712,9 @@
         return lines.flatMap((l) => {
             const m = l.match(/^([^a-zà-ÿ0-9]*(?:ingredienti|ingredients|occorrente|procedimento|preparazione|istruzioni|metodo|method|instructions|directions)\b[^:]{0,50}):\s*(\S.*)$/i);
             // "Preparazione: circa 20 minuti", "Preparazione: 20-25 minuti", "Preparazione: mezz'ora" sono tempi, non titoli
-            if (!m || (m[2].length < 45 && durationToMin(m[2]))) return [l];
+            const isTime = m && /preparazione/i.test(m[1]) && m[2].length < 45 && durationToMin(m[2])
+                && /^(circa\s+|ca\.?\s+|almeno\s+|about\s+)?(\d|mezz|un['’\s]|una\s|due\s|tre\s|quattro\s|quarto|tre quarti)/i.test(m[2]);
+            if (!m || isTime) return [l];
             return [m[1].trim(), m[2].trim()];
         });
     }
@@ -3916,7 +3978,12 @@
         if (res.timePrep && rest > 0) res.timeLeav = String(rest);
         const ings = [].concat(r.recipeIngredient || r.ingredients || []).map((s) => htmlToPlain(typeof s === 'string' ? s : (s && (s.text || s.name)) || ''));
         pushIngredients(res, ings.flatMap((s) => s.split('\n')));
-        res.procedure = ldSteps(r.recipeInstructions).join('\n');
+        // Alcuni siti lasciano nei passaggi i numeri delle foto ("…a striscioline 2 3 ."): li tolgo
+        // (anche in mezzo: "padella antiaderente 4 e rosolate", "ciotola 9 , sino"; restano "in 4 e", "per circa 10 minuti")
+        res.procedure = ldSteps(r.recipeInstructions).map((l) => l
+            .replace(/(?:\s+\d{1,2})+\s*([.;:!?])/g, '$1').replace(/(?:\s+\d{1,2})+\s*$/, '')
+            .replace(/([a-zà-ù]{4,})((?:\s+\d{1,2})+)(?=\s*,|\s+e\s)/gi, (m, w, nums) => (/^(circa|altri|altre|ogni|dopo|fino|sono|tutti|tutte)$/i.test(w) ? m : w))
+            .replace(/\s+,/g, ',').trim()).filter(Boolean).join('\n');
         const cat = [].concat(r.recipeCategory || []).map((c) => htmlToPlain(String(c))).join(' ');
         res.category = categories.find((c) => cat && norm(cat).split(/[^a-z0-9]+/).some((w) => w && stem(w) === stem(norm(c)))) || guessCategory(res.title + ' ' + cat);
         return res;
@@ -4167,7 +4234,9 @@
     // Condividi → ChefBox (app installata su Android): il link arriva nell'indirizzo, apro subito l'importazione
     setTimeout(() => {
         const q = new URLSearchParams(location.search);
-        const shared = ['url', 'text', 'title'].map((k) => q.get(k)).filter(Boolean).join(' ').trim();
+        // Prima il titolo (se il testo non lo contiene già), poi il testo e il link
+        const title = q.get('title') || '', text = q.get('text') || '', url = q.get('url') || '';
+        const shared = [title && !text.includes(title) ? title : '', text, url && !text.includes(url) ? url : ''].filter(Boolean).join('\n').trim();
         if (!shared) return;
         history.replaceState(null, '', location.pathname);
         if (!categories.length) { showToast('Crea prima una categoria', 'error'); return; }
@@ -4511,7 +4580,7 @@
     function openRecipe(id) {
         if (!getRecipe(id)) return;
         if (modalStack.includes('detail-view')) { goToRecipe(id); return; }
-        detailFrom = null;
+        detailFrom = null; detailScales.clear();
         currentRecipeId = id; refreshDetailView(id);
         $('detail-content').scrollTop = 0;
         openModal('detail-view');
@@ -4557,7 +4626,8 @@
     // --- EXPORT/IMPORT ---
     $('btn-export').onclick = async () => {
         const data = { app: 'chefbox', version: 5, exportedAt: new Date().toISOString(), recipes, categories, products: productsDB, lists: shopLists, aisles: aisleOverrides, history: shopHistory };
-        const fileName = `chefbox_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        const d = new Date(), pad = (n) => String(n).padStart(2, '0'); // data locale (non UTC: a mezzanotte e un quarto è già il giorno nuovo)
+        const fileName = `chefbox_backup_${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         // Su telefono usa il menu Condividi (funziona anche nell'app installata su iPhone)
         if (window.matchMedia('(pointer: coarse)').matches && navigator.canShare) {
