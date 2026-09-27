@@ -461,6 +461,27 @@
         /* --- Sostituzioni --- */
         .tile-wide { grid-column: 1 / -1; flex-direction: row; align-items: center; }
         .tile-wide .tile-arrow { position: static; margin-left: auto; }
+        /* Ricette collegate */
+        .link-btn { margin-left: auto; flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--primary); background: var(--primary-light, var(--bg-color)); color: var(--primary-dark); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; align-self: center; }
+        .link-btn + .sub-btn { margin-left: 0; }
+        .linked-list { display: grid; gap: 8px; margin-bottom: 24px; }
+        .linked-card { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; text-align: left; font-family: inherit; color: var(--text-main); }
+        .linked-card:hover { border-color: var(--primary); }
+        .linked-icon { width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: var(--bg-color); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+        .linked-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+        .linked-text strong { font-size: 1rem; overflow-wrap: anywhere; }
+        .linked-text small { color: var(--text-muted); font-weight: 600; }
+        .linked-card > .ri-arrow-right-s-line { color: var(--text-muted); font-size: 1.3rem; }
+        .detail-back { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin-bottom: 12px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--primary-dark); font: inherit; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-align: left; }
+        .link-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+        .link-suggest:empty, .link-chips:empty { display: none; }
+        .link-suggest > span { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); }
+        .link-sugg { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 6px 12px; border-radius: 999px; border: 1px dashed var(--primary); background: transparent; color: var(--primary-dark); font: inherit; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
+        .link-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .link-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 4px 4px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); font-weight: 700; font-size: 0.95rem; }
+        .link-chip > i { color: var(--primary); }
+        .link-chip > span { overflow-wrap: anywhere; }
+        .link-chip button { width: 32px; height: 32px; flex-shrink: 0; border: none; border-radius: 50%; background: var(--bg-color); color: var(--text-muted); cursor: pointer; font-size: 1rem; }
         .sub-btn { margin-left: auto; flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-color); color: var(--primary-dark); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; align-self: center; }
         .sub-card { display: flex; gap: 12px; align-items: flex-start; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; }
         .sub-amount { flex-shrink: 0; min-width: 76px; max-width: 40%; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; border-radius: 10px; padding: 6px 8px; text-align: center; font-size: 0.9rem; overflow-wrap: anywhere; }
@@ -703,7 +724,15 @@
                     <ul class="cat-list" id="current-ing-list"></ul>
                 </div>
 
-                <div class="form-section-title"><i class="ri-list-check-2"></i> 4. Come si prepara</div>
+                <div class="form-section-title"><i class="ri-links-line"></i> 4. Ricette collegate (Opzionale)</div>
+                <div class="form-group">
+                    <p class="form-hint" style="margin:0 0 10px;">Le preparazioni che usi qui dentro, come la besciamella e il ragù nelle lasagne: nella ricetta le apri con un tocco e puoi metterle in lista insieme.</p>
+                    <select class="form-control" id="link-select" aria-label="Scegli una ricetta da collegare" style="margin-bottom:0;"></select>
+                    <div class="link-suggest" id="link-suggest"></div>
+                    <div class="link-chips" id="link-chips"></div>
+                </div>
+
+                <div class="form-section-title"><i class="ri-list-check-2"></i> 5. Come si prepara</div>
                 <div class="form-group">
                     <textarea class="form-control" id="procedure" required placeholder="Descrivi qui... (es. &quot;cuoci per 15 minuti&quot; diventa un timer)" aria-label="Procedimento" style="margin-bottom:8px;"></textarea>
                     <p class="form-hint"><i class="ri-timer-flash-line"></i> Scrivi i tempi come «15 minuti», «1 ora e mezza» o «30'»: nella ricetta diventeranno timer da toccare.</p>
@@ -1068,6 +1097,9 @@
             procedure: raw.procedure === undefined || raw.procedure === null ? '' : String(raw.procedure),
             fav: raw.fav === true
         };
+        // Ricette collegate (es. la besciamella nelle lasagne): solo id, senza doppioni né se stessa
+        r.links = [...new Set((Array.isArray(raw.links) ? raw.links : []).filter((x) => typeof x === 'string').map(cleanStr))]
+            .filter((x) => x && x !== r.id).slice(0, 20);
         delete r.photo; // le foto non sono più usate: vengono tolte anche dai vecchi dati
         r.pan = normalizePan(raw.pan);
         if (!r.pan) delete r.pan;
@@ -1149,14 +1181,25 @@
         if (modalStack.includes(id)) return;
         if (id === 'add-sheet') activeFormToken = ++formToken;
         const stack = [...modalStack, id];
-        history.pushState({ modals: stack, session: LOAD_ID, form: activeFormToken }, '', '#' + id);
+        history.pushState({ modals: stack, session: LOAD_ID, form: activeFormToken, recipe: currentRecipeId, from: detailFrom }, '', '#' + id);
         applyModals(stack);
     }
     // Chiude subito la schermata in cima (così due tocchi rapidi non escono dall'app) e sincronizza la cronologia
     function closeTopModal() {
         if (!modalStack.length) return;
+        // Ricetta aperta da un'altra (ricette collegate): la freccia riporta a quella precedente, come il tasto indietro
+        if (modalStack[modalStack.length - 1] === 'detail-view' && detailFrom) { history.back(); return; }
         applyModals(modalStack.slice(0, -1));
         history.back();
+    }
+    // Ricette collegate: si aprono nella stessa schermata, con una voce di cronologia (il tasto indietro riporta alla precedente)
+    let detailFrom = null;
+    function goToRecipe(id) {
+        if (!getRecipe(id) || id === currentRecipeId || modalStack[modalStack.length - 1] !== 'detail-view') return;
+        detailFrom = currentRecipeId;
+        currentRecipeId = id; refreshDetailView(id);
+        $('detail-content').scrollTop = 0;
+        history.pushState({ modals: [...modalStack], session: LOAD_ID, form: activeFormToken, recipe: id, from: detailFrom }, '', '#detail-view');
     }
 
     window.addEventListener('popstate', (e) => {
@@ -1166,6 +1209,14 @@
             applyModals([]); history.back(); return;
         }
         const wanted = s && Array.isArray(s.modals) ? s.modals : [];
+        if (wanted.includes('detail-view') && s.recipe) {
+            detailFrom = s.from || null;
+            // Indietro/avanti tra ricette collegate: mostro quella di questa voce
+            if (s.recipe !== currentRecipeId) {
+                currentRecipeId = s.recipe;
+                if (getRecipe(s.recipe)) { refreshDetailView(s.recipe); $('detail-content').scrollTop = 0; }
+            }
+        } else if (!wanted.includes('detail-view')) detailFrom = null;
         applyModals(wanted, s ? s.form : null);
         // Voce non più valida (form già salvato, ricetta eliminata): niente tocchi "a vuoto", torno indietro
         if (modalStack.length < wanted.length) history.back();
@@ -1443,7 +1494,44 @@
             del.onclick = () => { activeIngredients.splice(index, 1); renderActiveIngredients(); };
             li.appendChild(del); ul.appendChild(li);
         });
+        renderLinkEditor(); // i suggerimenti dipendono dagli ingredienti
     }
+
+    // --- RICETTE COLLEGATE: preparazioni base (besciamella, ragù...) usate dentro altre ricette ---
+    let activeLinks = [];
+    const linkWords = (s) => words(String(s).replace(/\([^)]*\)/g, ' ')).filter((w) => !STOP_WORDS.has(w)).map(stem);
+    // L'ingrediente "besciamella" corrisponde alla ricetta "Besciamella", "ragù" a "Ragù alla bolognese"
+    function ingMatchesRecipe(ingName, r) {
+        const iw = linkWords(ingName), tw = linkWords(r.title);
+        if (!iw.length || !tw.length) return false;
+        if (tw.every((w) => iw.includes(w))) return true;
+        return iw[0] === tw[0] && iw.every((w) => tw.includes(w));
+    }
+    const linkedRecipes = (r) => (r && r.links ? r.links : []).map(getRecipe).filter(Boolean);
+    const usedInRecipes = (r) => recipes.filter((x) => x.id !== r.id && x.links.includes(r.id));
+    function renderLinkEditor() {
+        const self = isEditing ? currentRecipeId : null;
+        activeLinks = activeLinks.filter((id) => id !== self && getRecipe(id));
+        const all = recipes.filter((r) => r.id !== self);
+        const others = all.filter((r) => !activeLinks.includes(r.id)).sort((a, b) => a.title.localeCompare(b.title, 'it'));
+        const empty = !all.length ? 'Nessun\'altra ricetta salvata' : 'Hai già collegato tutte le ricette';
+        $('link-select').innerHTML = `<option value="">${others.length ? 'Collega una ricetta…' : empty}</option>` + others.map((r) => `<option value="${esc(r.id)}">${esc(r.title)}</option>`).join('');
+        $('link-select').disabled = !others.length;
+        $('link-chips').innerHTML = activeLinks.map(getRecipe).map((r) => `<span class="link-chip"><i class="ri-links-line" aria-hidden="true"></i><span>${esc(r.title)}</span><button type="button" data-unlink="${esc(r.id)}" aria-label="Scollega ${esc(r.title)}"><i class="ri-close-line"></i></button></span>`).join('');
+        // Suggerimenti: ingredienti che si chiamano come un'altra tua ricetta
+        const sugg = others.filter((r) => activeIngredients.some((i) => ingMatchesRecipe(i.name, r))).slice(0, 4);
+        $('link-suggest').innerHTML = sugg.length ? `<span>Suggerite:</span>` + sugg.map((r) => `<button type="button" class="link-sugg" data-link="${esc(r.id)}"><i class="ri-add-line" aria-hidden="true"></i>${esc(r.title)}</button>`).join('') : '';
+    }
+    function addLink(id) {
+        if (!id || activeLinks.includes(id) || !getRecipe(id)) return;
+        activeLinks.push(id); renderLinkEditor();
+    }
+    $('link-select').onchange = (e) => addLink(e.target.value);
+    $('link-suggest').onclick = (e) => { const b = e.target.closest('[data-link]'); if (b) addLink(b.dataset.link); };
+    $('link-chips').onclick = (e) => {
+        const b = e.target.closest('[data-unlink]'); if (!b) return;
+        activeLinks = activeLinks.filter((id) => id !== b.dataset.unlink); renderLinkEditor();
+    };
     function addIngredient() {
         const name = $('ing-name').value.trim();
         let qtyRaw = $('ing-qty').value.trim().replace(',', '.');
@@ -1477,7 +1565,7 @@
         return {
             title: $('title').value, category: catSelect.value, servings: $('servings').value,
             times: $('toggle-times').checked, timePrep: $('timePrep').value, timeLeav: $('timeLeav').value, timeCook: $('timeCook').value,
-            ingredients: activeIngredients.map((i) => ({ ...i })), procedure: $('procedure').value,
+            ingredients: activeIngredients.map((i) => ({ ...i })), links: [...activeLinks], procedure: $('procedure').value,
             pendingName: $('ing-name').value, pendingQty: $('ing-qty').value, pendingUnit: $('ing-unit').value
         };
     }
@@ -1516,6 +1604,7 @@
             const r = getRecipe(editId), t = r ? recipeTimes(d) : null;
             const same = r && r.title === d.title.trim() && r.procedure === d.procedure.trim() && r.category === d.category
                 && String(r.servings) === String(toNum(d.servings)) && JSON.stringify(r.ingredients) === JSON.stringify(d.ingredients) && !d.pendingName.trim()
+                && JSON.stringify(r.links) === JSON.stringify(d.links || [])
                 && (d.times ? t.timePrep === r.timePrep && t.timeLeav === r.timeLeav && t.timeCook === r.timeCook : !r.timeTotal);
             if (!r || same) { clearDraft(editId); return; }
         }
@@ -1536,6 +1625,7 @@
         $('toggle-times').checked = !!d.times; $('time-grid-container').classList.toggle('active', !!d.times); updateTimeTotal();
         activeIngredients = (d.ingredients || []).filter((i) => i && typeof i.name === 'string' && i.name.trim())
             .map((i) => ({ name: cleanStr(i.name), qty: cleanStr(i.qty), unit: cleanStr(i.unit) }));
+        if (Array.isArray(d.links)) activeLinks = d.links.filter((x) => typeof x === 'string');
         renderActiveIngredients();
         $('procedure').value = typeof d.procedure === 'string' ? d.procedure : '';
         $('ing-name').value = cleanStr(d.pendingName); $('ing-qty').value = cleanStr(d.pendingQty);
@@ -1546,7 +1636,7 @@
         renderCategories();
         if (categories.includes(currentFilter)) catSelect.value = currentFilter;
         $('servings').value = 4; $('toggle-times').checked = false; $('time-grid-container').classList.remove('active');
-        activeIngredients = []; renderActiveIngredients();
+        activeIngredients = []; activeLinks = []; renderActiveIngredients();
     }
 
     $('fab-add').onclick = () => {
@@ -1589,7 +1679,7 @@
             title: $('title').value, category: catSelect.value,
             servings: $('servings').value,
             timePrep: $('timePrep').value, timeLeav: $('timeLeav').value, timeCook: $('timeCook').value, timeTotal: '',
-            ingredients: activeIngredients, procedure: $('procedure').value.trim(),
+            ingredients: activeIngredients, links: activeLinks, procedure: $('procedure').value.trim(),
         });
 
         if (isEditing) {
@@ -1929,6 +2019,8 @@
             r.ingredients.forEach((i) => lines.push(`• ${ingLine(formatIngredient(i, ratio))}`));
         }
         if (r.procedure.trim()) lines.push('', '👩‍🍳 PREPARAZIONE', r.procedure.trim());
+        const linked = linkedRecipes(r);
+        if (linked.length) lines.push('', `📎 Vedi anche: ${linked.map((x) => x.title).join(', ')}`);
         lines.push('', '— Condivisa con ChefBox');
         return lines.join('\n');
     }
@@ -2302,11 +2394,14 @@
     }
 
     function computeShopping(list = activeList()) {
-        const map = new Map();
+        const map = new Map(), planIds = new Set(list.plan.map((p) => p.id));
         list.plan.forEach((p) => {
             const r = getRecipe(p.id); if (!r) return;
             const mult = (toNum(p.servings) / (r.servings || 1)) * (toNum(p.factor) > 0 ? toNum(p.factor) : 1);
+            // "Besciamella" non si compra se in lista c'è già la sua ricetta collegata: servono i suoi ingredienti
+            const linkedInList = linkedRecipes(r).filter((x) => planIds.has(x.id));
             r.ingredients.forEach((i) => {
+                if (linkedInList.some((x) => ingMatchesRecipe(i.name, x))) return;
                 const [fam, m] = famOf(i.unit), n = toNum(i.qty), nk = nameKey(i.name), key = nk + '|' + fam;
                 let it = map.get(key);
                 if (!it) { it = { key, nk, name: i.name, fam, qty: 0, unknown: false, sources: new Set() }; map.set(key, it); }
@@ -2531,6 +2626,7 @@
     function addToShopping() {
         const r = getRecipe(currentRecipeId); if (!r) return;
         if (shopLists.length === 1) { addRecipeToList(shopLists[0].id); return; }
+        $('pick-title').textContent = 'Aggiungi alla lista';
         $('pick-options').innerHTML = shopLists.map((l) => {
             const inList = l.plan.some((p) => p.id === r.id);
             return `<button type="button" class="pick-option" data-pick="${esc(l.id)}"><i class="${inList ? 'ri-checkbox-circle-fill' : 'ri-shopping-cart-2-line'}"></i>${esc(l.name)}<small>${inList ? 'aggiorna le dosi' : plural(l.plan.length, 'ricetta', 'ricette')}</small></button>`;
@@ -2538,6 +2634,9 @@
         openModal('pick-sheet');
     }
     $('pick-options').addEventListener('click', (e) => {
+        const s = e.target.closest('[data-share]');
+        // Prima condivido (serve il tocco dell'utente per aprire WhatsApp o il menu di condivisione), poi chiudo
+        if (s) { shareShopList(s.dataset.share); closeTopModal(); return; }
         const b = e.target.closest('[data-pick]'); if (!b) return;
         let id = b.dataset.pick;
         if (id === '__new') { const l = makeList(nextListName()); shopLists.push(l); id = l.id; }
@@ -2553,7 +2652,24 @@
         activeListId = list.id;
         if (!saveShop()) { list.plan = prev; return; }
         updateShopBadge(); updateShopButton();
-        showToast(idx >= 0 ? `Dosi aggiornate in «${list.name}»` : `Aggiunta a «${list.name}» (${numFmt.format(currentTargetServings)} pers.)`);
+        const msg = idx >= 0 ? `Dosi aggiornate in «${list.name}»` : `Aggiunta a «${list.name}» (${numFmt.format(currentTargetServings)} pers.)`;
+        // Ricette collegate non ancora in lista: le propongo, con le dosi scalate come la ricetta principale
+        const missing = linkedRecipes(r).filter((x) => !list.plan.some((p) => p.id === x.id)).map((x) => x.id), ratio = detailRatio();
+        if (missing.length) showToast(msg, 'success', { label: missing.length === 1 ? '+ la collegata' : `+ ${missing.length} collegate`, run: () => addLinkedToList(list.id, missing, ratio) });
+        else showToast(msg);
+    }
+    function addLinkedToList(listId, ids, ratio) {
+        const list = shopLists.find((l) => l.id === listId); if (!list) return;
+        const prev = list.plan.map((p) => ({ ...p })), added = [];
+        ids.map(getRecipe).filter((x) => x && !list.plan.some((p) => p.id === x.id)).forEach((x) => {
+            list.plan.push({ id: x.id, servings: Math.max(0.5, Math.round(x.servings * ratio * 2) / 2), factor: 1 });
+            added.push(x.title);
+        });
+        if (!added.length) return;
+        if (!saveShop()) { list.plan = prev; return; }
+        updateShopBadge(); updateShopButton();
+        if (modalStack.includes('shop-sheet')) renderShop();
+        showToast(`Aggiunte a «${list.name}»: ${added.join(', ')}`);
     }
     // Toglie dalle liste le ricette che non esistono più
     function pruneShopPlan() {
@@ -2784,21 +2900,42 @@
         saveShop(); renderShop(); updateShopButton();
         showToast('Lista svuotata');
     };
-    $('btn-shop-share').onclick = () => {
-        const list = activeList();
+    // Testo della lista, diviso per reparto, con solo quello che resta da comprare (già tolto ciò che hai in casa).
+    // bold: titoli in grassetto con gli asterischi di WhatsApp
+    function shopShareText(list, bold = false) {
         const items = computeShopping(list).filter((i) => !i.have && !i.done);
-        if (!items.length) return showToast('Non c\'è niente da comprare', 'error');
+        if (!items.length) return null;
+        const b = (s) => (bold ? `*${s}*` : s);
         const titles = list.plan.map((p) => getRecipe(p.id)).filter(Boolean).map((r) => r.title);
-        const lines = [`🛒 ${list.name.toUpperCase()}`];
+        const date = new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+        const lines = [`🛒 ${b(list.name.toUpperCase())}`, `${date} · ${plural(items.length, 'articolo', 'articoli')}`];
         if (titles.length) lines.push(`Per: ${titles.join(', ')}`);
         AISLES.forEach(([k, icon, label]) => {
             const group = items.filter((i) => i.aisle === k); if (!group.length) return;
-            lines.push('', `${icon} ${label.toUpperCase()}`);
+            lines.push('', `${icon} ${b(label.toUpperCase())}`);
             group.forEach((i) => lines.push(`☐ ${i.label === 'q.b.' ? i.name : (i.label ? i.label + ' ' : '') + i.name}`));
         });
         lines.push('', '— Creata con ChefBox');
-        shareText(list.name, lines.join('\n'), 'Lista copiata: incollala dove vuoi');
+        return lines.join('\n');
+    }
+    $('btn-shop-share').onclick = () => {
+        const list = activeList(), left = computeShopping(list).filter((i) => !i.have && !i.done).length;
+        if (!left) return showToast('Non c\'è niente da comprare', 'error');
+        $('pick-title').textContent = 'Condividi la lista';
+        $('pick-options').innerHTML = `
+            <button type="button" class="pick-option" data-share="wa"><i class="ri-whatsapp-line" style="color:#25D366;"></i>WhatsApp<small>${plural(left, 'articolo', 'articoli')}</small></button>
+            ${navigator.share ? `<button type="button" class="pick-option" data-share="apps"><i class="ri-share-forward-line"></i>Altre app<small>Telegram, SMS, email…</small></button>` : ''}
+            <button type="button" class="pick-option" data-share="copy"><i class="ri-file-copy-line"></i>Copia il testo<small>da incollare dove vuoi</small></button>`;
+        openModal('pick-sheet');
     };
+    async function shareShopList(how) {
+        const list = activeList(), text = shopShareText(list, how === 'wa');
+        if (!text) return;
+        if (how === 'wa') window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+        else if (how === 'apps') shareText(list.name, text, 'Lista copiata: incollala dove vuoi');
+        else if (await copyText(text)) showToast('Lista copiata: incollala dove vuoi');
+        else showToast('Impossibile copiare', 'error');
+    }
 
     // --- STORICO SPESE: ogni spesa completata viene salvata con data, articoli e reparti ---
     const HISTORY_KEY = 'chefbox_shop_history';
@@ -3424,7 +3561,7 @@
     }
     function parseRecipeText(text) {
         const lines = String(text || '').replace(/\r/g, '').split('\n').map((l) => l.replace(/\s+/g, ' ').trim())
-            .map((l) => (/^\W*(condivisa|creata) con chefbox/i.test(l) ? '' : l)); // la firma dei testi condivisi da ChefBox non è un ingrediente
+            .map((l) => (/^\W*((condivisa|creata) con chefbox|vedi anche:)/i.test(l) ? '' : l)); // la firma dei testi condivisi da ChefBox non è un ingrediente
         const res = { title: '', servings: '', timeTotal: '', timeCook: '', timeLeav: '', timePrep: '', ingredients: [], procedure: '', category: '' };
         const ingIdx = lines.findIndex(isIngHead), procIdx = lines.findIndex(isProcHead);
         const readMeta = (l) => {
@@ -3788,18 +3925,29 @@
     };
 
     // --- DETTAGLIO RICETTA E PORZIONI ---
-    function ingredientsListHTML(ings, ratio) {
+    // linked: ricette collegate; l'ingrediente con lo stesso nome ("besciamella") diventa un collegamento
+    function ingredientsListHTML(ings, ratio, linked = []) {
         if (!ings.length) return '';
         return `<ul class="ing-display-list">${ings.map((i, idx) => {
             const f = formatIngredient(i, ratio);
+            const lr = linked.find((x) => ingMatchesRecipe(i.name, x));
+            const link = lr ? `<button type="button" class="link-btn" data-open-recipe="${esc(lr.id)}" aria-label="Apri la ricetta ${esc(lr.title)}" title="Apri la ricetta"><i class="ri-book-open-line"></i></button>` : '';
             const sub = findSubs(i.name) ? `<button type="button" class="sub-btn" data-sub="${idx}" aria-label="Sostituzioni per ${esc(i.name)}" title="Cosa usare al suo posto"><i class="ri-arrow-left-right-line"></i></button>` : '';
-            return `<li>${f.amount ? `<strong>${esc(f.amount)}</strong>` : ''}<span>${esc(f.name)}</span>${sub}</li>`;
+            return `<li>${f.amount ? `<strong>${esc(f.amount)}</strong>` : ''}<span>${esc(f.name)}</span>${link}${sub}</li>`;
         }).join('')}</ul>`;
     }
     function renderDetailIngredientsHTML() {
         const box = $('dynamic-ingredients-box'); if (!box) return;
-        box.innerHTML = ingredientsListHTML(currentDetailIngredients, detailRatio());
+        box.innerHTML = ingredientsListHTML(currentDetailIngredients, detailRatio(), linkedRecipes(getRecipe(currentRecipeId)));
     }
+    const linkedCardHTML = (x) => `<button type="button" class="linked-card" data-open-recipe="${esc(x.id)}">
+        <span class="linked-icon"><i class="ri-book-open-line"></i></span>
+        <span class="linked-text"><strong>${esc(x.title)}</strong><small>${esc([x.category, x.timeTotal ? formatMinutes(x.timeTotal) : ''].filter(Boolean).join(' · '))}</small></span>
+        <i class="ri-arrow-right-s-line" aria-hidden="true"></i></button>`;
+    $('detail-content').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-open-recipe]'); if (b) goToRecipe(b.dataset.openRecipe);
+        if (e.target.closest('#btn-detail-back')) history.back();
+    });
     function setServings(val) {
         currentTargetServings = Math.max(0.5, Math.round(val * 2) / 2);
         $('detail-servings').value = currentTargetServings;
@@ -3824,9 +3972,11 @@
             timeBannerHtml += `</div>`;
         }
         const canCook = splitSteps(r.procedure).length > 0;
+        const linked = linkedRecipes(r), usedIn = usedInRecipes(r), parent = detailFrom ? getRecipe(detailFrom) : null;
 
         $('detail-content').innerHTML = `
             <div class="detail-inner">
+                ${parent ? `<button type="button" class="detail-back" id="btn-detail-back"><i class="ri-arrow-left-line"></i> Torna a «${esc(parent.title)}»</button>` : ''}
                 <div class="detail-cat">${esc(r.category)}</div>
                 <h2 class="detail-title">${esc(r.title)}</h2>
                 ${timeBannerHtml}
@@ -3848,12 +3998,14 @@
                     </div>
                 </div>
                 <div id="dynamic-ingredients-box"></div>
+                ${linked.length ? `<div class="form-section-title"><i class="ri-links-line"></i> Ricette collegate</div><div class="linked-list">${linked.map(linkedCardHTML).join('')}</div>` : ''}
                 <div class="detail-cta">
                     ${canCook ? `<button type="button" class="btn-submit btn-cook" id="btn-start-cook"><i class="ri-play-circle-fill"></i> Inizia a cucinare</button>` : ''}
                     <button type="button" class="btn-submit btn-soft" id="btn-add-shop"${canCook ? '' : ' style="grid-column: 1 / -1;"'}></button>
                 </div>
                 <div class="form-section-title"><i class="ri-list-check-2"></i> Preparazione</div>
                 <div class="content-box">${procedureToHTML(r.procedure)}</div>
+                ${usedIn.length ? `<div class="form-section-title"><i class="ri-git-merge-line"></i> Usata in</div><div class="linked-list">${usedIn.map(linkedCardHTML).join('')}</div>` : ''}
             </div>
         `;
         renderPanCard(); bindPanCard(); updateShopButton();
@@ -3867,6 +4019,8 @@
 
     function openRecipe(id) {
         if (!getRecipe(id)) return;
+        if (modalStack.includes('detail-view')) { goToRecipe(id); return; }
+        detailFrom = null;
         currentRecipeId = id; refreshDetailView(id);
         $('detail-content').scrollTop = 0;
         openModal('detail-view');
@@ -3895,7 +4049,7 @@
         $('procedure').value = r.procedure;
         const hasTimes = !!(r.timePrep || r.timeLeav || r.timeCook);
         $('toggle-times').checked = hasTimes; $('time-grid-container').classList.toggle('active', hasTimes);
-        activeIngredients = r.ingredients.map((i) => ({ ...i })); renderActiveIngredients(); updateTimeTotal();
+        activeIngredients = r.ingredients.map((i) => ({ ...i })); activeLinks = [...r.links]; renderActiveIngredients(); updateTimeTotal();
     }
 
     $('btn-delete').onclick = () => {
