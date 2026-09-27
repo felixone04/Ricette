@@ -398,6 +398,24 @@
         /* --- Incolla / scansiona ricetta --- */
         .import-cta { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; margin-bottom: 20px; background: linear-gradient(135deg, #FFF1E6, #FFFFFF); border: 1px dashed var(--primary); border-radius: 16px; cursor: pointer; text-align: left; font-family: inherit; color: inherit; }
         .import-cta > i { margin-left: auto; font-size: 1.4rem; color: var(--primary); }
+        .link-import { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+        .link-import .form-label { display: flex; align-items: center; gap: 6px; margin-top: 0; }
+        .link-import-row { display: flex; gap: 8px; }
+        .link-import-row .form-control { flex: 1; min-width: 0; margin-bottom: 0; }
+        .link-go { width: auto; margin: 0; padding: 0 16px; min-height: 48px; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; }
+        .link-go:disabled { opacity: 0.6; cursor: wait; }
+        .link-status { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-weight: 700; color: var(--primary-dark); font-size: 0.95rem; }
+        .link-status[hidden] { display: none; }
+        .spinner { width: 18px; height: 18px; flex-shrink: 0; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2s; } }
+        .import-or { display: flex; align-items: center; gap: 12px; margin: 16px 0 14px; color: var(--text-muted); font-weight: 700; font-size: 0.85rem; }
+        .import-or::before, .import-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .import-from { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin: -4px 0 10px; display: flex; gap: 6px; align-items: center; overflow-wrap: anywhere; }
+        .import-warn { background: var(--primary-light); color: var(--primary-text); border-radius: 12px; padding: 10px 12px; font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; line-height: 1.4; }
+        .source-link { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; margin: -4px 0 16px; padding: 8px 14px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--primary-dark); font-weight: 700; font-size: 0.9rem; text-decoration: none; }
+        .source-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .source-link i { flex-shrink: 0; }
         .import-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
         .import-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; font-weight: 800; font-size: 0.95rem; cursor: pointer; font-family: inherit; color: var(--text-main); }
         .import-btn i { font-size: 1.8rem; color: var(--primary); }
@@ -679,7 +697,7 @@
             <form id="recipe-form" novalidate>
                 <button type="button" class="import-cta" id="btn-open-import">
                     <span class="tile-icon"><i class="ri-magic-line"></i></span>
-                    <span class="tile-text"><strong>Incolla o scansiona una ricetta</strong><small>Da un sito, da WhatsApp o dalla foto di un libro: compilo io il modulo</small></span>
+                    <span class="tile-text"><strong>Importa da link, testo o foto</strong><small>Da un sito, TikTok, Instagram, YouTube, WhatsApp o dalla foto di un libro: compilo io il modulo</small></span>
                     <i class="ri-arrow-right-s-line" aria-hidden="true"></i>
                 </button>
 
@@ -690,6 +708,9 @@
 
                     <label class="form-label" for="category">Categoria Gastronomica</label>
                     <select class="form-control" id="category" required></select>
+
+                    <label class="form-label" for="source">Link originale (opzionale)</label>
+                    <input type="url" class="form-control" id="source" maxlength="500" placeholder="Es. il video o il sito da cui l'hai presa" inputmode="url" autocomplete="off">
 
                     <label class="form-label" for="servings">Per quante persone è questa dose?</label>
                     <input type="number" class="form-control" id="servings" required placeholder="Es. 4" min="0.5" step="0.5" inputmode="decimal" style="margin-bottom: 0;">
@@ -837,9 +858,19 @@
     <div class="page-view" id="import-page" role="dialog" aria-modal="true" aria-labelledby="import-title">
         <div class="page-header">
             <button type="button" class="btn-icon page-back" data-page-close aria-label="Torna al modulo"><i class="ri-arrow-left-s-line"></i></button>
-            <div class="page-heading"><h2 id="import-title">Incolla o scansiona</h2><span>Il modulo si compila da solo</span></div>
+            <div class="page-heading"><h2 id="import-title">Importa una ricetta</h2><span>Il modulo si compila da solo</span></div>
         </div>
         <div class="page-content"><div class="page-inner">
+            <div class="link-import">
+                <label class="form-label" for="import-url"><i class="ri-link"></i> Da un link</label>
+                <div class="link-import-row">
+                    <input type="url" class="form-control" id="import-url" placeholder="Sito, TikTok, Instagram, YouTube…" inputmode="url" autocomplete="off" enterkeyhint="go" aria-label="Link della ricetta">
+                    <button type="button" class="btn-submit link-go" id="btn-import-link"><i class="ri-download-2-line"></i> Leggi</button>
+                </div>
+                <div class="link-status" id="link-status" hidden><span class="spinner" aria-hidden="true"></span><span id="link-status-text" aria-live="polite"></span></div>
+                <p class="form-hint" style="margin:8px 0 0;">Dai siti di ricette leggo tutto: ingredienti, dosi, tempi e passaggi. Dai social leggo la ricetta scritta nella descrizione. Su Android, con l'app installata, puoi anche usare <strong>Condividi → ChefBox</strong>.</p>
+            </div>
+            <div class="import-or"><span>oppure</span></div>
             <div class="import-actions">
                 <button type="button" class="import-btn" id="btn-import-paste"><i class="ri-clipboard-line"></i><span>Incolla testo</span></button>
                 <button type="button" class="import-btn" id="btn-import-scan"><i class="ri-camera-lens-line"></i><span>Scansiona foto</span></button>
@@ -1100,10 +1131,18 @@
         // Ricette collegate (es. la besciamella nelle lasagne): solo id, senza doppioni né se stessa
         r.links = [...new Set((Array.isArray(raw.links) ? raw.links : []).filter((x) => typeof x === 'string').map(cleanStr))]
             .filter((x) => x && x !== r.id).slice(0, 20);
+        r.source = cleanSource(raw.source); // link originale (sito, video, post)
         delete r.photo; // le foto non sono più usate: vengono tolte anche dai vecchi dati
         r.pan = normalizePan(raw.pan);
         if (!r.pan) delete r.pan;
         return r;
+    }
+    // Link originale: solo indirizzi web validi ("giallozafferano.it/..." diventa "https://giallozafferano.it/...")
+    function cleanSource(v) {
+        let s = typeof v === 'string' ? v.trim() : '';
+        if (!s) return '';
+        if (!/^https?:\/\//i.test(s) && /^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}([/?#]\S*)?$/i.test(s)) s = 'https://' + s;
+        try { const u = new URL(s); return /^https?:$/.test(u.protocol) && s.length <= 500 && !/\s/.test(s) ? u.href : ''; } catch { return ''; }
     }
     // Tempi: preparazione + lievitazione + cottura; il totale è sempre la loro somma.
     // Ricette vecchie (senza preparazione): la differenza tra il totale scritto a mano e gli altri tempi diventa preparazione.
@@ -1563,7 +1602,7 @@
     let formSaved = false;
     function readForm() {
         return {
-            title: $('title').value, category: catSelect.value, servings: $('servings').value,
+            title: $('title').value, category: catSelect.value, servings: $('servings').value, source: $('source').value,
             times: $('toggle-times').checked, timePrep: $('timePrep').value, timeLeav: $('timeLeav').value, timeCook: $('timeCook').value,
             ingredients: activeIngredients.map((i) => ({ ...i })), links: [...activeLinks], procedure: $('procedure').value,
             pendingName: $('ing-name').value, pendingQty: $('ing-qty').value, pendingUnit: $('ing-unit').value
@@ -1604,7 +1643,7 @@
             const r = getRecipe(editId), t = r ? recipeTimes(d) : null;
             const same = r && r.title === d.title.trim() && r.procedure === d.procedure.trim() && r.category === d.category
                 && String(r.servings) === String(toNum(d.servings)) && JSON.stringify(r.ingredients) === JSON.stringify(d.ingredients) && !d.pendingName.trim()
-                && JSON.stringify(r.links) === JSON.stringify(d.links || [])
+                && JSON.stringify(r.links) === JSON.stringify(d.links || []) && r.source === cleanSource(d.source)
                 && (d.times ? t.timePrep === r.timePrep && t.timeLeav === r.timeLeav && t.timeCook === r.timeCook : !r.timeTotal);
             if (!r || same) { clearDraft(editId); return; }
         }
@@ -1621,6 +1660,7 @@
         if (d.category && !categories.includes(d.category) && isEditing) catSelect.add(new Option(d.category, d.category));
         if ([...catSelect.options].some((o) => o.value === d.category)) catSelect.value = d.category;
         if (toNum(d.servings) > 0) $('servings').value = d.servings;
+        if (typeof d.source === 'string') $('source').value = d.source.slice(0, 500);
         $('timePrep').value = cleanStr(d.timePrep); $('timeLeav').value = cleanStr(d.timeLeav); $('timeCook').value = cleanStr(d.timeCook);
         $('toggle-times').checked = !!d.times; $('time-grid-container').classList.toggle('active', !!d.times); updateTimeTotal();
         activeIngredients = (d.ingredients || []).filter((i) => i && typeof i.name === 'string' && i.name.trim())
@@ -1655,6 +1695,7 @@
         const checks = [
             [$('title').value.trim(), 'title', 'Inserisci il nome della ricetta'],
             [catSelect.value, 'category', 'Scegli una categoria'],
+            [!$('source').value.trim() || cleanSource($('source').value), 'source', 'Il link originale non è valido (es. https://…)'],
             [toNum($('servings').value) > 0, 'servings', 'Indica per quante persone è la dose'],
             [activeIngredients.length > 0, 'ing-name', "Aggiungi almeno un ingrediente con il tasto '+'"],
             [$('procedure').value.trim(), 'procedure', 'Descrivi il procedimento']
@@ -1677,7 +1718,7 @@
             ...(previous || {}),
             id: isEditing ? currentRecipeId : ('r_' + Date.now()),
             title: $('title').value, category: catSelect.value,
-            servings: $('servings').value,
+            servings: $('servings').value, source: $('source').value,
             timePrep: $('timePrep').value, timeLeav: $('timeLeav').value, timeCook: $('timeCook').value, timeTotal: '',
             ingredients: activeIngredients, links: activeLinks, procedure: $('procedure').value.trim(),
         });
@@ -2021,6 +2062,7 @@
         if (r.procedure.trim()) lines.push('', '👩‍🍳 PREPARAZIONE', r.procedure.trim());
         const linked = linkedRecipes(r);
         if (linked.length) lines.push('', `📎 Vedi anche: ${linked.map((x) => x.title).join(', ')}`);
+        if (r.source) lines.push('', `🔗 Originale: ${r.source}`);
         lines.push('', '— Condivisa con ChefBox');
         return lines.join('\n');
     }
@@ -3477,15 +3519,17 @@
         s = s.trim().toLowerCase();
         if (s in FRAC) return FRAC[s];
         if (s in WORD_NUM) return WORD_NUM[s];
+        const f = s.replace(/\s+/g, '').match(/^(\d+)\/(\d+)$/);
+        if (f && (+f[1] >= +f[2] || +f[2] > 16)) return +f[1];    // "20/30 savoiardi" è un intervallo, non una frazione
         return toNum(s.split(/\s*[-–]\s*/)[0].replace(/\s+/g, '')); // "2-3" → 2, "1/2" → 0,5
     }
     const capFirst = (x) => x.charAt(0).toUpperCase() + x.slice(1);
-    const cleanIngName = (x) => capFirst(x.replace(/^(di|d['’])\s*/i, '').replace(/\s*[:–-]\s*$/, '').replace(/\s+/g, ' ').trim());
+    const cleanIngName = (x) => capFirst(x.replace(/^((di|d['’])\s*)+/i, '').replace(/\s*[:–-]\s*$/, '').replace(/\s+/g, ' ').trim());
     // "1. Taglia le zucchine" / "Passo 2: ..." sono passaggi, non ingredienti ("1. 200 g di farina" invece sì)
     const isStepLine = (l) => /^\s*(?:(?:passo|step|fase)\s*)?\d+\s*[.)]\s+[^\d½¼¾⅓⅔\s]/i.test(l) || /^\s*(?:passo|step|fase)\s*\d+/i.test(l);
     function parseIngredientLine(line) {
         if (isStepLine(line)) return null;
-        let s = line.replace(/^[\s\-–—•*·▪►✓✔☐○●◦>]+/, '').replace(/\s+/g, ' ').trim().replace(/[;,.]$/, '')
+        let s = line.replace(/^[\s\-–—•*·▪►✓✔☐○●◦>]+/, '').replace(/\s+/g, ' ').trim().replace(/[;,.]$/, '').replace(/^(circa|ca\.|about|approx\.?)\s+(?=[\d½¼¾⅓⅔])/i, '')
             .replace(/^\d+\s*[.)]\s+(?=[\d½¼¾⅓⅔])/, ''); // elenco numerato di ingredienti: "1. 200 g di farina"
         if (!s || s.length > 120) return null;
         // Nota finale tra parentesi senza numeri ("Acqua 300 ml (tiepida)"): la tengo nel nome
@@ -3498,6 +3542,8 @@
     function parseIngredientCore(s) {
         let m = s.match(/^(.+?)[\s,:–-]+(q\.?\s?b\.?|quanto basta|a piacere|qb)$/i);
         if (m) return { name: cleanIngName(m[1]), qty: '', unit: 'q.b.' };
+        m = s.match(/^(?:q\.?\s?b\.?|qb|quanto basta)\s+(?:di\s+|d['’]\s*)?(.{2,})$/i);   // "qb di cacao amaro"
+        if (m) return { name: cleanIngName(m[1]), qty: '', unit: 'q.b.' };
         m = s.match(QTY_FIRST_RE);                          // "300 g di farina", "3 uova", "2 spicchi d'aglio"
         if (m) {
             const qty = parseQtyText(m[1]), tok = (m[2] || '').replace('.', '').toLowerCase(), rest = m[3] || '';
@@ -3505,6 +3551,7 @@
                 const u = UNIT_MAP.find(([re]) => re.test(tok));
                 if (u && rest) return { name: cleanIngName(rest), qty: fmtQ(qty * u[2]), unit: u[1] };
                 if (/^pizzic/.test(tok) && rest) return { name: cleanIngName(rest), qty: '', unit: 'q.b.' };
+                if (tok === 'di' && qty >= 20 && rest) return { name: cleanIngName(rest), qty: fmtQ(qty), unit: 'g' }; // "150 di burro" = 150 g
                 const name = cleanIngName(`${tok} ${rest}`);
                 if (name) return { name, qty: fmtQ(qty), unit: 'pz' };
             }
@@ -3520,6 +3567,46 @@
             }
         }
         return null;
+    }
+    // Più ingredienti sulla stessa riga (testi dei social): "150 gr di burro 100gr di zucchero 4g di sale" → uno per riga.
+    // Separo prima su ";" o sulle virgole, poi quando dopo un ingrediente completo (quantità + nome) inizia una nuova quantità.
+    const RUN_PREP = new Set(['di', 'da', 'a', 'circa', 'per', 'con', 'e', 'o', 'tipo', 'n', 'n.', 'n°', 'x', 'ca', 'ca.', 'max', 'almeno', 'oppure', 'al', 'ai', 'or', 'of', 'and', 'about', '+', 'cui', 'più']);
+    const RUN_UNIT = /^(g|gr|grammi|kg|ml|l|lt|cl|dl|di|d['’]|cucchia\w*|pz|pezzi|q\.?b\.?|circa)$/i;
+    function splitIngredientRun(line) {
+        let parts = line.split(/\s*;\s*/);
+        if (parts.length === 1) {
+            // Ogni pezzo deve avere un nome: "Farina 00, 300 g" resta un solo ingrediente
+            const c = line.split(/\s*,\s+/), named = c.every((x) => /[a-zà-ù]{3,}/i.test(x.replace(/\b(grammi|gr|kg|ml|cucchia\w*)\b/gi, '')));
+            if (named && (c.length >= 3 ? c.filter((x) => /\d/.test(x)).length >= 2 : c.length === 2 && c.every((x) => /\d/.test(x)))) parts = c;
+        }
+        return parts.flatMap((s) => {
+            const toks = s.split(' '), segs = [];
+            // Divido sulle quantità solo le righe "lunghe" dei social (3+ quantità o molto lunghe):
+            // "30 g Parmigiano 24 mesi" o "1 barattolo di fagioli 400 g scolati" restano un solo ingrediente
+            const nQty = toks.filter((w) => /^\d/.test(w) || /^q\.?b\.?$/i.test(w)).length;
+            if (nQty < 3 && s.length <= 60) return [s];
+            let cur = [], depth = 0, hasQty = false, named = false;
+            const qtyTok = (w) => (/^\d+(?:[.,/]\d+)?[a-zà-ù]*\.?$/i.test(w) && !/^0\d*$/.test(w)) || /^[½¼¾⅓⅔]$/.test(w) || /^q\.?b\.?$/i.test(w);
+            // Dopo la quantità deve esserci un nome: "1 uovo grande 60 g" resta un solo ingrediente
+            const nameAhead = (i) => { for (let k = i + 1; k < toks.length; k++) { if (qtyTok(toks[k])) return false; if (/[a-zà-ù]{2,}/i.test(toks[k]) && !RUN_UNIT.test(toks[k])) return true; } return false; };
+            toks.forEach((w, i) => {
+                const isQty = qtyTok(w);
+                const prev = (toks[i - 1] || '').toLowerCase();
+                const newQty = isQty && !RUN_PREP.has(prev) && nameAhead(i) && (named || (/^per\s/i.test(cur.join(' ')) && !hasQty));
+                const newSub = w === 'Per' && named && /^(il|la|lo|l['’]\S*|i|gli|le|un|una)$/i.test(toks[i + 1] || ''); // "… cacao Per lo sciroppo 50 g acqua"
+                if (cur.length && depth === 0 && (newQty || newSub)) {
+                    segs.push(cur.join(' ')); cur = []; hasQty = false; named = false;
+                }
+                // "Aroma alla vaniglia q.b 1 uovo": il q.b. in fondo chiude l'ingrediente
+                if (/^q\.?b\.?$/i.test(w) && cur.some((x) => /[a-zà-ù]{2,}/i.test(x))) named = true;
+                cur.push(w);
+                depth = Math.max(0, depth + (w.split('(').length - 1) - (w.split(')').length - 1));
+                if (isQty) hasQty = true;
+                else if (hasQty && /[a-zà-ù]{2,}/i.test(w) && !RUN_UNIT.test(w)) named = true;
+            });
+            if (cur.length) segs.push(cur.join(' '));
+            return segs;
+        }).map((x) => x.trim()).filter(Boolean);
     }
     function durationToMin(text) {
         const re = new RegExp(TIMER_RE.source, 'gi'); let m, secs = 0;
@@ -3559,10 +3646,28 @@
         });
         return out;
     }
+    // "Ingredienti per la frolla: 300 g di farina, 150 g di burro…" → il titolo su una riga, il contenuto sotto
+    // ("Preparazione: 20 minuti" invece è un tempo e resta com'è)
+    function splitInlineHeads(lines) {
+        return lines.flatMap((l) => {
+            const m = l.match(/^([^a-zà-ÿ0-9]*(?:ingredienti|ingredients|occorrente|procedimento|preparazione|istruzioni|metodo|method|instructions|directions)\b[^:]{0,50}):\s*(\S.*)$/i);
+            // "Preparazione: circa 20 minuti", "Preparazione: 20-25 minuti", "Preparazione: mezz'ora" sono tempi, non titoli
+            if (!m || (m[2].length < 45 && durationToMin(m[2]))) return [l];
+            return [m[1].trim(), m[2].trim()];
+        });
+    }
     function parseRecipeText(text) {
-        const lines = String(text || '').replace(/\r/g, '').split('\n').map((l) => l.replace(/\s+/g, ' ').trim())
-            .map((l) => (/^\W*((condivisa|creata) con chefbox|vedi anche:)/i.test(l) ? '' : l)); // la firma dei testi condivisi da ChefBox non è un ingrediente
-        const res = { title: '', servings: '', timeTotal: '', timeCook: '', timeLeav: '', timePrep: '', ingredients: [], procedure: '', category: '' };
+        let source = '';
+        const lines = splitInlineHeads(String(text || '').replace(/\r/g, '').split('\n').map((l) => l.replace(/\s+/g, ' ').trim()))
+            .map((l) => (/^\W*((condivisa|creata) con chefbox|vedi anche:)/i.test(l) ? '' : l)) // la firma dei testi condivisi da ChefBox non è un ingrediente
+            .map((l) => {
+                // Riga con solo un link ("🔗 Originale: https://…"): è la fonte della ricetta
+                const m = l.match(/^\W*(?:(?:originale|fonte|link|ricetta originale)\s*:?\s*)?(https?:\/\/\S+)$/i);
+                if (!m) return l;
+                if (!source) source = cleanSource(m[1]);
+                return '';
+            });
+        const res = { title: '', servings: '', timeTotal: '', timeCook: '', timeLeav: '', timePrep: '', ingredients: [], procedure: '', category: '', source };
         const ingIdx = lines.findIndex(isIngHead), procIdx = lines.findIndex(isProcHead);
         const readMeta = (l) => {
             if (!l || l.length > 90) return false;
@@ -3598,9 +3703,20 @@
         let ingLines = [], procLines = [];
         if (ingIdx >= 0) {
             readMeta(lines[ingIdx]); // "Ingredienti per 4 persone"
-            ingLines = nonEmpty(ingIdx + 1, procIdx > ingIdx ? procIdx : lines.length);
-            if (procIdx > ingIdx) procLines = nonEmpty(procIdx + 1, lines.length);
-            else {
+            if (procIdx > ingIdx) {
+                // Anche più sezioni alternate: "Ingredienti frolla / Ingredienti crema / Procedimento frolla / Procedimento crema"
+                let mode = 'ing';
+                nonEmpty(ingIdx + 1, lines.length).forEach((l) => {
+                    if (isIngHead(l)) { mode = 'ing'; readMeta(l); return; }
+                    if (isProcHead(l)) { mode = 'proc'; const sub = stripDeco(l).replace(/^(come si prepara|come preparare|\S+)\s*/i, '').replace(/:$/, ''); if (sub) procLines.push(capFirst(sub) + ':'); return; }
+                    (mode === 'ing' ? ingLines : procLines).push(l);
+                });
+            } else {
+                // Elenco su una riga ("yogurt 125g, uova 3, zucchero 180g…"): lo divido prima di cercare dove inizia il procedimento
+                ingLines = nonEmpty(ingIdx + 1, lines.length).flatMap((l) => {
+                    const parts = splitIngredientRun(l);
+                    return parts.length >= 3 && parts.every((x) => x.length <= 70) ? parts : [l];
+                });
                 // Nessun titolo "Procedimento": gli ingredienti finiscono alla prima frase lunga
                 const cut = ingLines.findIndex((l) => isStepLine(l) || l.length > 70 || (/[.!?]$/.test(l) && l.split(' ').length > 6));
                 if (cut >= 0) { procLines = ingLines.slice(cut); ingLines = ingLines.slice(0, cut); }
@@ -3617,10 +3733,21 @@
             });
             if (procIdx >= 0) procLines = nonEmpty(procIdx + 1, lines.length);
         }
-        ingLines.filter((l) => !isSubHead(l) && !readMeta(l)).forEach((l) => {
+        // Parentesi aperta su una riga e chiusa sulla successiva: "150 g pollo (oppure ceci" + "frullati se vuoi veg)"
+        ingLines = ingLines.reduce((acc, l) => {
+            const prev = acc[acc.length - 1];
+            if (prev && (prev.split('(').length > prev.split(')').length) && l.includes(')')) acc[acc.length - 1] = prev + ' ' + l; else acc.push(l);
+            return acc;
+        }, []);
+        ingLines.flatMap(splitIngredientRun).filter((l) => !isSubHead(l) && !readMeta(l)
+            && !/^[^\d]{2,40}:$/.test(l)                                                       // "Assemblaggio:", "Per la crema:"
+            && !(/^per\s/i.test(l) && (parseIngredientLine(l) || { loose: true }).loose)       // "per uno stampo da 20 cm"
+        ).forEach((l) => {
             const p = parseIngredientLine(l);
             if (p && p.name && p.name.length > 1) res.ingredients.push(p.loose ? { ...p, unit: 'q.b.' } : p);
         });
+        // Passaggi numerati scritti prima degli ingredienti ("1. Metti il caffè… 2. Monta la panna…  Ingredienti: …")
+        if (!procLines.length && ingIdx > 0) procLines = nonEmpty(0, ingIdx).filter((l) => l !== titleLine && isStepLine(l));
         procLines = procLines.filter((l) => !readMeta(l) || l.length > 60)
             .map((l) => l.replace(/^\s*(?:passo|step|fase)?\s*\d+\s*[.):\-]\s+/i, '').replace(/^[\-–•*]\s+/, ''));
         res.procedure = joinBrokenLines(procLines).join('\n').trim();
@@ -3635,11 +3762,13 @@
     let lastImport = null;
     function renderImportPreview(p) {
         const box = $('import-preview');
-        const found = p.title || p.ingredients.length || p.procedure;
+        const found = p.title || p.ingredients.length || p.procedure || p.source;
         if (!found) { box.innerHTML = `<div class="import-card"><h4><i class="ri-error-warning-line"></i> Non ho trovato una ricetta</h4><p class="form-hint">Controlla il testo: servono almeno ingredienti o procedimento.</p></div>`; return; }
         const times = [['Totale', p.timeTotal], ['Preparazione', p.timePrep], ['Cottura', p.timeCook], ['Lievitaz.', p.timeLeav]].filter(([, v]) => v).map(([k, v]) => `${k} ${formatMinutes(v)}`).join(' · ');
         box.innerHTML = `<div class="import-card">
             <h4><i class="ri-checkbox-circle-line" style="color:#10B981;"></i> Ecco cosa ho capito</h4>
+            ${p.from ? `<div class="import-from"><i class="ri-link"></i> ${esc(p.from)}</div>` : ''}
+            ${p.warn ? `<div class="import-warn"><i class="ri-information-line"></i> ${esc(p.warn)}</div>` : ''}
             <div class="import-field"><b>Titolo</b><span>${esc(p.title) || '<em>non trovato</em>'}</span></div>
             <div class="import-field"><b>Categoria</b><span>${esc(p.category) || '<em>da scegliere</em>'}</span></div>
             <div class="import-field"><b>Persone</b><span>${esc(p.servings) || '<em>non indicato</em>'}</span></div>
@@ -3655,7 +3784,16 @@
     function analyzeImport() {
         const text = $('import-text').value;
         if (!text.trim()) { showToast('Incolla prima il testo della ricetta', 'error'); $('import-text').focus(); return; }
-        lastImport = parseRecipeText(text);
+        // Hai incollato solo un link: lo leggo
+        const u = findUrl(text);
+        if (u && text.trim().length < u.href.length + 40 && !/\n/.test(text.trim())) {
+            if (linkBusy) { showToast('Sto già leggendo un link, un attimo…', 'error'); return; }
+            $('import-text').value = ''; importFromLink(u.href); return;
+        }
+        // Testo copiato da un social (tutto su una riga, emoji, hashtag): lo rimetto in ordine prima di leggerlo
+        const flat = text.trim().split('\n').length <= 3 && text.length > 150;
+        lastImport = flat || /#[\p{L}\d_]{3,}/u.test(text) ? parseSocialText(text) : parseRecipeText(text);
+        delete lastImport.linksText;
         renderImportPreview(lastImport);
     }
     function applyImport() {
@@ -3671,16 +3809,19 @@
         // Senza preparazione ma con il totale: la differenza (totale − cottura − lievitazione) diventa preparazione
         const t = recipeTimes({ timePrep: p.timePrep, timeCook: p.timeCook, timeLeav: p.timeLeav, timeTotal: p.timeTotal });
         $('timePrep').value = t.timePrep; $('timeCook').value = t.timeCook; $('timeLeav').value = t.timeLeav; updateTimeTotal();
-        if (p.ingredients.length) {
+        // Se hai scelto di sostituire, i dati vecchi che la nuova ricetta non ha vengono svuotati (niente link o passaggi di un'altra ricetta)
+        if (p.ingredients.length || hasData) {
             activeIngredients = p.ingredients.map(({ name, qty, unit }) => ({ name, qty, unit }));
             renderActiveIngredients();
         }
-        if (p.procedure) $('procedure').value = p.procedure;
+        if (p.procedure || hasData) $('procedure').value = p.procedure;
+        if (p.source || hasData) $('source').value = p.source || '';
         closeTopModal();
         showToast(p.category ? 'Modulo compilato: controlla e salva' : 'Modulo compilato: scegli la categoria e salva');
     }
     $('btn-open-import').onclick = () => {
-        $('import-preview').innerHTML = ''; lastImport = null; $('scan-progress').hidden = true;
+        $('import-preview').innerHTML = ''; lastImport = null; $('scan-progress').hidden = true; $('import-url').value = '';
+        cancelLinkRead(); // una lettura lasciata a metà non deve comparire nella pagina riaperta
         $('scan-editor').hidden = true; scan.img = null; scan.crop = null; scan.lastText = '';
         openPage('import-page', 'import-text', () => { });
     };
@@ -3695,6 +3836,346 @@
             $('import-text').focus();
         }
     };
+
+    // --- IMPORTA DA LINK: siti di ricette, TikTok, Instagram, YouTube e qualsiasi pagina ---
+    // Il browser non può leggere direttamente le pagine di altri siti: per quelle uso il servizio gratuito
+    // Jina Reader (r.jina.ai); per TikTok e YouTube le loro API pubbliche (oEmbed).
+    const READER = 'https://r.jina.ai/';
+    function findUrl(text) {
+        const s = String(text || '').trim();
+        let raw = (s.match(/https?:\/\/[^\s<>"'”»]+/i) || [])[0];
+        if (!raw && /^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}(\/\S*)?$/i.test(s)) raw = 'https://' + s;
+        if (!raw) return null;
+        try { const u = new URL(raw.replace(/[).,;:!?]+$/, '')); return /^https?:$/.test(u.protocol) ? u : null; } catch { return null; }
+    }
+    async function fetchTimeout(url, opts = {}, ms = 30000) {
+        const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), ms);
+        try {
+            const r = await fetch(url, { ...opts, signal: ctrl.signal });
+            if (!r.ok) throw new Error('http ' + r.status);
+            return r;
+        } finally { clearTimeout(timer); }
+    }
+    const readerHTML = async (url) => (await fetchTimeout(READER + url, { headers: { 'X-Return-Format': 'html' } }, 45000)).text();
+    const parseHTML = (html) => new DOMParser().parseFromString(html, 'text/html');
+    const decodeEntities = (s) => { const d = document.createElement('textarea'); d.innerHTML = String(s || ''); return d.value; };
+    const htmlToPlain = (s) => decodeEntities(String(s || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|li|div|h\d|tr)>/gi, '\n').replace(/<[^>]+>/g, ' '))
+        .replace(/[^\S\n]+/g, ' ').replace(/ *\n */g, '\n').trim();
+    // "PT1H30M" → 90
+    function isoMinutes(v) {
+        const m = String(v || '').trim().match(/^P(?:(\d+)D)?T?(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+)S)?$/i);
+        if (!m) return '';
+        const min = (+m[1] || 0) * 1440 + (+m[2] || 0) * 60 + (+m[3] || 0) + (+m[4] || 0) / 60;
+        return min >= 1 ? String(Math.round(min)) : '';
+    }
+    const emptyParsed = () => ({ title: '', servings: '', timeTotal: '', timeCook: '', timeLeav: '', timePrep: '', ingredients: [], procedure: '', category: '' });
+    function pushIngredients(res, lines) {
+        lines.forEach((l) => {
+            const p = parseIngredientLine(l);
+            if (p && p.name && p.name.length > 1) res.ingredients.push(p.loose ? { ...p, unit: 'q.b.' } : p);
+        });
+    }
+
+    // Siti di ricette: quasi tutti descrivono la ricetta con i dati strutturati schema.org (JSON-LD), letti alla perfezione
+    function findJsonLdRecipe(doc) {
+        const found = [];
+        const visit = (o) => {
+            if (!o || typeof o !== 'object') return;
+            if (Array.isArray(o)) { o.forEach(visit); return; }
+            const types = [].concat(o['@type'] || []);
+            if (types.some((x) => /recipe$/i.test(String(x)))) found.push(o);
+            if (o['@graph']) visit(o['@graph']);
+            if (o.mainEntity) visit(o.mainEntity);
+            if (o.itemListElement && !found.length) visit(o.itemListElement);
+        };
+        doc.querySelectorAll('script[type="application/ld+json"]').forEach((s) => {
+            try { visit(JSON.parse(s.textContent.replace(/^\s*<!\[CDATA\[|\]\]>\s*$/g, '').replace(/\p{Cc}+/gu, ' '))); } catch { }
+        });
+        return found.find((r) => r.recipeIngredient || r.ingredients) || found[0] || null;
+    }
+    function ldSteps(ins) {
+        const out = [];
+        const walk = (x) => {
+            if (!x) return;
+            if (typeof x === 'string') { htmlToPlain(x).split('\n').forEach((l) => { if (l.trim()) out.push(l.trim()); }); return; }
+            if (Array.isArray(x)) { x.forEach(walk); return; }
+            if (x.itemListElement) { if (x.name) out.push(htmlToPlain(x.name).replace(/:?$/, ':')); walk(x.itemListElement); return; }
+            walk(x.text || x.name || x.description);
+        };
+        walk(ins);
+        return out;
+    }
+    function recipeFromJsonLd(r) {
+        const res = emptyParsed(), first = (v) => (Array.isArray(v) ? v[0] : v);
+        res.title = capFirst(htmlToPlain(first(r.name) || first(r.headline) || '').replace(/\s+/g, ' ')).slice(0, 120);
+        const y = [].concat(r.recipeYield || []).map(String).find((s) => /\d/.test(s)), ym = y && y.match(/\d+(?:[.,]\d+)?/);
+        if (ym && toNum(ym[0]) > 0) res.servings = String(toNum(ym[0]));
+        res.timePrep = isoMinutes(r.prepTime); res.timeCook = isoMinutes(r.cookTime || r.performTime); res.timeTotal = isoMinutes(r.totalTime);
+        // Totale più lungo di preparazione + cottura: la differenza è riposo/lievitazione (es. tiramisù in frigo)
+        const rest = toNum(res.timeTotal) - (toNum(res.timePrep) || 0) - (toNum(res.timeCook) || 0);
+        if (res.timePrep && rest > 0) res.timeLeav = String(rest);
+        const ings = [].concat(r.recipeIngredient || r.ingredients || []).map((s) => htmlToPlain(typeof s === 'string' ? s : (s && (s.text || s.name)) || ''));
+        pushIngredients(res, ings.flatMap((s) => s.split('\n')));
+        res.procedure = ldSteps(r.recipeInstructions).join('\n');
+        const cat = [].concat(r.recipeCategory || []).map((c) => htmlToPlain(String(c))).join(' ');
+        res.category = categories.find((c) => cat && norm(cat).split(/[^a-z0-9]+/).some((w) => w && stem(w) === stem(norm(c)))) || guessCategory(res.title + ' ' + cat);
+        return res;
+    }
+    // "Carbonara: la ricetta originale | GialloZafferano" → "Carbonara"
+    function cleanPageTitle(t) {
+        t = htmlToPlain(t).replace(/\s+/g, ' ').trim();
+        const cut = t.split(/\s+[|–—]\s+|\s+-\s+|:\s+/)[0].trim();
+        return capFirst(cut.length >= 3 ? cut : t).slice(0, 120);
+    }
+    // Pagine senza dati strutturati: prendo il testo della pagina (senza menu, pubblicità e commenti) e lo leggo come un testo incollato
+    function pageToText(doc) {
+        doc.querySelectorAll('script, style, noscript, nav, header, footer, aside, form, iframe, svg, button, select, [aria-hidden="true"], [class*="comment"], [id*="comment"], [class*="cookie"], [class*="related"], [class*="share"]').forEach((e) => e.remove());
+        const root = doc.querySelector('[itemtype*="Recipe"], .wprm-recipe-container, .tasty-recipes, .mv-create-card, article, main, [role="main"]') || doc.body;
+        const BLOCK = /^(P|DIV|LI|H[1-6]|BR|TR|SECTION|ARTICLE|UL|OL|TABLE|BLOCKQUOTE|DT|DD|FIGCAPTION|HEADER)$/;
+        let out = '';
+        const walk = (n) => n.childNodes.forEach((c) => {
+            if (c.nodeType === 3) out += c.textContent;
+            else if (c.nodeType === 1) {
+                const block = BLOCK.test(c.tagName);
+                if (block) out += '\n';
+                if (c.tagName === 'LI') out += '- ';
+                walk(c);
+                if (block) out += '\n';
+            }
+        });
+        if (root) walk(root);
+        return out.replace(/[^\S\n]+/g, ' ').replace(/ *\n[ \n]*/g, '\n').trim();
+    }
+    async function parseWebPage(url) {
+        const doc = parseHTML(await readerHTML(url));
+        // Pagina di controllo anti-robot (Cloudflare & co.): il sito non si lascia leggere
+        const head = doc.title + ' ' + ((doc.querySelector('h1') || {}).textContent || '');
+        if (/just a moment|attention required|access denied|verify you are human|captcha|accesso negato/i.test(head)) throw new Error('blocked');
+        if (/\b(404|page not found|pagina non trovata|not found|pagina non esiste|non trovata)\b/i.test(head)) throw new Error('notfound');
+        const ld = findJsonLdRecipe(doc);
+        if (ld) { const p = recipeFromJsonLd(ld); if (p.ingredients.length || p.procedure) return { p, how: 'dati della ricetta' }; }
+        const meta = (sel) => (doc.querySelector(sel) || {}).content || '';
+        const title = cleanPageTitle(meta('meta[property="og:title"]') || (doc.querySelector('h1') || {}).textContent || doc.title || '');
+        const lines = splitInlineHeads(pageToText(doc).split('\n'));
+        const start = lines.findIndex(isIngHead);
+        const body = (start >= 0 ? lines.slice(start) : lines).slice(0, 250).join('\n');
+        const p = parseRecipeText((title ? title + '\n' : '') + body);
+        if (title) p.title = title;
+        if (!p.category) p.category = guessCategory(p.title);
+        p.linksText = body;
+        return { p, how: 'testo della pagina' };
+    }
+
+    // --- TESTI DEI SOCIAL: di solito arrivano su una sola riga, con emoji, hashtag ed elenchi "- 200g farina - 2 uova" ---
+    const PROC_START = /(^|\s)(Per prima cosa|Come prima cosa|Prima di tutto|Innanzitutto|Per iniziare|Iniziamo|Iniziate|Inizia|In una|In un|Unisci|Unite|Aggiungi|Aggiungete|Metti|Mettete|Mescola|Mescolate|Monta|Montate|Prepara|Preparate|Taglia|Tagliate|Cuoci|Cuocete|Versa|Versate|Sciogli|Sciogliete|Scalda|Scaldate|Riscalda|Fai|Fate|Prendi|Prendete|Sbatti|Sbattete|Frulla|Frullate|Impasta|Impastate|Trita|Tritate|Lava|Lavate|Lavora|Lavorate|Sbuccia|Sbucciate|Porta|Portate|Intingi|Accendi|Preriscalda|Preriscaldate|Rosola|Rosolate|Soffriggi|Stendi|Stendete|Disponi|Disponete|Inforna|Infornate|Lessa|Lessate|Friggi|Friggete|Setaccia|Setacciate|Condisci|Condite|Amalgama|Amalgamate|Imburra|Fodera|Foderate|Pulisci|Pulite|Scola|Scolate|Separa|Separate|Dividi|Dividete|Pastorizza|Tosta|Tostate|Grattugia|Spremi|Bagna|Bagnate|Farcisci|Spolvera|Montare|Mescolare|Aggiungere|Unire|Cuocere|Tagliare|Preparare|Versare|Mettere|Lavorare|Sciogliere|Portare|Frullare|Impastare|Preheat|Combine|Mix|Whisk|In a)\b/;
+    const JUNK_LINE = /(salva (la ricetta|il post|il video|questo)|link in bio|seguimi|segui(mi)? per|follow|commenta|scrivi(mi)? nei commenti|condividi con|tagga|iscriviti|mi piace)/i;
+    // Righe di contorno: link, social, "iscriviti al canale"...
+    const SOCIAL_LINE = /(https?:\/\/|www\.|^\/\s|^(ig|instagram|tiktok|facebook|fb|blog|youtube|sito|shop|e-?mail|contatti|collaborazioni|iscriviti|seguimi|music|musica|camera|lens|obiettivo|attrezzatura usata)\b)/i;
+    function socialToLines(raw) {
+        // Blocchi separati da "*****" o "-----": tengo solo quelli con la ricetta (via link, attrezzatura, musica...)
+        const blocks = String(raw || '').split(/\n\s*[-–—_=~•*#+]{3,}\s*(?:\n|$)/);
+        if (blocks.length > 1) {
+            const score = (b) => (b.match(/\b\d+(?:[.,]\d+)?\s*(?:g|gr|kg|ml|l|cl|cucchia\w*|pz|uov\w*|tazz\w*)\b/gi) || []).length + (/ingredient|procediment|preparazion/i.test(b) ? 3 : 0);
+            const kept = blocks.filter((b) => score(b) > 0);
+            if (kept.length) raw = kept.join('\n');
+        }
+        // Righe che servono solo a citare qualcuno ("@marca supplied", "ricetta di @chef")
+        raw = String(raw || '').split('\n').filter((l) => !(/@[\w.]{2,}/.test(l) && !/\d/.test(l) && l.replace(/@[\w.]+/g, '').replace(/[^a-zà-ÿ]/gi, '').length < 25)).join('\n');
+        let t = String(raw || '').replace(/\r/g, '')
+            .replace(/\s*\|\s*(TikTok|Instagram|YouTube|Facebook)\s*$/i, '')
+            .replace(/\p{Cf}/gu, '')                                             // caratteri invisibili ("- ⁠500g")
+            .replace(/(\d)\p{Mn}?\p{Me}\s*/gu, '\n$1. ')                         // 1️⃣ → "1. "
+            .replace(/[✅✔☑]\p{Mn}?\s*/gu, '\n- ')                              // ✅ caffè ✅ cacao → elenco
+            .replace(/(^|\s)#[^\s#]+/g, ' ')                                     // hashtag
+            .replace(/(^|\s)@[\w.]+/g, '$1')                                     // menzioni
+            .replace(/\*?\bADV\b\*?/g, ' ')
+            .replace(/[-–—_=~•]{3,}|\.{4,}/g, '\n')                              // separatori "—————"
+            .replace(/(?:\p{Extended_Pictographic}|\p{Regional_Indicator})[\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\p{Mn}]*/gu, '\n') // le emoji fanno spesso da "a capo"
+            .replace(/[^\S\n]{2,}/g, '\n')                                       // doppio spazio = a capo perso
+            .replace(/[^\S\n]+[-–•▪▫·►✓✔]\s*(?=\S)/g, '\n- ')                    // elenco puntato in linea
+            .replace(/\b(hai bisogno di|ti serv(?:e|ono|iranno)|occorr(?:e|ono)|ecco cosa (?:ti )?serve)\s*:/gi, '\nIngredienti\n');
+        // Titoli delle sezioni in linea: "INGREDIENTI:", "Ingredienti (per 4)", "Procedimento:", "-Descrizione :"
+        t = t.replace(/(^|[\s.!?:)\-–])(ingredienti|ingredients|occorrente|procedimento|preparazione|istruzioni|descrizione|metodo|method|instructions|directions)\b(\s*\([^)\n]{1,30}\)|\s+per\s+[^:\n]{1,30}(?=\s*:))?\s*(:|\n|$)/gi, (m, pre, word, extra, end, off, all) => {
+            const before = all.slice(Math.max(0, off - 12), off + pre.length).toLowerCase();
+            const after = all.slice(off + m.length, off + m.length + 16);
+            if (/\b(di|tempo|la|della)\s*$/.test(before) || /^\s*\d+\s*(min|minuti|h\b|ore|ora|')/i.test(after)) return m; // "tempo di preparazione: 20 min"
+            const proc = /^(procedimento|preparazione|istruzioni|descrizione|metodo|method|instructions|directions)$/i.test(word);
+            return `${pre}\n${proc ? 'Procedimento' : 'Ingredienti'}${extra ? ' ' + extra.trim() : ''}\n`;
+        });
+        // Sottosezioni: "Per la frolla al cacao: 150 g..." / "(per la torta) 160 g..." / "Assemblaggio: ..."
+        t = t.replace(/\(\s*((?:per|for)\s+[^()\n]{2,35})\)\s*/gi, '\n$1:\n');
+        t = t.replace(/(^|\s)((?:per|for)\s+(?:il|la|lo|l['’]|i|gli|le|un|una|the)\s*[^:.\n]{2,35}|assemblaggio|decorazione|farcitura|ripieno|copertura|glassa|sciroppo|finitura)\s*:\s*/gi, '$1\n$2:\n');
+        // Nessun "Procedimento": comincia alla prima frase con un verbo da ricetta dopo gli ingredienti ("… Sale qb Per prima cosa dividi…")
+        if (!/\nProcedimento\n/.test(t)) {
+            const ing = t.search(/\nIngredienti\b[^\n]*\n/);
+            if (ing >= 0) {
+                const from = t.indexOf('\n', ing + 1) + 1, m = t.slice(from).match(PROC_START);
+                if (m) { const at = from + m.index + m[1].length; t = t.slice(0, at) + '\nProcedimento\n' + t.slice(at); }
+            }
+        }
+        // Tolgo solo le frasi "da social" ("Salva la ricetta e seguimi!"), non tutta la riga con il passaggio
+        const junkSentence = new RegExp('[^.!?]*' + JUNK_LINE.source + '[^.!?]*[.!?]*\\s*', 'gi');
+        return t.split('\n').map((l) => l.replace(/\s+/g, ' ').trim()).map((l) => (JUNK_LINE.test(l) ? l.replace(junkSentence, '').trim() : l))
+            .filter((l) => l && !/^\d+\.$/.test(l) && !(l.length < 70 && SOCIAL_LINE.test(l)) && !/^[()\-–.,;:!?/*]+$/.test(l)).join('\n');
+    }
+    function cleanSocialTitle(t) {
+        t = String(t || '').replace(/(?:\p{Extended_Pictographic}|\p{Regional_Indicator})[\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\p{Mn}\p{Cf}]*/gu, ' ')
+            .split(/\s+[|–—]\s+|\s+-\s+/)[0]                                        // "Torta di mele | ricetta facile" → "Torta di mele"
+            .replace(/\([^)]*\)?/g, ' ').replace(/^(la |il )?(mia )?ricetta (del|della|dello|dei|degli|delle|di)?\s*/i, '')
+            .replace(/[!?.,:;\-–\s]+$/, '').replace(/\s+/g, ' ').trim();
+        if (t.length > 70) t = t.slice(0, 70).replace(/\s+\S*$/, '');
+        return t ? capFirst(t === t.toUpperCase() ? t.toLowerCase() : t) : '';
+    }
+    function parseSocialText(text, fallbackTitle = '') {
+        const lines = socialToLines(text);
+        const p = parseRecipeText(lines);
+        p.title = cleanSocialTitle(p.title) || cleanSocialTitle(fallbackTitle) || cleanSocialTitle(lines.split('\n')[0]);
+        // Frasi da social dentro il procedimento ("Salva la ricetta e seguimi per altre idee!")
+        p.procedure = p.procedure.replace(/[^.!?\n]*(salva (la ricetta|il post|il video)|seguimi|link in bio|lascia un like|iscriviti|commenta)[^.!?\n]*[.!?]*\s*/gi, '').trim();
+        if (!p.category) p.category = guessCategory(p.title);
+        p.linksText = text;
+        return p;
+    }
+    async function tiktokCaption(u) {
+        const oembed = async (link) => (await fetchTimeout('https://www.tiktok.com/oembed?url=' + encodeURIComponent(link), {}, 20000)).json();
+        let j;
+        try { j = await oembed(u.href); }
+        catch {
+            // Link brevi (vm.tiktok.com): cerco l'indirizzo completo del video
+            const html = await readerHTML(u.href), m = html.match(/https:\/\/www\.tiktok\.com\/@[\w.-]+\/(?:video|photo)\/\d+/);
+            if (!m) throw new Error('tiktok');
+            j = await oembed(m[0]);
+        }
+        return { text: j.title || '', author: j.author_name || '' };
+    }
+    async function instagramCaption(u) {
+        const m = u.pathname.match(/\/(p|reel|reels|tv)\/([\w-]+)/);
+        if (!m) throw new Error('instagram-link');
+        const kind = m[1] === 'reels' ? 'reel' : m[1];
+        const doc = parseHTML(await readerHTML(`https://www.instagram.com/${kind}/${m[2]}/embed/captioned/`));
+        if (/may be broken|may have been removed|non è disponibile|isn't available/i.test(doc.body ? doc.body.textContent : '')) throw new Error('removed');
+        const cap = doc.querySelector('.Caption');
+        let text = '';
+        const author = ((doc.querySelector('.UsernameText, .CaptionUsername') || {}).textContent || '').trim();
+        if (cap) {
+            cap.querySelectorAll('.CaptionUsername, .CaptionComments').forEach((e) => e.remove());
+            text = htmlToPlain(cap.innerHTML);
+        } else {
+            // Alternativa: la descrizione della pagina ("123 Mi piace - utente: «didascalia»")
+            const d = (doc.querySelector('meta[property="og:description"], meta[name="description"]') || {}).content || '';
+            text = d.replace(/^[^:]*:\s*[“"«]?/, '').replace(/[”"»]\.?\s*$/, '');
+        }
+        if (!text.trim()) throw new Error('instagram');
+        return { text, author };
+    }
+    async function youtubeInfo(u) {
+        let title = '', author = '', text = '';
+        try { const j = await (await fetchTimeout('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent(u.href), {}, 15000)).json(); title = j.title || ''; author = j.author_name || ''; } catch { }
+        try {
+            const html = await readerHTML(u.href);
+            const m = html.match(/"shortDescription":"((?:[^"\\]|\\.)*)"/) || html.match(/"attributedDescription":\{"content":"((?:[^"\\]|\\.)*)"/);
+            if (m) text = JSON.parse('"' + m[1] + '"');
+            else {
+                const d = parseHTML(html).querySelector('#description-inline-expander yt-attributed-string, #description yt-attributed-string, #description-inline-expander');
+                if (d) text = htmlToPlain(d.innerHTML).replace(/…\s*(\.\.\.)?more[\s\S]*$/i, '');
+            }
+        } catch { }
+        if (!title && !text) throw new Error('youtube');
+        return { title, author, text };
+    }
+    // Nella descrizione c'è il link alla ricetta scritta (es. "Ricetta completa: https://…"): lo seguo
+    function recipeLinkIn(text, fromHost) {
+        const urls = String(text || '').match(/https?:\/\/[^\s<>"'”»)]+/gi) || [];
+        return urls.map((x) => { try { return new URL(x.replace(/[.,;:!?]+$/, '')); } catch { return null; } })
+            .find((x) => x && x.pathname.length > 3 && x.hostname !== fromHost && !/(tiktok|instagram|youtube|youtu\.be|facebook|fb\.|twitter|x\.com|linktr\.ee|amzn|amazon|bit\.ly|spotify|whatsapp|t\.me)/i.test(x.hostname)) || null;
+    }
+
+    const PLATFORM = (u) => (/(^|\.)tiktok\.com$/i.test(u.hostname) ? 'TikTok' : /(^|\.)instagram\.com$/i.test(u.hostname) ? 'Instagram'
+        : /(^|\.)(youtube\.com|youtu\.be)$/i.test(u.hostname) ? 'YouTube' : /(^|\.)(facebook\.com|fb\.watch)$/i.test(u.hostname) ? 'Facebook' : '');
+    const hostLabel = (u) => u.hostname.replace(/^(www|m|mobile)\./, '');
+    function setLinkStatus(msg) {
+        $('link-status').hidden = !msg; $('link-status-text').textContent = msg || '';
+        $('btn-import-link').disabled = !!msg;
+    }
+    // Ogni lettura ha un numero: se nel frattempo la pagina è stata chiusa/riaperta o è partita un'altra lettura, il risultato vecchio si ignora
+    let linkBusy = false, linkRun = 0;
+    function cancelLinkRead() { linkRun++; linkBusy = false; setLinkStatus(''); }
+    async function importFromLink(raw) {
+        const u = findUrl(raw);
+        if (!u) { $('import-preview').innerHTML = ''; showToast('Non trovo un link valido', 'error'); $('import-url').focus(); return; }
+        if (linkBusy) { showToast('Sto già leggendo un link, un attimo…', 'error'); return; }
+        const run = ++linkRun;
+        linkBusy = true;
+        $('import-url').value = u.href; $('import-preview').innerHTML = ''; lastImport = null;
+        const platform = PLATFORM(u);
+        setLinkStatus(platform ? `Leggo il post di ${platform}…` : `Leggo la pagina di ${hostLabel(u)}…`);
+        try {
+            if (/\.(jpe?g|png|gif|webp|avif|heic|svg|pdf|mp4|mov|mp3)$/i.test(u.pathname)) throw new Error('file');
+            let p, from = platform || hostLabel(u), web = null;
+            if (platform === 'TikTok') { const c = await tiktokCaption(u); p = parseSocialText(c.text); if (c.author) from += ` · ${c.author}`; }
+            else if (platform === 'Instagram') { const c = await instagramCaption(u); p = parseSocialText(c.text); if (c.author) from += ` · ${c.author}`; }
+            else if (platform === 'YouTube') { const c = await youtubeInfo(u); p = parseSocialText(c.text, c.title); if (c.title && p.title.length < 3) p.title = cleanSocialTitle(c.title); if (c.author) from += ` · ${c.author}`; }
+            else { web = await parseWebPage(u.href); p = web.p; from += ` · ${web.how}`; }
+            if (run !== linkRun) return;
+            // Pochi ingredienti ma c'è il link alla ricetta completa: la leggo da lì (solo se è davvero una pagina di ricetta)
+            const next = p.ingredients.length < 2 ? recipeLinkIn(p.linksText, u.hostname) : null;
+            if (next) {
+                setLinkStatus(`Apro la ricetta completa su ${hostLabel(next)}…`);
+                try {
+                    const r = await parseWebPage(next.href);
+                    if (r.p.ingredients.length >= 2 && (platform || r.how === 'dati della ricetta')) { r.p.title = r.p.title || p.title; p = r.p; web = r; from += ` → ${hostLabel(next)}`; }
+                } catch { }
+                if (run !== linkRun) return;
+            }
+            delete p.linksText;
+            p.source = u.href; p.from = from;
+            if (!p.ingredients.length) {
+                // Pagina qualsiasi senza ingredienti: il testo non è una ricetta, non lo metto nel procedimento
+                if (web && web.how !== 'dati della ricetta') p.procedure = '';
+                p.warn = platform
+                    ? 'Nella descrizione non ci sono gli ingredienti (forse sono solo nel video o nei commenti). Ho preso quello che c\'è e il link: completa a mano, oppure fai uno screenshot della ricetta e usa «Scansiona foto».'
+                    : 'In questa pagina non ho trovato una ricetta scritta. Ho preso il titolo e il link: completa a mano o incolla il testo.';
+            }
+            lastImport = p;
+            renderImportPreview(p);
+        } catch (err) {
+            if (run !== linkRun) return;
+            const tips = {
+                Instagram: 'Instagram in questo momento non mi lascia leggere il post. Apri il post e copia la descrizione (dal computer si seleziona, dal telefono fai uno screenshot): poi usa «Incolla testo» o «Scansiona foto».',
+                Facebook: 'Facebook non permette di leggere i post dall\'esterno. Copia il testo del post e usa «Incolla testo», oppure fai uno screenshot e usa «Scansiona foto».',
+                TikTok: 'Non riesco a leggere questo video di TikTok: controlla che sia un video pubblico. In alternativa copia la descrizione e usa «Incolla testo».',
+                YouTube: 'Non riesco a leggere questo video di YouTube. Apri la descrizione, copiala e usa «Incolla testo».'
+            };
+            const tip = !navigator.onLine ? 'Sei offline: per leggere un link serve internet.'
+                : err.message === 'removed' ? 'Questo post non esiste più oppure è privato: controlla il link.'
+                : err.message === 'notfound' ? 'Questa pagina non esiste (errore 404): controlla il link.'
+                : err.message === 'file' ? 'Questo link è un file (foto, PDF o video), non una pagina. Se è la foto di una ricetta, salvala e usa «Scansiona foto».'
+                : err.message === 'blocked' ? `${hostLabel(u)} blocca la lettura automatica delle sue pagine. Apri la ricetta nel browser, copia il testo e usa «Incolla testo».`
+                : tips[platform] || 'Il sito non risponde o blocca la lettura. Riprova tra poco, oppure copia il testo della ricetta e usa «Incolla testo».';
+            $('import-preview').innerHTML = `<div class="import-card"><h4><i class="ri-error-warning-line"></i> Non sono riuscito a leggere il link</h4>
+                <p class="form-hint">${esc(tip)}</p>
+                <button type="button" class="btn-submit btn-outline" id="btn-link-retry" style="margin:12px 0 0;"><i class="ri-refresh-line"></i> Riprova</button></div>`;
+            $('btn-link-retry').onclick = () => importFromLink(u.href);
+        } finally {
+            if (run === linkRun) { linkBusy = false; setLinkStatus(''); }
+        }
+    }
+    $('btn-import-link').onclick = () => importFromLink($('import-url').value);
+    $('import-url').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); importFromLink(e.target.value); } });
+    // Incollando un link parte subito la lettura
+    $('import-url').addEventListener('paste', () => setTimeout(() => { if (findUrl($('import-url').value)) importFromLink($('import-url').value); }, 0));
+    // Condividi → ChefBox (app installata su Android): il link arriva nell'indirizzo, apro subito l'importazione
+    setTimeout(() => {
+        const q = new URLSearchParams(location.search);
+        const shared = ['url', 'text', 'title'].map((k) => q.get(k)).filter(Boolean).join(' ').trim();
+        if (!shared) return;
+        history.replaceState(null, '', location.pathname);
+        if (!categories.length) { showToast('Crea prima una categoria', 'error'); return; }
+        $('fab-add').click();
+        $('btn-open-import').click();
+        const u = findUrl(shared);
+        if (u) importFromLink(u.href); else { $('import-text').value = shared; analyzeImport(); }
+    }, 0);
 
     // --- SCANSIONE DA FOTO: riconoscimento del testo (OCR) con Tesseract.js, caricato solo quando serve ---
     let ocrScript = null, ocrWorker = null;
@@ -3940,6 +4421,15 @@
         const box = $('dynamic-ingredients-box'); if (!box) return;
         box.innerHTML = ingredientsListHTML(currentDetailIngredients, detailRatio(), linkedRecipes(getRecipe(currentRecipeId)));
     }
+    // Pulsante per aprire la ricetta originale (video, post o sito)
+    function sourceLinkHTML(src) {
+        if (!src) return '';
+        let host = '';
+        try { host = new URL(src).hostname.replace(/^(www|m|mobile|vm|vt)\./, ''); } catch { return ''; }
+        const video = /tiktok|youtube|youtu\.be|instagram|facebook|fb\.watch/i.test(host);
+        const icon = /tiktok/i.test(host) ? 'ri-tiktok-line' : /instagram/i.test(host) ? 'ri-instagram-line' : /youtu/i.test(host) ? 'ri-youtube-line' : /facebook|fb\./i.test(host) ? 'ri-facebook-circle-line' : 'ri-global-line';
+        return `<a class="source-link" href="${esc(src)}" target="_blank" rel="noopener noreferrer"><i class="${icon}"></i><span>${video ? 'Guarda l\'originale' : 'Ricetta originale'} · ${esc(host)}</span><i class="ri-external-link-line" aria-hidden="true"></i></a>`;
+    }
     const linkedCardHTML = (x) => `<button type="button" class="linked-card" data-open-recipe="${esc(x.id)}">
         <span class="linked-icon"><i class="ri-book-open-line"></i></span>
         <span class="linked-text"><strong>${esc(x.title)}</strong><small>${esc([x.category, x.timeTotal ? formatMinutes(x.timeTotal) : ''].filter(Boolean).join(' · '))}</small></span>
@@ -3979,6 +4469,7 @@
                 ${parent ? `<button type="button" class="detail-back" id="btn-detail-back"><i class="ri-arrow-left-line"></i> Torna a «${esc(parent.title)}»</button>` : ''}
                 <div class="detail-cat">${esc(r.category)}</div>
                 <h2 class="detail-title">${esc(r.title)}</h2>
+                ${sourceLinkHTML(r.source)}
                 ${timeBannerHtml}
                 <div class="form-section-title"><i class="ri-restaurant-line"></i> Dosi</div>
                 <div class="servings-stepper">
@@ -4044,7 +4535,7 @@
         // Ricette importate con una categoria non più presente: la aggiungo al menu per non perderla
         if (r.category && !categories.includes(r.category)) catSelect.add(new Option(r.category, r.category));
         $('title').value = r.title; catSelect.value = r.category;
-        $('servings').value = r.servings || 1;
+        $('servings').value = r.servings || 1; $('source').value = r.source || '';
         $('timePrep').value = r.timePrep || ''; $('timeLeav').value = r.timeLeav || ''; $('timeCook').value = r.timeCook || '';
         $('procedure').value = r.procedure;
         const hasTimes = !!(r.timePrep || r.timeLeav || r.timeCook);
